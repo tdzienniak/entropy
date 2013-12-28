@@ -17,11 +17,12 @@
 
     var _current_state = "dummy";
     var _entered_states = {};
+    var _e_patterns = {};
 
     function Game (starting_state) {
-        this.input = new app["Input"]();
-        this.engine = new app["Engine"]();
-        this.ticker = new app["Ticker"]();
+        this.input = new app["Input"](this);
+        this.engine = new app["Engine"](this);
+        this.ticker = new app["Ticker"](this);
 
         this.ticker.addListener(this.engine, this.engine.update);
 
@@ -30,21 +31,42 @@
 
     Game.addState = function (name, state_obj) {
         if (typeof name !== "string") {
-            throw new Error("Entropy: ")
+            Game.error("state name should be type of string.");
         }
+
+        _states[name] = state_obj;
+    };
+
+    Game.entityPattern = function (name, family, obj) {
+        if (arguments.length !== 3) {
+            Game.error("wrong number of arguments for ent. pattern.")
+        }
+
+        _e_patterns[name] = {
+            family: family,
+            pattern: obj
+        };
+    };
+
+    Game.log = function (message) {
+        console.log(message);
+    };
+
+    Game.error = function (message) {
+        throw new Error(["Entropy: ", message].join(" "));
     };
 
     Game.prototype = {
         constans: function (name, value) {
             if (typeof name !== "string" || name === "") {
-                throw new Error("Entropy: constans name should be non-empty string.");
+                Game.error("constans name should be non-empty string.");
             }
 
             if (name in _consts) {
                 if (typeof value === "undefined") {
                     return _consts[name];
                 } else {
-                    throw new Error("Entropy: can't define same constans twice.");
+                    Game.error("can't define same constans twice.");
                 }
             } else {
                 _consts[name] = value;
@@ -54,7 +76,7 @@
         },
         changeState: function (name) {
             if (typeof name !== "string" || !(name in _states)) {
-                throw new Error("Entropy: no such state or state name not a string.");
+                Game.error("no such state or state name not a string.");
             }
 
             var args = Array.prototype.slice.call(arguments, 1);
@@ -73,8 +95,33 @@
 
             return true;
         },
-        log: function (message) {
-            console.log(message);
+        setRenderer: function (renderer) {
+            this.renderer = renderer;
+        },
+        setStage: function (stage) {
+            this.stage = stage;
+        },
+        create: function (name) {
+            var args = Array.prototype.slice.call(arguments, 1);
+
+            this.engine.createEntity(_e_patterns[name]["family"]);
+
+            return _e_patterns[name].pattern.create.apply(this.engine, args);
+        },
+        start: function () {
+            this.ticker.start();
+
+            Game.log("Game starded!");
+        },
+        pause: function () {
+            this.ticker.pause();
+
+            Game.log("Game paused!");
+        },
+        resume: function () {
+            this.ticker.resume();
+
+            Game.log("Game resumed!");
         }
     };
 

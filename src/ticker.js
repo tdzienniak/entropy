@@ -5,14 +5,16 @@
         USE_RAF = true,
         ticks = 0,
         callbacks = [],
-        ticker,
+        raf = requestAnimationFrame,
         last_time_value = 0,
         is_running = false,
         currentFPS = FPS;
 
     var event = {};
 
-    function Ticker () {}
+    function Ticker (game) {
+        this.game = game;
+    }
 
     function tick (time) {
         if (PAUSED) {
@@ -32,22 +34,22 @@
 
         last_time_value = time;
 
-        if (ticks % FPS === 0) {
+        /*if (ticks % FPS === 0) {
             currentFPS = Math.round(1000 / delta);
-        }
+        }*/
 
         event.delta = delta;
         event.ticks = ticks;
         event.paused = PAUSED;
 
         for (var i = 0, len = callbacks.length; i < len; i++) {
-            callbacks[i][1].call(callbacks[i][0], event);
+            callbacks[i][1].call(callbacks[i][0], delta, event);
         }
 
         ticks++;
 
         if (USE_RAF) {
-            ticker(tick, FPS);
+            raf(tick);
         }
     }
 
@@ -107,7 +109,8 @@
 
             is_running = true;
             
-            ticker(tick);
+            raf(tick);
+            //ticker(tick);
         }
     };
 

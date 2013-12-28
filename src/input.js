@@ -105,7 +105,9 @@
 
     var _pressed_keys = [];
 
-    function Input () {
+    function Input (game) {
+        this.game = game;
+
         for (var i = 0; i < 256; i++) {
                 _pressed_keys[i] = false;
             }

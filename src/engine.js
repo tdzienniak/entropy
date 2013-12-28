@@ -4,8 +4,10 @@
     var _can_modify = true;
     var _next_c_id = 0;
 
-    function Engine () {
+    function Engine (game) {
         _can_modify = false;
+
+        this.game = game;
 
         this._greatest_e_id = 0;
         this._e_ids_to_reuse = [];
@@ -17,6 +19,11 @@
         this._nodes = {};
         this._systems = new app.OrderedLinkedList();
         this._updating = false;
+        this._entities_mapping = [];
+        this._families = {
+            none: []
+        };
+        this._e_family_index = [];
 
         //initializing component pool
         for (var i = 0; i < _next_c_id; i++) {
@@ -26,19 +33,19 @@
 
     Engine.component = function (name, component) {
         if (!_can_modify) {
-            throw new Error("Entropy: you can't specify components during system work - do it before initialization.");
+            app.Game.error("Entropy: you can't specify components during system work - do it before initialization.");
         }
 
         if (typeof name !== "string" && !(name instanceof String)) {
-            throw new Error("Entropy: component name should be string.");
+            app.Game.error("Entropy: component name should be string.");
         }
 
         if (typeof component !== "object") {
-            throw new Error("Entropy: component should be plain object.");
+            app.Game.error("Entropy: component should be plain object.");
         }
 
         if (typeof _component_manifest[name] !== "undefined") {
-            throw new Error("Entropy: you can't specify same component twice.");
+            app.Game.error("Entropy: you can't specify same component twice.");
         }
 
         _component_manifest[name] = [
@@ -53,23 +60,23 @@
 
     Engine.system = function (name, system) {
         if (!_can_modify) {
-            throw new Error("Entropy: you can't specify systems during system work - do it before initialization.");
+            app.Game.error("Entropy: you can't specify systems during system work - do it before initialization.");
         }
 
         if (typeof name !== "string" && !(name instanceof String)) {
-            throw new Error("Entropy: system name should be string.");
+            app.Game.error("Entropy: system name should be string.");
         }
 
         if (typeof system !== "object") {
-            throw new Error("Entropy: system should be plain object.");
+            app.Game.error("Entropy: system should be plain object.");
         }
 
         if (typeof _system_manifest[name] !== "undefined") {
-            throw new Error("Entropy: you can't specify same system twice.");
+            app.Game.error("Entropy: you can't specify same system twice.");
         }
 
         if (!("init" in system) || !("update" in system)) {
-            throw new Error("Entropy: system should specify 'init' and 'update' methods.");
+            app.Game.error("Entropy: system should specify 'init' and 'update' methods.");
         }
 
         _system_manifest[name] = system;
@@ -83,7 +90,13 @@
         canModify: function () {
             return _can_modify;
         },
-        createEntity: function () {
+        createEntity: function (family) {
+            if (typeof family !== "string") {
+                app.Game.error("Entropy: family name should be string.");
+            }
+
+            family = family || "none";
+
             if (this._e_ids_to_reuse.length !== 0) {
                 var id = this._e_ids_to_reuse.pop();
             } else {
@@ -97,6 +110,16 @@
                     this._components[id][i] = false;
                 }
             }
+
+            this._entities_mapping[id] = {};
+
+            //adding entity to family
+            if (!(family in this._families)) {
+                this._families[family] = [];
+            }
+
+            this._families[family].push(id);
+            this._e_family_index[id] = family;
 
             this._current_e_id = id;
 
@@ -119,6 +142,13 @@
                 }
             }
 
+            this._entities_mapping[id] = null;
+
+            var family = this._e_famlily_mapping[id];
+            var f_id = this._families[family].indexOf(id);
+
+            this._families[family].splice(f_id, 1);
+
             this._e_ids_to_reuse.push(id);
 
             return this;
@@ -127,13 +157,17 @@
             if (typeof id === "number") {
                 var args = Array.prototype.slice.call(arguments, 2);
             } else {
-                var name = id; 
+                //this function can be used either with two or one parameter
+                //if used wiht one, the only parameter is the name of component to add
+                //but has been mapped to id argument
+                var c_name = id; 
+
                 id = this._current_e_id;
 
                 var args = Array.prototype.slice.call(arguments, 1);
             }
             
-            var c_id = _component_manifest[name][0];
+            var c_id = _component_manifest[c_name][0];
 
             if (this._component_pool[c_id].length !== 0) {
                 var new_c = this._component_pool[c_id].pop();
@@ -143,12 +177,34 @@
             }
 
             this._entities[id][c_id] = true;
-            this._components[id][c_id] = _component_manifest[name][1].init.apply(new_c, args);
+            this._entities_mapping[id][c_name.toLowerCase()] = this._components[id][c_id] = _component_manifest[c_name][1].init.apply(new_c, args);
 
             return this;
         },
         remove: function (id, name) {
+            if (typeof id === "number") {
+                var args = Array.prototype.slice.call(arguments, 2);
+            } else {
+                //this function can be used either with two or one parameter
+                //if used wiht one, the only parameter is the name of component to add
+                //but has been mapped to id argument
+                var name = id; 
 
+                id = this._current_e_id;
+
+                var args = Array.prototype.slice.call(arguments, 1);
+            }
+
+            var c_id = _component_manifest[name][0];
+
+            this._component_pool[name].push(this._components[id][c_id]);
+
+            this._components[id][c_id] = false;
+            this._entities[id][c_id] = false;
+
+            delete this._entities_mapping[name.toLowerCase()];
+
+            return this;
         },
         getComponents: function (c_array) {
             var c_matched = [];
@@ -173,12 +229,35 @@
 
             return c_matched;
         },
+        getEntitiesWith: function (c_array) {
+            var e_matched = [];
+
+            for (var i = 0, len = c_array.length; i < len; i++) {
+                c_array[i] = _component_manifest[c_array[i]][0];
+            }
+
+            for (var e_id = 0, len = this._entities.length; e_id < len; e_id++) {
+                var found = 0;
+
+                for (var c_id = 0, len2 = c_array.length; c_id < len2; c_id++) {
+                    if (this._entities[e_id][c_array[c_id]]) {
+                        found += 1;
+                    }
+                }
+
+                if (found === c_array.length) {
+                    e_matched.push(this._entities_mapping[e_id]) //copying temp array
+                }
+            }
+
+            return e_matched;
+        },
         addSystem: function (name, priority) {
             var args = Array.prototype.slice.call(arguments, 2);
 
             var system = _system_manifest[name];
 
-            system._core = this;
+            system.game = this.game;
             system._name = name;
 
             system.init.apply(system, args);
@@ -189,7 +268,7 @@
         },
         removeSystem: function (system) {
             if (!this.isUpdating()) {
-                 this._systems.remove(system);
+                this._systems.remove(system);
             }
         },
         isSystemActive: function (name) {
@@ -221,9 +300,6 @@
         },
         getComponentPoolSize: function () {
             return this._component_pool_size;
-        },
-        getVersion: function () {
-            return "v" + VERSION;
         }
     };
 
