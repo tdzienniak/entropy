@@ -97,6 +97,8 @@
 
             family = family || "none";
 
+            var families = family.split("|");
+
             if (this._e_ids_to_reuse.length !== 0) {
                 var id = this._e_ids_to_reuse.pop();
             } else {
@@ -113,12 +115,17 @@
 
             this._entities_mapping[id] = {};
 
-            //adding entity to family
-            if (!(family in this._families)) {
-                this._families[family] = [];
+            for (var i = 0, max = families.length; i < max; i += 1) {
+                var f = families[i];
+
+                //adding entity to family
+                if (!(f in this._families)) {
+                    this._families[f] = [];
+                }
+
+                this._families[f].push(id);
             }
 
-            this._families[family].push(id);
             this._e_family_index[id] = family;
 
             this._current_e_id = id;
@@ -142,7 +149,7 @@
                 }
             }
 
-            this._entities_mapping[id] = null;
+            delete this._entities_mapping[id];
 
             var family = this._e_famlily_mapping[id];
             var f_id = this._families[family].indexOf(id);
@@ -188,21 +195,21 @@
                 //this function can be used either with two or one parameter
                 //if used wiht one, the only parameter is the name of component to add
                 //but has been mapped to id argument
-                var name = id; 
+                var c_name = id; 
 
                 id = this._current_e_id;
 
                 var args = Array.prototype.slice.call(arguments, 1);
             }
 
-            var c_id = _component_manifest[name][0];
+            var c_id = _component_manifest[c_name][0];
 
-            this._component_pool[name].push(this._components[id][c_id]);
+            this._component_pool[c_name].push(this._components[id][c_id]);
 
             this._components[id][c_id] = false;
             this._entities[id][c_id] = false;
 
-            delete this._entities_mapping[name.toLowerCase()];
+            delete this._entities_mapping[c_name.toLowerCase()];
 
             return this;
         },
@@ -251,6 +258,26 @@
             }
 
             return e_matched;
+        },
+        getAllEntities: function () {
+            return this._entities_mapping.map(function (entity) {
+                return entity;
+            });
+        },
+        getFamily: function (family) {
+            if (!isString(family)) {
+                app.error("family name should be string.");
+            }
+
+            if (!(family in this._families)) {
+                app.log("there is no such family, empty array returned.");
+
+                return [];
+            }
+
+            return this._families[family].map(function (e_id) {
+                return this._entities_mapping[e_id];
+            }, this);
         },
         addSystem: function (name, priority) {
             var args = Array.prototype.slice.call(arguments, 2);
