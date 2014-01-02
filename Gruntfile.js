@@ -49,7 +49,7 @@ module.exports = function(grunt) {
                 banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
                 //       + '"use strict";',
                 mangle: true,
-                sourceMap: 'entropy.map.js'
+                sourceMap: 'build/entropy.map.js'
                 //wrap: true
             },
             build: {

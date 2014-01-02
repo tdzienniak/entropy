@@ -56,24 +56,24 @@
         throw new Error(["Entropy: ", message].join(" "));
     };
 
+    Game.constans = function (name, value) {
+        if (typeof name !== "string" || name === "") {
+            Game.error("constans name should be non-empty string.");
+        }
+
+        name = name.toUpperCase();
+
+        if (Game.hasOwnProperty(name)) {
+            Game.error("can't define same constans twice.");
+        } else {
+            Object.defineProperty(Game, name, {
+                value: value
+            })
+        }
+    };
+
     Game.prototype = {
-        constans: function (name, value) {
-            if (typeof name !== "string" || name === "") {
-                Game.error("constans name should be non-empty string.");
-            }
-
-            if (name in _consts) {
-                if (typeof value === "undefined") {
-                    return _consts[name];
-                } else {
-                    Game.error("can't define same constans twice.");
-                }
-            } else {
-                _consts[name] = value;
-
-                return true;
-            }
-        },
+        
         changeState: function (name) {
             if (typeof name !== "string" || !(name in _states)) {
                 Game.error("no such state or state name not a string.");

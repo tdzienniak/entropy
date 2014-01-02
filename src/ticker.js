@@ -81,10 +81,10 @@
     function tick () {
         raf(tick);
 
-        /*if (_paused) {
+        if (_paused) {
             is_running = false;
             return;
-        }*/
+        }
 
         var time = time || performance.now();
 
@@ -127,7 +127,7 @@
         pause: function () {
             _paused = true;
 
-            cancelAnimationFrame(_raf_id);
+            //cancelAnimationFrame(_raf_id);
         },
         resume: function () {
             if (_paused && !is_running) {
