@@ -153,6 +153,13 @@
             for (var node = this.head; node; node = node.next) {
                 fn(this, node);
             }
+        },
+        /**
+         * Clears list.
+         * @return {[type]} [description]
+         */
+        clear: function () {
+            this.head = this.tail = null;
         }
     };
 

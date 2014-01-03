@@ -29,7 +29,7 @@
         };
 }());
 
-//perf.now polyfill by Paul Irish
+// perf.now polyfill by Paul Irish
 // relies on Date.now() which has been supported everywhere modern for years.
 // as Safari 6 doesn't have support for NavigationTiming, we use a Date.now() timestamp for relative values
  
@@ -78,7 +78,7 @@
         this.game = game;
     }
 
-    function tick () {
+    function tick (time) {
         raf(tick);
 
         if (_paused) {
