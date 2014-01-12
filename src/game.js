@@ -49,11 +49,15 @@
     };
 
     Game.log = function (message) {
-        console.log(message);
+        console.log("Entropy: ", message);
     };
 
     Game.error = function (message) {
         throw new Error(["Entropy: ", message].join(" "));
+    };
+
+    Game.warning = function (message) {
+        console.warn("Entropy: ", message);
     };
 
     Game.constans = function (name, value) {

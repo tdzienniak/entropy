@@ -16,8 +16,4 @@ function isString(val) {
     return typeof val === "string" || val instanceof String;
 }
 
-function distance(x1, y1, x2, y2) {
-    return Math.sqrt(Math.pow(2, x1 - x2) + Math.pow(2, y1 - y2));
-}
-
 global["Entropy"] = app = Entropy;

@@ -1,6 +1,7 @@
 (function (app) {
     var _component_manifest = {};
     var _system_manifest = {};
+    var _entity_patterns = {};
     var _can_modify = true;
     var _next_c_id = 0;
 
@@ -53,7 +54,7 @@
          * it contains plain objects - real component instances. 
          * @type {Array}
          */
-        this._components = [];
+        this._entities_components = [];
 
         /**
          * Component pool. Contains componet object that can be reused when creating 
@@ -69,6 +70,9 @@
         this._component_pool_size = 0;
         //this._nodes = {};
         
+        this._entities_pool = [];
+
+        this._entities_pool_size = 0;
         /**
          * Ordered linked list with system instances. The update method iterates
          * through them on every tick and call their update method.
@@ -143,11 +147,41 @@
         _system_manifest[name] = system;
     };
 
+    Engine.entity = function (name, family, pattern) {
+        _entity_patterns[name] = {
+            family: family,
+            pattern: pattern
+        };
+    };
+
     // Engine.node = function (name, node) {
     //     //_node_manifest[name] = node;
     // };
 
     Engine.prototype = {
+        _getComponentPattern: function (name) {
+            return _component_manifest[name][1];
+        },
+        _getComponentObject: function (name) {
+            var id = _component_manifest[name][0];
+            var new_component;
+
+            if (this._component_pool[id].length !== 0) {
+                new_component = this._component_pool[id].pop();
+                this._component_pool_size--;
+            } else {
+                new_component = {};
+            }
+
+            return new_component;
+        },
+        _addComponentToPool: function (name, obj) {
+            var id = _component_manifest[name][0];
+
+            this._component_pool_size += 1;
+
+            return this._component_pool[id].push(obj);
+        },
         canModify: function () {
             return _can_modify;
         },
@@ -168,14 +202,20 @@
                 id = this._greatest_e_id;
                 this._greatest_e_id += 1;
 
-                this._entities[id] = [];
-                this._components[id] = [];
-
+                this._entities_components[id] = [];
+                
                 for (var i = 0; i < this._next_c_id; i += 1) {
-                    this._entities[id][i] = false;
-                    this._components[id][i] = false;
+                    this._entities_components[id][i] = false;
                 }
             }
+
+
+
+            var e = new app.Entity(id, this);
+
+
+
+
 
             this._entities_map[id] = {
                 _e_id: id
