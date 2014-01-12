@@ -85,7 +85,7 @@
         "F7": 118,
         "F8": 119,
         "F9": 120,
-        "F1": 121,
+        "F10": 121,
         "F11": 122,
         "F12": 123,
         "NUM_LOCK": 144,
@@ -104,6 +104,10 @@
     };
 
     var _pressed_keys = [];
+    var _mouse_position = {
+        x: 0,
+        y: 0
+    };
 
     function Input (game) {
         this.game = game;
@@ -133,6 +137,12 @@
             }
 
             return keys;
+        },
+        setMouseStagePosition: function (position) {
+            _mouse_position = position;
+        },
+        getMouseStagePosition: function () {
+            return _mouse_position;
         }
     };
 

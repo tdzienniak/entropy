@@ -39,7 +39,7 @@
 
     Game.entityPattern = function (name, family, obj) {
         if (arguments.length !== 3) {
-            Game.error("wrong number of arguments for ent. pattern.")
+            Game.error("wrong number of arguments for ent. pattern.");
         }
 
         _e_patterns[name] = {
@@ -68,7 +68,7 @@
         } else {
             Object.defineProperty(Game, name, {
                 value: value
-            })
+            });
         }
     };
 
@@ -83,17 +83,19 @@
             args.unshift(this);
 
             _states[_current_state].onExit.apply(_states[_current_state], args);
+            
 
             if (name in _entered_states) {
+                _current_state = name;
                 _states[name].onReturn.apply(_states[name], args);
             } else {
+                _current_state = name;
                 _states[name].onEnter.apply(_states[name], args);
                 _entered_states[name] = true;
             }
             
-            _current_state = name;
 
-            return true;
+            console.log(_current_state);
         },
         setRenderer: function (renderer) {
             this.renderer = renderer;

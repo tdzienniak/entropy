@@ -18,7 +18,139 @@ function isString(val) {
     return typeof val === "string" || val instanceof String;
 }
 
+function distance(x1, y1, x2, y2) {
+    return Math.sqrt(Math.pow(2, x1 - x2) + Math.pow(2, y1 - y2));
+}
+
 global["Entropy"] = app = Entropy;
+
+(function (app) {
+    /**
+     * Easing functions by Robert Panner
+     * http://www.robertpenner.com/easing/
+     *
+     * t: current time, b: beginning value, c: change in value, d: duration
+     */
+
+    app.Easing = {
+        Linear: {
+            In: function (t, b, c, d) {
+                return c * t / d + b;
+            }
+        },
+        Quadratic: {
+            In: function (t, b, c, d) {
+                t /= d;
+                return c * t * t + b;
+            },
+            Out: function (t, b, c, d) {
+                t /= d;
+                return -c * t*(t-2) + b;
+            },
+            InOut: function (t, b, c, d) {
+                t /= d / 2;
+                if (t < 1) return c / 2 * t * t + b;
+                t--;
+                return -c / 2 * (t * (t - 2) - 1) + b;
+            }
+        },
+        Cubic: {
+            In: function (t, b, c, d) {
+                t /= d;
+                return c*t*t*t + b;
+            },
+            Out: function (t, b, c, d) {
+                t /= d;
+                t--;
+                return c*(t*t*t + 1) + b;
+            },
+            InOut: function (t, b, c, d) {
+                t /= d/2;
+                if (t < 1) return c/2*t*t*t + b;
+                t -= 2;
+                return c/2*(t*t*t + 2) + b;
+            }
+        },
+        Quartic: {
+            In: function (t, b, c, d) {
+                t /= d;
+                return c*t*t*t*t + b;
+            },
+            Out: function (t, b, c, d) {
+                t /= d;
+                t--;
+                return -c * (t*t*t*t - 1) + b;
+            },
+            InOut: function (t, b, c, d) {
+                t /= d/2;
+                if (t < 1) return c/2*t*t*t*t + b;
+                t -= 2;
+                return -c/2 * (t*t*t*t - 2) + b;
+            }
+        },
+        Quintic: {
+            In: function (t, b, c, d) {
+                t /= d;
+                return c*t*t*t*t*t + b;
+            },
+            Out: function (t, b, c, d) {
+                t /= d;
+                t--;
+                return c*(t*t*t*t*t + 1) + b;
+            },
+            InOut: function (t, b, c, d) {
+                t /= d/2;
+                if (t < 1) return c/2*t*t*t*t*t + b;
+                t -= 2;
+                return c/2*(t*t*t*t*t + 2) + b;
+            }
+        },
+        Sine: {
+            In: function (t, b, c, d) {
+                return -c * Math.cos(t/d * (Math.PI/2)) + c + b;
+            },
+            Out: function (t, b, c, d) {
+                return c * Math.sin(t/d * (Math.PI/2)) + b;
+            },
+            InOut: function (t, b, c, d) {
+                return -c/2 * (Math.cos(Math.PI*t/d) - 1) + b;
+            }
+        },
+        Exponential: {
+            In: function (t, b, c, d) {
+                return c * Math.pow( 2, 10 * (t/d - 1) ) + b;
+            },
+            Out: function (t, b, c, d) {
+                return c * ( -Math.pow( 2, -10 * t/d ) + 1 ) + b;
+            },
+            InOut: function (t, b, c, d) {
+                t /= d/2;
+                if (t < 1) return c/2 * Math.pow( 2, 10 * (t - 1) ) + b;
+                t--;
+                return c/2 * ( -Math.pow( 2, -10 * t) + 2 ) + b;
+            }
+        },
+        Circular: {
+            In: function (t, b, c, d) {
+                t /= d;
+                return -c * (Math.sqrt(1 - t*t) - 1) + b;
+            },
+            Out: function (t, b, c, d) {
+                t /= d;
+                t--;
+                return c * Math.sqrt(1 - t*t) + b;
+            },
+            InOut: function (t, b, c, d) {
+                t /= d/2;
+                if (t < 1) return -c/2 * (Math.sqrt(1 - t*t) - 1) + b;
+                t -= 2;
+                return c/2 * (Math.sqrt(1 - t*t) + 1) + b;
+            }
+        }
+    };
+
+
+})(app);
 
 (function (app) {
     var _component_manifest = {};
@@ -106,6 +238,8 @@ global["Entropy"] = app = Entropy;
         };
         this._entity_family_map = [];
 
+        this._entities_to_remove = [];
+
         //initializing component pool
         for (var i = 0; i < _next_c_id; i += 1) {
             this._component_pool[i] = [];
@@ -176,14 +310,16 @@ global["Entropy"] = app = Entropy;
                 app.Game.error("Entropy: family name should be string.");
             }
 
+            var id;
+
             family = family || "none";
 
             var families = family.split("|");
 
             if (this._e_ids_to_reuse.length !== 0) {
-                var id = this._e_ids_to_reuse.pop();
+                id = this._e_ids_to_reuse.pop();
             } else {
-                var id = this._greatest_e_id;
+                id = this._greatest_e_id;
                 this._greatest_e_id += 1;
 
                 this._entities[id] = [];
@@ -195,7 +331,9 @@ global["Entropy"] = app = Entropy;
                 }
             }
 
-            this._entities_map[id] = {};
+            this._entities_map[id] = {
+                _e_id: id
+            };
 
             for (var i = 0, max = families.length; i < max; i += 1) {
                 var f = families[i];
@@ -219,17 +357,9 @@ global["Entropy"] = app = Entropy;
         removeEntity: function (e_id) {
             for (var i = 0; i < this._entities[e_id].length; i += 1) {
                 if (this._entities[e_id][i]) {
-                    this._entities[e_id][i] = false;
+                    var c_name = this._components[e_id][i]._name;
 
-                    var component_name = this._components[e_id][i]._name;
-                    var component_id = i;
-
-                    this._component_pool[component_id].push(this._components[e_id][i]);
-
-                    //for informational purposes
-                    this._component_pool_size += 1;
-
-                    this._components[e_id][i] = false;
+                    this.remove(e_id, c_name);
                 }
             }
 
@@ -244,7 +374,7 @@ global["Entropy"] = app = Entropy;
                 var e_f_id = this._families[f].indexOf(e_id);
 
                 if (e_f_id !== -1) {
-                    this._families[family].splice(e_f_id, 1);
+                    this._families[f].splice(e_f_id, 1);
                 } else {
                     app.Game.error(" there is no such entity in this family.");
                 }
@@ -264,58 +394,84 @@ global["Entropy"] = app = Entropy;
             }
         },
         add: function (e_id, name) {
+            var c_name;
+            var new_c;
+            var args;
+            var c_id;
+
             if (typeof e_id === "number") {
-                var args = Array.prototype.slice.call(arguments, 2);
+                args = Array.prototype.slice.call(arguments, 2);
+                c_name = name;
             } else {
                 //this function can be used either with two or one parameter
                 //if used wiht one, the only parameter is the name of component to add
                 //but has been mapped to e_id argument
-                var c_name = e_id; 
+                c_name = e_id; 
 
                 e_id = this._current_e_id;
 
-                var args = Array.prototype.slice.call(arguments, 1);
+                args = Array.prototype.slice.call(arguments, 1);
             }
             
-            var c_id = _component_manifest[c_name][0];
+            c_id = _component_manifest[c_name][0];
 
             if (this._component_pool[c_id].length !== 0) {
-                var new_c = this._component_pool[c_id].pop();
+                new_c = this._component_pool[c_id].pop();
                 this._component_pool_size--;
             } else {
-                var new_c = {};
+                new_c = {};
             }
 
             this._entities[e_id][c_id] = true;
-            this._entities_map[e_id][c_name.toLowerCase()] = this._components[e_id][c_id] = _component_manifest[c_name][1].init.apply(new_c, args);
+            this._entities_map[e_id][c_name.toLowerCase()] =
+                this._components[e_id][c_id] =
+                _component_manifest[c_name][1].init.apply(new_c, args);
 
             //to which entity component belongs
             this._components[e_id][c_id]._e_id = e_id;
 
+            this._components[e_id][c_id]._name = c_name;
+
             return this;
         },
-        remove: function (id, name) {
-            if (typeof id === "number") {
-                var args = Array.prototype.slice.call(arguments, 2);
+        markForRemoval: function (id) {
+            this._entities_to_remove.push(id);
+        },
+        remove: function (e_id, name) {
+            var c_name;
+            var args;
+
+            if (typeof e_id === "number") {
+                args = Array.prototype.slice.call(arguments, 2);
+                c_name = name;
             } else {
                 //this function can be used either with two or one parameter
                 //if used wiht one, the only parameter is the name of component to add
                 //but has been mapped to id argument
-                var c_name = id; 
+                c_name = e_id; 
 
-                id = this._current_e_id;
+                e_id = this._current_e_id;
 
-                var args = Array.prototype.slice.call(arguments, 1);
+                args = Array.prototype.slice.call(arguments, 1);
             }
 
+            args.unshift(this.game);
+
             var c_id = _component_manifest[c_name][0];
+            var c = this._components[e_id][c_id];
 
-            this._component_pool[c_name].push(this._components[id][c_id]);
+            this._component_pool[c_id].push(c);
+            this._component_pool_size += 1;
 
-            this._components[id][c_id] = false;
-            this._entities[id][c_id] = false;
+            if (_component_manifest[c_name][1].hasOwnProperty("remove")) {
+                _component_manifest[c_name][1].remove.apply(c, args);
+            }
 
-            delete this._entities_map[c_name.toLowerCase()];
+            this._components[e_id][c_id] = null;
+
+            this._entities[e_id][c_id] = false;
+
+            delete this._entities_map[e_id][c_name.toLowerCase()];
 
             return this;
         },
@@ -362,7 +518,7 @@ global["Entropy"] = app = Entropy;
                 }
 
                 if (found === c_array.length) {
-                    e_matched.push(this._entities_map[e_id]) //copying temp array
+                    e_matched.push(this._entities_map[e_id]); //copying temp array
                 }
             }
 
@@ -375,11 +531,11 @@ global["Entropy"] = app = Entropy;
         },
         getFamily: function (family) {
             if (!isString(family)) {
-                app.error("family name should be string.");
+                app.Game.error("family name should be string.");
             }
 
             if (!(family in this._families)) {
-                app.log("there is no such family, empty array returned.");
+                //app.Game.log("there is no such family, empty array returned.");
 
                 return [];
             }
@@ -436,6 +592,20 @@ global["Entropy"] = app = Entropy;
                 node = node.next;
             }
 
+            node = this._systems.head;
+
+            while (node) {
+                node.data.afterUpdate(delta, event);
+
+                node = node.next;
+            }
+
+            for (var i = 0, max = this._entities_to_remove.length; i < max; i++) {
+                this.removeEntity(this._entities_to_remove[i]);
+            }
+
+            this._entities_to_remove.length = 0;
+
             //Entropy.trigger("updatecomplete");
 
             this._updating = false;
@@ -453,6 +623,8 @@ global["Entropy"] = app = Entropy;
 
     app["Engine"] = Engine;
 })(app);
+
+
 
 (function (app) {
     _consts = {};
@@ -495,7 +667,7 @@ global["Entropy"] = app = Entropy;
 
     Game.entityPattern = function (name, family, obj) {
         if (arguments.length !== 3) {
-            Game.error("wrong number of arguments for ent. pattern.")
+            Game.error("wrong number of arguments for ent. pattern.");
         }
 
         _e_patterns[name] = {
@@ -524,7 +696,7 @@ global["Entropy"] = app = Entropy;
         } else {
             Object.defineProperty(Game, name, {
                 value: value
-            })
+            });
         }
     };
 
@@ -539,17 +711,19 @@ global["Entropy"] = app = Entropy;
             args.unshift(this);
 
             _states[_current_state].onExit.apply(_states[_current_state], args);
+            
 
             if (name in _entered_states) {
+                _current_state = name;
                 _states[name].onReturn.apply(_states[name], args);
             } else {
+                _current_state = name;
                 _states[name].onEnter.apply(_states[name], args);
                 _entered_states[name] = true;
             }
             
-            _current_state = name;
 
-            return true;
+            console.log(_current_state);
         },
         setRenderer: function (renderer) {
             this.renderer = renderer;
@@ -671,7 +845,7 @@ global["Entropy"] = app = Entropy;
         "F7": 118,
         "F8": 119,
         "F9": 120,
-        "F1": 121,
+        "F10": 121,
         "F11": 122,
         "F12": 123,
         "NUM_LOCK": 144,
@@ -690,6 +864,10 @@ global["Entropy"] = app = Entropy;
     };
 
     var _pressed_keys = [];
+    var _mouse_position = {
+        x: 0,
+        y: 0
+    };
 
     function Input (game) {
         this.game = game;
@@ -719,6 +897,12 @@ global["Entropy"] = app = Entropy;
             }
 
             return keys;
+        },
+        setMouseStagePosition: function (position) {
+            _mouse_position = position;
+        },
+        getMouseStagePosition: function () {
+            return _mouse_position;
         }
     };
 
@@ -904,8 +1088,7 @@ global["Entropy"] = app = Entropy;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
     for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
         window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
     }
  
     if (!window.requestAnimationFrame)
@@ -943,13 +1126,13 @@ global["Entropy"] = app = Entropy;
     var nowOffset = Date.now();
  
     if (performance.timing && performance.timing.navigationStart){
-      nowOffset = performance.timing.navigationStart
+      nowOffset = performance.timing.navigationStart;
     }
  
  
     window.performance.now = function now(){
       return Date.now() - nowOffset;
-    }
+    };
  
   }
  
@@ -981,7 +1164,7 @@ global["Entropy"] = app = Entropy;
             return;
         }
 
-        var time = time || performance.now();
+        time = time || performance.now();
 
         var delta = time - last_time_value;
 
@@ -1044,6 +1227,15 @@ global["Entropy"] = app = Entropy;
 })(app);
 
 (function (app) {
+
+    function degToRad(degrees) {
+        return degrees * Math.PI / 180;
+    }
+
+    function radToDeg(radians) {
+        return radians * 180 / Math.PI;
+    }
+
     var Vector = function (coords) {
         if (Object.prototype.toString.call(coords) === "[object Array]") {
             this.x = coords[0];
@@ -1051,7 +1243,9 @@ global["Entropy"] = app = Entropy;
             this.updatePolarCoords();
         } else if (typeof coords === 'object') {
             if (typeof coords.x === 'undefined') { //podano wspórzędne biegunowe
-                this.angle = coords.angle;
+                this.angle = 0;
+                this.rotate(coords.angle);
+
                 this.length = coords.length;
 
                 //uzupełnianie wspórzędnych kartezjańskich
@@ -1066,88 +1260,101 @@ global["Entropy"] = app = Entropy;
         } else {
             throw new Error('Podałeś zły format współrzędnych!');
         }
-    }
+    };
 
     var v = Vector.prototype;
 
-    v.rotate = function (angle) {
-        var fullAngles = Math.abs(angle / 360),
-            newAngle;
+    v.rotate = function (angle, return_new) {
+        angle %= 360;
+        return_new = return_new || false;
 
-        if (fullAngles >= 1 && angle > 0) {
-            fullAngles = Math.floor(fullAngles);
-            newAngle = this.angle + (angle - (fullAngles * 360));
-        } else if (fullAngles >= 1 && angle < 0) {
-            newAngle = this.angle + (angle + (fullAngles * 360));
+        if (return_new) {
+            return new Vector({length: this.length, angle: this.angle + angle});
         } else {
-            newAngle = this.angle + angle;
-        }
+            this.angle += angle;
+            this.angle %= 360;
 
-        if (newAngle > 180) {
-            this.angle = -360 + newAngle;
-        } else if (newAngle < -180) {
-            this.angle = 360 + newAngle;
-        } else {
-            this.angle = newAngle;
-        }
-
-        this.updateCartCoords();
-        return this;
-    };
-
-    v.add = function (vector, returnNew) {
-        var returnNew = returnNew || false;
-
-        if (Object.prototype.toString.call(vector) === "[object Array]") {
-            this.x += vector[0];
-            this.y += vector[1];
-            this.updatePolarCoords();
-        } else if (typeof vector === 'object') {
-            if (returnNew) { //zwraca nowy wektor, nie modyfikuje obecnego
-                return new Vector([this.x + vector.x, this.y + vector.y]);
-            } else {
-                this.x += vector.x;
-                this.y += vector.y;
-
-                this.updatePolarCoords();
-            }
-            return this;
-        } else {
-            throw new Error('Zły parametr.')
-        }
-    };
-
-    v.scale = function (scalar, returnNew) {
-        var returnNew = returnNew || false;
-
-        if (returnNew) { //zwraca nowy wektor, nie modyfikuje obecnego
-            return new Vector([this.x * scalar, this.y * scalar]);
-        } else {
-            this.x *= scalar;
-            this.y *= scalar;
-            this.updatePolarCoords();
-        }
-
-        return this;
-    };
-
-    v.setAngle = function (angle, returnNew) {
-        var returnNew = returnNew || false;
-
-        if (returnNew) {
-            return new Vector({length: this.length, angle: angle});
-        } else {
-            this.angle = angle;
             this.updateCartCoords();
 
             return this;
         }
     };
 
-    v.truncate = function (desiredLength, returnNew) {
-        var returnNew = returnNew || false;
+    v.rotateRad = function (angle, return_new) {
+        angle = angle % (2 * Math.PI);
+        return_new = return_new || false;
 
-        if (returnNew) { //zwraca nowy wektor, nie modyfikuje obecnego
+        if (return_new) {
+            return new Vector({length: this.length, angle: this.angle + radToDeg(angle)});
+        } else {
+            this.rotate(radToDeg(angle));
+
+            return this;
+        }
+    };
+
+    v.add = function (vector, return_new) {
+        return_new = return_new || false;
+        var x, y;
+
+        if (Object.prototype.toString.call(vector) === "[object Array]") {
+            x = vector[0];
+            y = vector[1];
+        } else if (typeof vector === 'object') {
+            x = vector.x;
+            y = vector.y;
+        } else {
+            throw new Error('Zły parametr.');
+        }
+
+        if (return_new) { //zwraca nowy wektor, nie modyfikuje obecnego
+            return new Vector([this.x + x, this.y + y]);
+        } else {
+            this.x += x;
+            this.y += y;
+
+            this.updatePolarCoords();
+
+            return this;
+        }
+    };
+
+    v.scale = function (scalar, return_new) {
+        return_new = return_new || false;
+
+        if (return_new) { //zwraca nowy wektor, nie modyfikuje obecnego
+            return new Vector([this.x * scalar, this.y * scalar]);
+        } else {
+            this.x *= scalar;
+            this.y *= scalar;
+
+            this.updatePolarCoords();
+        }
+
+        return this;
+    };
+
+    v.setAngle = function (angle, return_new) {
+        return_new = return_new || false;
+
+        if (return_new) {
+            return new Vector({length: this.length, angle: angle});
+        } else {
+            this.angle = 0;
+            this.rotate(angle);
+
+            return this;
+        }
+    };
+
+    v.getRadAngle = function () {
+        return degToRad(this.angle);
+    };
+
+    v.truncate = function (desiredLength, return_new) {
+        return_new = return_new || false;
+
+        if (return_new) { //zwraca nowy wektor, nie modyfikuje obecnego
             return new Vector({
                 angle: this.angle,
                 length: desiredLength
@@ -1160,26 +1367,33 @@ global["Entropy"] = app = Entropy;
         return this;
     };
 
-    v.normalize = function (returnNew) {
-        return this.truncate(1, returnNew);
+    v.normalize = function (return_new) {
+        return this.truncate(1, return_new);
     };
 
-    v.substract = function (vector, returnNew) {
-        var returnNew = returnNew || false;
+    v.substract = function (vector, return_new) {
+        return_new = return_new || false;
+        var x, y;
 
-        if (typeof vector === 'object') {
-            if (returnNew) { //zwraca nowy wektor, nie modyfikuje obecnego
-                return new Vector([this.x - vector.x, this.y - vector.y]);
-            } else {
-                this.x -= vector.x;
-                this.y -= vector.y;
+        if (Object.prototype.toString.call(vector) === "[object Array]") {
+            x = vector[0];
+            y = vector[1];
+        } else if (typeof vector === 'object') {
+            x = vector.x;
+            y = vector.y;
+        } else {
+            throw new Error('Zły parametr.');
+        }
 
-                this.updatePolarCoords();
-            }
+        if (return_new) { //zwraca nowy wektor, nie modyfikuje obecnego
+            return new Vector([this.x - x, this.y - y]);
+        } else {
+            this.x -= x;
+            this.y -= y;
+
+            this.updatePolarCoords();
 
             return this;
-        } else {
-            throw new Error('Zły parametr.')
         }
     };
 
@@ -1191,38 +1405,38 @@ global["Entropy"] = app = Entropy;
         } else if (typeof vector === 'object') {
             scalar = this.x * vector.x + this.y * vector.y;
         } else {
-            throw new Error('Zły parametr.')
+            throw new Error('Zły parametr.');
         }
 
         return scalar;
-    }
+    };
 
-    v.reverseX = function (returnNew) {
-        var returnNew = returnNew || false;
+    v.reverseX = function (return_new) {
+        return_new = return_new || false;
 
-        if (returnNew) {
+        if (return_new) {
             return new Vector([-this.x, this.y]);
         } else {
             this.x = -this.x;
             this.updatePolarCoords();
         }
-    }
+    };
 
-    v.reverseY = function (returnNew) {
-        var returnNew = returnNew || false;
+    v.reverseY = function (return_new) {
+        return_new = return_new || false;
 
-        if (returnNew) {
+        if (return_new) {
             return new Vector([this.x, -this.y]);
         } else {
             this.y = -this.y;
             this.updatePolarCoords();
         }
-    }
+    };
 
-    v.reverseBoth = function (returnNew) {
-        var returnNew = returnNew || false;
+    v.reverseBoth = function (return_new) {
+        return_new = return_new || false;
 
-        if (returnNew) {
+        if (return_new) {
             return new Vector([-this.x, -this.y]);
         } else {
             this.x = -this.x;
@@ -1231,15 +1445,31 @@ global["Entropy"] = app = Entropy;
         }
 
         return this;
-    }
+    };
 
-    v.angleBetween = function (vector) {
+    v.minAngleTo = function (vector) {
+        if (this.angle < 0) {
+            this.angle += 360;
+        }
 
-    }
+        if (vector.angle < 0) {
+            vector.angle += 360;
+        }
 
-    v.negate = function (returnNew) {
+        var angle = vector.angle - this.angle;
 
-    }
+        if (angle > 180) {
+            angle = 360 + this.angle - vector.angle;
+        } else if (angle < -180) {
+            angle = 360 - this.angle + vector.angle;
+        }
+
+        return angle;
+    };
+
+    v.negate = function (return_new) {
+        return this.reverseBoth(return_new);
+    };
 
     v.clone = function () {
         return new Vector([this.x, this.y]);
@@ -1247,12 +1477,15 @@ global["Entropy"] = app = Entropy;
 
     v.updatePolarCoords = function () {
         this.length = Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
-        this.angle = Math.atan2(this.y, this.x) * 180 / Math.PI;
+
+        this.angle = 0;
+        this.rotate(radToDeg(Math.atan2(this.y, this.x) + 2 * Math.PI));
     };
 
     v.updateCartCoords = function () {
-        this.x = Math.cos(this.angle * Math.PI / 180) * this.length;
-        this.y = (this.angle === 180 || this.angle === -180) ? 0 : Math.sin(this.angle * Math.PI / 180) * this.length
+        this.x = Math.cos(degToRad(this.angle)) * this.length;
+        this.y = Math.sin(degToRad(this.angle)) * this.length;
+        //this.y = (this.angle === 180 || this.angle === -180) ? 0 : Math.sin(this.angle * Math.PI / 180) * this.length
     };
 
     v.debug = function () {

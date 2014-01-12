@@ -84,6 +84,8 @@
         };
         this._entity_family_map = [];
 
+        this._entities_to_remove = [];
+
         //initializing component pool
         for (var i = 0; i < _next_c_id; i += 1) {
             this._component_pool[i] = [];
@@ -154,14 +156,16 @@
                 app.Game.error("Entropy: family name should be string.");
             }
 
+            var id;
+
             family = family || "none";
 
             var families = family.split("|");
 
             if (this._e_ids_to_reuse.length !== 0) {
-                var id = this._e_ids_to_reuse.pop();
+                id = this._e_ids_to_reuse.pop();
             } else {
-                var id = this._greatest_e_id;
+                id = this._greatest_e_id;
                 this._greatest_e_id += 1;
 
                 this._entities[id] = [];
@@ -173,7 +177,9 @@
                 }
             }
 
-            this._entities_map[id] = {};
+            this._entities_map[id] = {
+                _e_id: id
+            };
 
             for (var i = 0, max = families.length; i < max; i += 1) {
                 var f = families[i];
@@ -197,17 +203,9 @@
         removeEntity: function (e_id) {
             for (var i = 0; i < this._entities[e_id].length; i += 1) {
                 if (this._entities[e_id][i]) {
-                    this._entities[e_id][i] = false;
+                    var c_name = this._components[e_id][i]._name;
 
-                    var component_name = this._components[e_id][i]._name;
-                    var component_id = i;
-
-                    this._component_pool[component_id].push(this._components[e_id][i]);
-
-                    //for informational purposes
-                    this._component_pool_size += 1;
-
-                    this._components[e_id][i] = false;
+                    this.remove(e_id, c_name);
                 }
             }
 
@@ -222,7 +220,7 @@
                 var e_f_id = this._families[f].indexOf(e_id);
 
                 if (e_f_id !== -1) {
-                    this._families[family].splice(e_f_id, 1);
+                    this._families[f].splice(e_f_id, 1);
                 } else {
                     app.Game.error(" there is no such entity in this family.");
                 }
@@ -242,58 +240,84 @@
             }
         },
         add: function (e_id, name) {
+            var c_name;
+            var new_c;
+            var args;
+            var c_id;
+
             if (typeof e_id === "number") {
-                var args = Array.prototype.slice.call(arguments, 2);
+                args = Array.prototype.slice.call(arguments, 2);
+                c_name = name;
             } else {
                 //this function can be used either with two or one parameter
                 //if used wiht one, the only parameter is the name of component to add
                 //but has been mapped to e_id argument
-                var c_name = e_id; 
+                c_name = e_id; 
 
                 e_id = this._current_e_id;
 
-                var args = Array.prototype.slice.call(arguments, 1);
+                args = Array.prototype.slice.call(arguments, 1);
             }
             
-            var c_id = _component_manifest[c_name][0];
+            c_id = _component_manifest[c_name][0];
 
             if (this._component_pool[c_id].length !== 0) {
-                var new_c = this._component_pool[c_id].pop();
+                new_c = this._component_pool[c_id].pop();
                 this._component_pool_size--;
             } else {
-                var new_c = {};
+                new_c = {};
             }
 
             this._entities[e_id][c_id] = true;
-            this._entities_map[e_id][c_name.toLowerCase()] = this._components[e_id][c_id] = _component_manifest[c_name][1].init.apply(new_c, args);
+            this._entities_map[e_id][c_name.toLowerCase()] =
+                this._components[e_id][c_id] =
+                _component_manifest[c_name][1].init.apply(new_c, args);
 
             //to which entity component belongs
             this._components[e_id][c_id]._e_id = e_id;
 
+            this._components[e_id][c_id]._name = c_name;
+
             return this;
         },
-        remove: function (id, name) {
-            if (typeof id === "number") {
-                var args = Array.prototype.slice.call(arguments, 2);
+        markForRemoval: function (id) {
+            this._entities_to_remove.push(id);
+        },
+        remove: function (e_id, name) {
+            var c_name;
+            var args;
+
+            if (typeof e_id === "number") {
+                args = Array.prototype.slice.call(arguments, 2);
+                c_name = name;
             } else {
                 //this function can be used either with two or one parameter
                 //if used wiht one, the only parameter is the name of component to add
                 //but has been mapped to id argument
-                var c_name = id; 
+                c_name = e_id; 
 
-                id = this._current_e_id;
+                e_id = this._current_e_id;
 
-                var args = Array.prototype.slice.call(arguments, 1);
+                args = Array.prototype.slice.call(arguments, 1);
             }
 
+            args.unshift(this.game);
+
             var c_id = _component_manifest[c_name][0];
+            var c = this._components[e_id][c_id];
 
-            this._component_pool[c_name].push(this._components[id][c_id]);
+            this._component_pool[c_id].push(c);
+            this._component_pool_size += 1;
 
-            this._components[id][c_id] = false;
-            this._entities[id][c_id] = false;
+            if (_component_manifest[c_name][1].hasOwnProperty("remove")) {
+                _component_manifest[c_name][1].remove.apply(c, args);
+            }
 
-            delete this._entities_map[c_name.toLowerCase()];
+            this._components[e_id][c_id] = null;
+
+            this._entities[e_id][c_id] = false;
+
+            delete this._entities_map[e_id][c_name.toLowerCase()];
 
             return this;
         },
@@ -340,7 +364,7 @@
                 }
 
                 if (found === c_array.length) {
-                    e_matched.push(this._entities_map[e_id]) //copying temp array
+                    e_matched.push(this._entities_map[e_id]); //copying temp array
                 }
             }
 
@@ -353,11 +377,11 @@
         },
         getFamily: function (family) {
             if (!isString(family)) {
-                app.error("family name should be string.");
+                app.Game.error("family name should be string.");
             }
 
             if (!(family in this._families)) {
-                app.log("there is no such family, empty array returned.");
+                //app.Game.log("there is no such family, empty array returned.");
 
                 return [];
             }
@@ -413,6 +437,20 @@
 
                 node = node.next;
             }
+
+            node = this._systems.head;
+
+            while (node) {
+                node.data.afterUpdate(delta, event);
+
+                node = node.next;
+            }
+
+            for (var i = 0, max = this._entities_to_remove.length; i < max; i++) {
+                this.removeEntity(this._entities_to_remove[i]);
+            }
+
+            this._entities_to_remove.length = 0;
 
             //Entropy.trigger("updatecomplete");
 
