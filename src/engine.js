@@ -136,8 +136,8 @@
             app.Game.error("Entropy: you can't specify same system twice.");
         }
 
-        if (!("init" in system) || !("update" in system)) {
-            app.Game.error("Entropy: system should specify 'init' and 'update' methods.");
+        if (!system.hasOwnProperty("update")) {
+            app.Game.error("Entropy: system should specify 'update' method.");
         }
 
         _system_manifest[name] = system;
@@ -222,7 +222,7 @@
                 if (e_f_id !== -1) {
                     this._families[f].splice(e_f_id, 1);
                 } else {
-                    app.Game.error(" there is no such entity in this family.");
+                    //app.Game.error(" there is no such entity in this family.");
                 }
             }
 
@@ -398,7 +398,7 @@
             system.game = this.game;
             system._name = name;
 
-            system.init.apply(system, args);
+            system.init && system.init.apply(system, args);
 
             this._systems.insert(system, priority);
 
@@ -441,7 +441,7 @@
             node = this._systems.head;
 
             while (node) {
-                node.data.afterUpdate(delta, event);
+                node.data.afterUpdate && node.data.afterUpdate(delta, event);
 
                 node = node.next;
             }

@@ -133,7 +133,7 @@
                 is_running = true;
                 _paused = false;
 
-                this.start();
+                //this.start();
             }
         },
         addListener: function (that, callback) {
