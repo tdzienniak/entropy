@@ -1,7 +1,7 @@
 (function (app) {
     var _component_manifest = {};
     var _system_manifest = {};
-    var _entity_patterns = {};
+    var _entity_pattern = {};
     var _can_modify = true;
     var _next_c_id = 0;
 
@@ -54,23 +54,23 @@
          * it contains plain objects - real component instances. 
          * @type {Array}
          */
-        this._entities_components = [];
+        this._components_index = [];
 
         /**
          * Component pool. Contains componet object that can be reused when creating 
          * or modifying entities. For more GC friendlyness.
          * @type {Array}
          */
-        this._component_pool = [];
+        this._components_pool = [];
 
         /**
          * Size of component pool.
          * @type {Number}
          */
-        this._component_pool_size = 0;
+        this._components_pool_size = 0;
         //this._nodes = {};
         
-        this._entities_pool = [];
+        this._entities_pool = {};
 
         this._entities_pool_size = 0;
         /**
@@ -82,17 +82,18 @@
 
 
         this._updating = false;
-        this._entities_map = [];
+
         this._families = {
             none: []
         };
-        this._entity_family_map = [];
+
+        this._entity_family_index = [];
 
         this._entities_to_remove = [];
 
         //initializing component pool
         for (var i = 0; i < _next_c_id; i += 1) {
-            this._component_pool[i] = [];
+            this._components_pool[i] = [];
         }
     }
 
@@ -140,16 +141,16 @@
             app.Game.error("Entropy: you can't specify same system twice.");
         }
 
-        if (!("init" in system) || !("update" in system)) {
-            app.Game.error("Entropy: system should specify 'init' and 'update' methods.");
+        if (!("update" in system)) {
+            app.Game.error("Entropy: system should specify 'update' method.");
         }
 
         _system_manifest[name] = system;
     };
 
     Engine.entity = function (name, family, pattern) {
-        _entity_patterns[name] = {
-            family: family,
+        _entity_pattern[name] = {
+            families: family.split("|"),
             pattern: pattern
         };
     };
@@ -159,42 +160,61 @@
     // };
 
     Engine.prototype = {
-        _getComponentPattern: function (name) {
+        getComponentPattern: function (name) {
             return _component_manifest[name][1];
         },
-        _getComponentObject: function (name) {
+        getNewComponent: function (name) {
             var id = _component_manifest[name][0];
-            var new_component;
 
-            if (this._component_pool[id].length !== 0) {
-                new_component = this._component_pool[id].pop();
-                this._component_pool_size--;
+            if (this._components_pool[id].length > 0) {
+                this._components_pool_size -= 1;
+
+                var new_component = this._components_pool[id].pop();
+                new_component.deleted = false;
+
+                return new_component;
             } else {
-                new_component = {};
+                return {
+                    id: id,
+                    name: name,
+                    deleted: false
+                };
             }
-
-            return new_component;
         },
-        _addComponentToPool: function (name, obj) {
+        addComponentToPool: function (name, obj) {
             var id = _component_manifest[name][0];
 
-            this._component_pool_size += 1;
+            this._components_pool_size += 1;
 
-            return this._component_pool[id].push(obj);
+            return this._components_pool[id].push(obj);
+        },
+        setComponentsIndex: function (e_id, c_id) {
+            this._components_index[e_id][c_id] = true;
+        },
+        unsetComponentsIndex: function (e_id, c_id) {
+            this._components_index[e_id][c_id] = false;
         },
         canModify: function () {
             return _can_modify;
         },
-        createEntity: function (family) {
+        create: function (name) {
+/*
             if (typeof family !== "string") {
                 app.Game.error("Entropy: family name should be string.");
-            }
-
+            }*/
             var id;
+            var e;
+            var families;
+            var i, max;
+            var f;
+            var args;
 
-            family = family || "none";
-
-            var families = family.split("|");
+            if (arguments.length > 1) {
+                args = Array.prototype.slice.call(arguments, 1);
+                args.unshift(this.game);
+            } else {
+                args = [this.game];
+            }
 
             if (this._e_ids_to_reuse.length !== 0) {
                 id = this._e_ids_to_reuse.pop();
@@ -202,62 +222,71 @@
                 id = this._greatest_e_id;
                 this._greatest_e_id += 1;
 
-                this._entities_components[id] = [];
-                
-                for (var i = 0; i < this._next_c_id; i += 1) {
-                    this._entities_components[id][i] = false;
-                }
+                this._components_index[id] = this._components_index[id] || [];
             }
 
+            this._entities_pool[name] = this._entities_pool[name] || [];
 
+            if (this._entities_pool[name].length > 0) {
+                e = this._entities_pool[name].pop();
 
-            var e = new app.Entity(id, this);
+                e.setId(id);
+                e.setRecycled();
 
+                this._entities_pool_size -= 1;
+            } else {
+                this._entities_pool[name] = [];
 
+                e = new app.Entity(id, name, this.game);
+            }
 
+            //applying creational function to entity object
+            _entity_pattern[name].pattern.create.apply(e, args);
 
+            this._entities[id] = e;
 
-            this._entities_map[id] = {
-                _e_id: id
-            };
+            families = _entity_pattern[name].families;
 
-            for (var i = 0, max = families.length; i < max; i += 1) {
-                var f = families[i];
+            max = families.length;
+            for (i = 0; i < max; i += 1) {
+                f = families[i];
 
-                //adding entity to family
-                if (!(f in this._families)) {
+                if (!this._families.hasOwnProperty(f)) {
                     this._families[f] = [];
                 }
 
-                this._families[f].push(id);
+                this._families[f].push(e);
             }
 
-            this._entity_family_map[id] = family;
-
-            this._current_e_id = id;
+            this._entity_family_index[id] = families;
 
             this._entities_count += 1;
-
-            return id;
         },
-        removeEntity: function (e_id) {
-            for (var i = 0; i < this._entities[e_id].length; i += 1) {
-                if (this._entities[e_id][i]) {
-                    var c_name = this._components[e_id][i]._name;
+        remove: function (e) {
+            var args;
+            var id = e.id;
+            var i, max;
+            var f, e_f_id;
+            var families = _entity_pattern[e.name].families;
 
-                    this.remove(e_id, c_name);
-                }
+            //already removed
+            if (typeof this._entities[id] === "undefined") {
+                
+                return;
             }
 
-            delete this._entities_map[e_id];
+            if (arguments.length > 1) {
+                 args = Array.prototype.slice.call(arguments, 2);
+                 args.unshift(this.game);
+            } else {
+                args = [this.game];
+            }
 
-            var family = this._entity_family_map[e_id];
-            var families = family.split("|");
+            max = families.length;
+            for (i = 0; i < max; i += 1) {
+                f = families[i];
 
-            for (var i = 0, max = families.length; i < max; i += 1) {
-                var f = families[i];
-
-                var e_f_id = this._families[f].indexOf(e_id);
+                e_f_id = this._families[f].indexOf(e);
 
                 if (e_f_id !== -1) {
                     this._families[f].splice(e_f_id, 1);
@@ -266,169 +295,80 @@
                 }
             }
 
-            this._e_ids_to_reuse.push(e_id);
+            _entity_pattern[e.name].pattern.remove  && _entity_pattern[e.name].pattern.remove.apply(e, args);
+
+            //soft delete all components
+            e.removeAllComponents(true);
+            this._components_index[id].length = 0;
+
+            this._entities_pool[e.name].push(e);
+            this._entities_pool_size += 1;
+
+            delete this._entities[id];
+
+            this._e_ids_to_reuse.push(id);
 
             this._entities_count -= 1;
-
-            return this;
         },
         removeAllEntities: function () {
-            for (var i = 0, max = this._entities.length; i < max; i += 1) {
-                var e_id = this._entities[i];
 
-                this.removeEntity(e_id);
-            }
         },
-        add: function (e_id, name) {
-            var c_name;
-            var new_c;
-            var args;
-            var c_id;
-
-            if (typeof e_id === "number") {
-                args = Array.prototype.slice.call(arguments, 2);
-                c_name = name;
+        markForRemoval: function (e) {
+            this._entities_to_remove.push(e);
+        },
+        getEntity: function (id) {
+            if (typeof this._entities[id] !== "undefined") {
+                return this._entities[id];
             } else {
-                //this function can be used either with two or one parameter
-                //if used wiht one, the only parameter is the name of component to add
-                //but has been mapped to e_id argument
-                c_name = e_id; 
-
-                e_id = this._current_e_id;
-
-                args = Array.prototype.slice.call(arguments, 1);
+                return null;
             }
-            
-            c_id = _component_manifest[c_name][0];
-
-            if (this._component_pool[c_id].length !== 0) {
-                new_c = this._component_pool[c_id].pop();
-                this._component_pool_size--;
-            } else {
-                new_c = {};
-            }
-
-            this._entities[e_id][c_id] = true;
-            this._entities_map[e_id][c_name.toLowerCase()] =
-                this._components[e_id][c_id] =
-                _component_manifest[c_name][1].init.apply(new_c, args);
-
-            //to which entity component belongs
-            this._components[e_id][c_id]._e_id = e_id;
-
-            this._components[e_id][c_id]._name = c_name;
-
-            return this;
-        },
-        markForRemoval: function (id) {
-            this._entities_to_remove.push(id);
-        },
-        remove: function (e_id, name) {
-            var c_name;
-            var args;
-
-            if (typeof e_id === "number") {
-                args = Array.prototype.slice.call(arguments, 2);
-                c_name = name;
-            } else {
-                //this function can be used either with two or one parameter
-                //if used wiht one, the only parameter is the name of component to add
-                //but has been mapped to id argument
-                c_name = e_id; 
-
-                e_id = this._current_e_id;
-
-                args = Array.prototype.slice.call(arguments, 1);
-            }
-
-            args.unshift(this.game);
-
-            var c_id = _component_manifest[c_name][0];
-            var c = this._components[e_id][c_id];
-
-            this._component_pool[c_id].push(c);
-            this._component_pool_size += 1;
-
-            if (_component_manifest[c_name][1].hasOwnProperty("remove")) {
-                _component_manifest[c_name][1].remove.apply(c, args);
-            }
-
-            this._components[e_id][c_id] = null;
-
-            this._entities[e_id][c_id] = false;
-
-            delete this._entities_map[e_id][c_name.toLowerCase()];
-
-            return this;
-        },
-        getComponents: function (c_array) {
-            var c_matched = [];
-
-            for (var i = 0, len = c_array.length; i < len; i += 1) {
-                c_array[i] = _component_manifest[c_array[i]][0];
-            }
-
-            for (var e_id = 0, len = this._entities.length; e_id < len; e_id += 1) {
-                var temp = [];
-
-                for (var c_id = 0, len2 = c_array.length; c_id < len2; c_id += 1) {
-                    if (this._entities[e_id][c_array[c_id]]) {
-                        temp.push(this._components[e_id][c_array[c_id]]);
-                    }
-                }
-
-                if (temp.length === c_array.length) {
-                    c_matched.push(temp.slice(0)) //copying temp array
-                }
-            }
-
-            return c_matched;
-        },
-        getEntity: function (e_id) {
-            return this._entities_map[e_id];
         },
         getEntitiesWith: function (c_array) {
             var e_matched = [];
+            var i, max1, max2;
+            var e_id, c_id, found;
 
-            for (var i = 0, max = c_array.length; i < max; i += 1) {
-                c_array[i] = _component_manifest[c_array[i]][0];
-            }
+            c_array = c_array.map(function (name) {
+                return _component_manifest[name][0];
+            });
 
-            for (var e_id = 0, max = this._entities.length; e_id < max; e_id += 1) {
-                var found = 0;
+            max1 = this._components_index.length;
+            for (e_id = 0; e_id < max1; e_id += 1) {
+                found = 0;
 
-                for (var c_id = 0, len2 = c_array.length; c_id < len2; c_id += 1) {
-                    if (this._entities[e_id][c_array[c_id]]) {
+                max2 = c_array.length;
+                for (i = 0; i < max2; i += 1) {
+                    c_id = c_array[i];
+
+                    if (this._components_index[e_id][c_id]) {
                         found += 1;
                     }
                 }
 
                 if (found === c_array.length) {
-                    e_matched.push(this._entities_map[e_id]); //copying temp array
+                    e_matched.push(this._entities[e_id]); //copying temp array
                 }
             }
 
             return e_matched;
         },
         getAllEntities: function () {
-            return this._entities_map.map(function (entity) {
+            return this._entities.map(function (entity) {
                 return entity;
             });
         },
         getFamily: function (family) {
             if (!isString(family)) {
-                app.Game.error("family name should be string.");
+                app.Game.error("family name must be a string.");
             }
 
-            if (!(family in this._families)) {
+            if (!this._families.hasOwnProperty(family)) {
                 //app.Game.log("there is no such family, empty array returned.");
 
                 return [];
+            } else {
+                return this._families[family];
             }
-
-            return this._families[family].map(function (e_id) {
-                return this._entities_map[e_id];
-            }, this);
         },
         addSystem: function (name, priority) {
             var args = Array.prototype.slice.call(arguments, 2);
@@ -438,7 +378,7 @@
             system.game = this.game;
             system._name = name;
 
-            system.init.apply(system, args);
+            system.init && system.init.apply(system, args);
 
             this._systems.insert(system, priority);
 
@@ -481,13 +421,13 @@
             node = this._systems.head;
 
             while (node) {
-                node.data.afterUpdate(delta, event);
+                node.data.afterUpdate && node.data.afterUpdate(delta, event);
 
                 node = node.next;
             }
 
             for (var i = 0, max = this._entities_to_remove.length; i < max; i++) {
-                this.removeEntity(this._entities_to_remove[i]);
+                this.remove(this._entities_to_remove[i]);
             }
 
             this._entities_to_remove.length = 0;

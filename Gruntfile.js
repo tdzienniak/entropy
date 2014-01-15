@@ -16,14 +16,14 @@ module.exports = function(grunt) {
                 // the files to concatenate
                 src: ['src/**/*.js'],
                 // the location of the resulting JS file
-                dest: 'build/<%= pkg.name %>.js'
+                dest: 'build/entropy.js'
           }
         },
 
         wrap: {
             basic: {
-                src: ['build/<%= pkg.name %>.js'],
-                dest: 'build/<%= pkg.name %>.js',
+                src: ['build/entropy.js'],
+                dest: 'build/entropy.js',
                 options: {
                     wrapper: ['(function (global) {\n', '\n})(this);']
                 }
@@ -54,7 +54,7 @@ module.exports = function(grunt) {
             },
             build: {
                 files: {
-                  'build/<%= pkg.name %>.min.js': ['<%= concat.build.dest %>']
+                  'build/entropy.min.js': ['<%= concat.build.dest %>']
                 }
             }
         }

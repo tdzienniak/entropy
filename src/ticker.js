@@ -132,8 +132,6 @@
             if (_paused && !is_running) {
                 is_running = true;
                 _paused = false;
-
-                this.start();
             }
         },
         addListener: function (that, callback) {
