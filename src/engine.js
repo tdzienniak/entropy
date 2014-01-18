@@ -84,12 +84,14 @@
         this._updating = false;
 
         this._families = {
-            none: []
+            none: new app.Family("none")
         };
 
         this._entity_family_index = [];
 
         this._entities_to_remove = [];
+
+        this._blank_family = new app.Family("empty");
 
         //initializing component pool
         for (var i = 0; i < _next_c_id; i += 1) {
@@ -252,10 +254,10 @@
                 f = families[i];
 
                 if (!this._families.hasOwnProperty(f)) {
-                    this._families[f] = [];
+                    this._families[f] = new app.Family(f);
                 }
 
-                this._families[f].push(e);
+                this._families[f].append(e);
             }
 
             this._entity_family_index[id] = families;
@@ -286,13 +288,7 @@
             for (i = 0; i < max; i += 1) {
                 f = families[i];
 
-                e_f_id = this._families[f].indexOf(e);
-
-                if (e_f_id !== -1) {
-                    this._families[f].splice(e_f_id, 1);
-                } else {
-                    app.Game.error(" there is no such entity in this family.");
-                }
+                this._families[f].remove(e);
             }
 
             _entity_pattern[e.name].pattern.remove  && _entity_pattern[e.name].pattern.remove.apply(e, args);
@@ -365,7 +361,7 @@
             if (!this._families.hasOwnProperty(family)) {
                 //app.Game.log("there is no such family, empty array returned.");
 
-                return [];
+                return this._blank_family;
             } else {
                 return this._families[family];
             }
@@ -376,6 +372,7 @@
             var system = _system_manifest[name];
 
             system.game = this.game;
+            system.engine = this;
             system._name = name;
 
             system.init && system.init.apply(system, args);

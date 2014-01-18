@@ -39,8 +39,6 @@
             }
         }
 
-        //debugger;
-
         component_pattern.init.apply(
             this.components[lowercase_name],
             args
@@ -52,15 +50,6 @@
     };
 
     p.remove = function (name, soft_delete) {
-        /*var args = [];
-
-        if (arguments.length > 2) {
-            args = Array.prototype.slice.call(arguments, 2);
-            args.unshift(this.game);
-        } else {
-            args = [this.game];
-        }*/
-
         var lowercase_name = name.toLowerCase();
 
         if (soft_delete && this.components[lowercase_name].deleted) {
@@ -71,13 +60,6 @@
         if (this.components.hasOwnProperty(lowercase_name)) {
             var component_pattern = this.engine.getComponentPattern(name);
 
-            /*component_pattern.remove && component_pattern.remove.apply(
-                this.components[lowercase_name],
-                args
-            );*/
-
-            //soft deleted components will stay in entity,
-            //but they will not be visible in component index
             if (!soft_delete) {
                 this.engine.addComponentToPool(name, this.components[lowercase_name]);
 
@@ -87,9 +69,6 @@
             }
 
             this.engine.unsetComponentsIndex(this.id, this.components[lowercase_name].id);
-        } else {
-            //debugger;
-            app.Game.warning("there is no such component it this entity. No removal took place.");
         }
 
         return this;
