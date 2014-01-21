@@ -218,7 +218,6 @@ global["Entropy"] = app = Entropy;
          * @type {Number}
          */
         this._components_pool_size = 0;
-        //this._nodes = {};
         
         this._entities_pool = {};
 
@@ -229,7 +228,6 @@ global["Entropy"] = app = Entropy;
          * @type {OrderedLinkedList}
          */
         this._systems = new app.OrderedLinkedList();
-
 
         this._updating = false;
 
@@ -301,15 +299,15 @@ global["Entropy"] = app = Entropy;
     };
 
     Engine.entity = function (name, family, pattern) {
+        if (family === "") {
+            family = "none";
+        }
+
         _entity_pattern[name] = {
             families: family.split("|"),
             pattern: pattern
         };
     };
-
-    // Engine.node = function (name, node) {
-    //     //_node_manifest[name] = node;
-    // };
 
     Engine.prototype = {
         getComponentPattern: function (name) {
@@ -346,27 +344,15 @@ global["Entropy"] = app = Entropy;
         unsetComponentsIndex: function (e_id, c_id) {
             this._components_index[e_id][c_id] = false;
         },
-        canModify: function () {
-            return _can_modify;
-        },
-        create: function (name) {
-/*
-            if (typeof family !== "string") {
-                app.Game.error("Entropy: family name should be string.");
-            }*/
-            var id;
-            var e;
-            var families;
-            var i, max;
-            var f;
-            var args;
+        createComponentsIndex: function (e_id) {
+            this._components_index[e_id] = [];
 
-            if (arguments.length > 1) {
-                args = Array.prototype.slice.call(arguments, 1);
-                args.unshift(this.game);
-            } else {
-                args = [this.game];
+            for (var i = 0; i < _next_c_id; i += 1) {
+                this._components_index[e_id][i] = false;
             }
+        },
+        obtainEntityId: function () {
+            var id;
 
             if (this._e_ids_to_reuse.length !== 0) {
                 id = this._e_ids_to_reuse.pop();
@@ -374,23 +360,30 @@ global["Entropy"] = app = Entropy;
                 id = this._greatest_e_id;
                 this._greatest_e_id += 1;
 
-                this._components_index[id] = this._components_index[id] || [];
+                this.createComponentsIndex(id);
             }
 
-            this._entities_pool[name] = this._entities_pool[name] || [];
+            return id;
+        },
+        canModify: function () {
+            return _can_modify;
+        },
+        create: function (name) {
+            var families;
+            var i, max;
+            var f;
 
-            if (this._entities_pool[name].length > 0) {
-                e = this._entities_pool[name].pop();
+            var args = Array.prototype.slice.call(arguments, 1);
+            args.unshift(this.game);
+  
+            var id = this.obtainEntityId();
 
-                e.setId(id);
-                e.setRecycled();
-
-                this._entities_pool_size -= 1;
-            } else {
+            if (!this._entities_pool.hasOwnProperty(name)) {
                 this._entities_pool[name] = [];
-
-                e = new app.Entity(id, name, this.game);
             }
+
+            var e = this._entities_pool[name].pop() || new app.Entity(name, this.game);
+            e.setId(id);
 
             //applying creational function to entity object
             _entity_pattern[name].pattern.create.apply(e, args);
@@ -427,28 +420,24 @@ global["Entropy"] = app = Entropy;
                 return;
             }
 
-            if (arguments.length > 1) {
-                 args = Array.prototype.slice.call(arguments, 2);
-                 args.unshift(this.game);
-            } else {
-                args = [this.game];
-            }
+            args = Array.prototype.slice.call(arguments, 2);
+            args.unshift(this.game);
 
             max = families.length;
             for (i = 0; i < max; i += 1) {
                 f = families[i];
-
+                
                 this._families[f].remove(e);
             }
 
+            //optionaly call remove method
             _entity_pattern[e.name].pattern.remove  && _entity_pattern[e.name].pattern.remove.apply(e, args);
 
             //soft delete all components
             e.removeAllComponents(true);
-            this._components_index[id].length = 0;
 
             this._entities_pool[e.name].push(e);
-            this._entities_pool_size += 1;
+            //this._entities_pool_size += 1;
 
             delete this._entities[id];
 
@@ -523,7 +512,7 @@ global["Entropy"] = app = Entropy;
 
             system.game = this.game;
             system.engine = this;
-            system._name = name;
+            system.name = name;
 
             system.init && system.init.apply(system, args);
 
@@ -545,7 +534,7 @@ global["Entropy"] = app = Entropy;
             var node = this._systems.head;
 
             while (node) {
-                if (node.data._name === name) {
+                if (node.data.name === name) {
                     return true;
                 }
 
@@ -579,8 +568,6 @@ global["Entropy"] = app = Entropy;
 
             this._entities_to_remove.length = 0;
 
-            //Entropy.trigger("updatecomplete");
-
             this._updating = false;
         },
         clear: function () {
@@ -599,8 +586,8 @@ global["Entropy"] = app = Entropy;
 
 (function (app) {
 
-    function Entity (id, name, game) {
-        this.id = id;
+    function Entity (name, game) {
+        this.id = 0;
         this.name = name;
         this.engine = game.engine;
         this.game = game;
@@ -633,9 +620,10 @@ global["Entropy"] = app = Entropy;
         if (!this.components.hasOwnProperty(lowercase_name)) {
             this.components[lowercase_name] = this.engine.getNewComponent(name);
         } else {
-            if (!this.recycled) {
+            this.components[lowercase_name].deleted = false;
+            /*if (!this.recycled) {
                 app.Game.warning(" you are trying to add same component twice. Existing component will be overridden.");
-            }
+            }*/
         }
 
         component_pattern.init.apply(
@@ -722,55 +710,100 @@ global["Entropy"] = app = Entropy;
 
 (function (app) {
 
+    /**
+     * Internal node constructor.
+     * @param {any} data any type of data, in most cases an Entity instance
+     * @private
+     * @constructor
+     */
     function Node (data) {
         this.data = data;
         this.next = null;
     }
 
+    Node.prototype = {
+        getComponents: function () {
+            return this.data.components;
+        }
+    };
+
+    /**
+     * Family implemented as singly linked list.
+     * @param {String} name Family name
+     * @constructor
+     */
     function Family (name) {
+        /**
+         * Family name.
+         * @type {String}
+         */
         this.name = name;
 
-        this.head = this.tail = null;
+        /**
+         * Linked list head. Null if list is empty.
+         * @type {Node|null}
+         */
+        this.head = null;
 
+        /**
+         * Helper variable indicating whether brake current iteration or not.
+         * @type {Boolean}
+         */
         this.break_iteration = false;
     }
 
     Family.prototype = {
+        /**
+         * Appends data (entity) at the beginnig of the list. Appended node becomes new head.
+         * @param  {Entity} entity entity object
+         * @return {Family} Family instance
+         */
         append: function (entity) {
             var node = new Node(entity);
 
-            if (this.head === null) {
-                this.head = node;
-                this.tail = this.head;
-            } else if (this.head.next === null) {
-                this.head.next = node;
-                this.tail = this.head.next;
-            } else {
-                this.tail.next = node;
-                this.tail = node;
-            }
+            node.next = this.head;
+            this.head = node;
+
+            return this;
         },
+
+        /**
+         * Removes given node/entity from the family.
+         * @param  {Node|Entity} data entity or node to remove
+         * @return {Family}      Family instance
+         */
         remove: function (data) {
             var node = this.findPrecedingNode(data);
-
-            if (node !== -1) {
+            
+            if (node === null) { //remove head
+                this.head = this.head.next;
+            } else if (node !== -1) {
                 var obolete_node = node.next;
                 node.next = node.next.next;
-
                 //prepare for removal by GC
                 obolete_node = null;
             }
         },
-        findPrecedingNode: function (data) {
-            var node = this.head;
 
+        /**
+         * Finds node preceding given data.
+         * @param  {Node|Entity} data Entity or Node instance
+         * @returns {Node} if data is found
+         * @returns {null} if data is head
+         * @returns {Number} -1 if there is no such data
+         */
+        findPrecedingNode: function (data) {
+            //if data is head, there is no preceiding node, null returned
+            if (data instanceof Node && data === this.head ||
+                data instanceof app.Entity && this.head.data === data) {
+                return null;
+            }
+
+            var node = this.head;
             while (node) {
-                if (data instanceof Node) {
-                    if (node.next === data) { return node; }
-                } else if (data instanceof app.Entity) {
-                    if (node.next !== null && node.next.data === data) { return node; }
-                } else {
-                    return -1;
+                if ((data instanceof Node && node.next === data) ||
+                    (data instanceof app.Entity && node.next !== null && node.next.data === data)) {
+                    return node;
                 }
 
                 node = node.next;
@@ -778,6 +811,12 @@ global["Entropy"] = app = Entropy;
 
             return -1;
         },
+
+        /**
+         * Calls given callback for each node in the family.
+         * @param  {Function} fn      callback function
+         * @param  {object}   binding [description]
+         */
         iterate: function (fn, binding) {
             binding = binding || (function () { return this; })();
 

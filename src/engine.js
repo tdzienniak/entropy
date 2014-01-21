@@ -68,7 +68,6 @@
          * @type {Number}
          */
         this._components_pool_size = 0;
-        //this._nodes = {};
         
         this._entities_pool = {};
 
@@ -79,7 +78,6 @@
          * @type {OrderedLinkedList}
          */
         this._systems = new app.OrderedLinkedList();
-
 
         this._updating = false;
 
@@ -151,15 +149,15 @@
     };
 
     Engine.entity = function (name, family, pattern) {
+        if (family === "") {
+            family = "none";
+        }
+
         _entity_pattern[name] = {
             families: family.split("|"),
             pattern: pattern
         };
     };
-
-    // Engine.node = function (name, node) {
-    //     //_node_manifest[name] = node;
-    // };
 
     Engine.prototype = {
         getComponentPattern: function (name) {
@@ -196,27 +194,15 @@
         unsetComponentsIndex: function (e_id, c_id) {
             this._components_index[e_id][c_id] = false;
         },
-        canModify: function () {
-            return _can_modify;
-        },
-        create: function (name) {
-/*
-            if (typeof family !== "string") {
-                app.Game.error("Entropy: family name should be string.");
-            }*/
-            var id;
-            var e;
-            var families;
-            var i, max;
-            var f;
-            var args;
+        createComponentsIndex: function (e_id) {
+            this._components_index[e_id] = [];
 
-            if (arguments.length > 1) {
-                args = Array.prototype.slice.call(arguments, 1);
-                args.unshift(this.game);
-            } else {
-                args = [this.game];
+            for (var i = 0; i < _next_c_id; i += 1) {
+                this._components_index[e_id][i] = false;
             }
+        },
+        obtainEntityId: function () {
+            var id;
 
             if (this._e_ids_to_reuse.length !== 0) {
                 id = this._e_ids_to_reuse.pop();
@@ -224,23 +210,30 @@
                 id = this._greatest_e_id;
                 this._greatest_e_id += 1;
 
-                this._components_index[id] = this._components_index[id] || [];
+                this.createComponentsIndex(id);
             }
 
-            this._entities_pool[name] = this._entities_pool[name] || [];
+            return id;
+        },
+        canModify: function () {
+            return _can_modify;
+        },
+        create: function (name) {
+            var families;
+            var i, max;
+            var f;
 
-            if (this._entities_pool[name].length > 0) {
-                e = this._entities_pool[name].pop();
+            var args = Array.prototype.slice.call(arguments, 1);
+            args.unshift(this.game);
+  
+            var id = this.obtainEntityId();
 
-                e.setId(id);
-                e.setRecycled();
-
-                this._entities_pool_size -= 1;
-            } else {
+            if (!this._entities_pool.hasOwnProperty(name)) {
                 this._entities_pool[name] = [];
-
-                e = new app.Entity(id, name, this.game);
             }
+
+            var e = this._entities_pool[name].pop() || new app.Entity(name, this.game);
+            e.setId(id);
 
             //applying creational function to entity object
             _entity_pattern[name].pattern.create.apply(e, args);
@@ -277,28 +270,24 @@
                 return;
             }
 
-            if (arguments.length > 1) {
-                 args = Array.prototype.slice.call(arguments, 2);
-                 args.unshift(this.game);
-            } else {
-                args = [this.game];
-            }
+            args = Array.prototype.slice.call(arguments, 2);
+            args.unshift(this.game);
 
             max = families.length;
             for (i = 0; i < max; i += 1) {
                 f = families[i];
-
+                
                 this._families[f].remove(e);
             }
 
+            //optionaly call remove method
             _entity_pattern[e.name].pattern.remove  && _entity_pattern[e.name].pattern.remove.apply(e, args);
 
             //soft delete all components
             e.removeAllComponents(true);
-            this._components_index[id].length = 0;
 
             this._entities_pool[e.name].push(e);
-            this._entities_pool_size += 1;
+            //this._entities_pool_size += 1;
 
             delete this._entities[id];
 
@@ -373,7 +362,7 @@
 
             system.game = this.game;
             system.engine = this;
-            system._name = name;
+            system.name = name;
 
             system.init && system.init.apply(system, args);
 
@@ -395,7 +384,7 @@
             var node = this._systems.head;
 
             while (node) {
-                if (node.data._name === name) {
+                if (node.data.name === name) {
                     return true;
                 }
 
@@ -428,8 +417,6 @@
             }
 
             this._entities_to_remove.length = 0;
-
-            //Entropy.trigger("updatecomplete");
 
             this._updating = false;
         },

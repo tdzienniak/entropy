@@ -1,7 +1,7 @@
 (function (app) {
 
-    function Entity (id, name, game) {
-        this.id = id;
+    function Entity (name, game) {
+        this.id = 0;
         this.name = name;
         this.engine = game.engine;
         this.game = game;
@@ -34,9 +34,10 @@
         if (!this.components.hasOwnProperty(lowercase_name)) {
             this.components[lowercase_name] = this.engine.getNewComponent(name);
         } else {
-            if (!this.recycled) {
+            this.components[lowercase_name].deleted = false;
+            /*if (!this.recycled) {
                 app.Game.warning(" you are trying to add same component twice. Existing component will be overridden.");
-            }
+            }*/
         }
 
         component_pattern.init.apply(
