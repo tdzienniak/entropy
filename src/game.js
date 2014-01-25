@@ -3,20 +3,20 @@
 
     var _states = {
         dummy: {
-            onEnter: function (game) {
+            init: function (game) {
                 //dummy enter
             },
-            onReturn: function (game) {
+            enter: function (game) {
                 //dummy return
             },
-            onExit: function (game) {
+            exit: function (game) {
                 //dummy exit
             }
         }
     };
 
     var _current_state = "dummy";
-    var _entered_states = {};
+    var _initiated_states = {};
     var _e_patterns = {};
 
     function Game (starting_state) {
@@ -86,19 +86,18 @@
             var args = Array.prototype.slice.call(arguments, 1);
             args.unshift(this);
 
-            _states[_current_state].onExit.apply(_states[_current_state], args);
-            
+            _states[_current_state].exit && _states[_current_state].exit.apply(_states[_current_state], args);
 
-            if (name in _entered_states) {
+            if (name in _initiated_states) {
                 _current_state = name;
-                _states[name].onReturn.apply(_states[name], args);
+                _states[name].enter && _states[name].enter.apply(_states[name], args);
             } else {
                 _current_state = name;
-                _states[name].onEnter.apply(_states[name], args);
-                _entered_states[name] = true;
+                _states[name].init && _states[name].init.apply(_states[name], args);
+                _states[name].enter && _states[name].enter.apply(_states[name], args);
+                _initiated_states[name] = true;
             }
             
-
             console.log(_current_state);
         },
         setRenderer: function (renderer) {

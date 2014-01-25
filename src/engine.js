@@ -69,11 +69,20 @@
          */
         this._components_pool_size = 0;
         
+        /**
+         * Entities pool object. Keys are entity pattern names.
+         * @type {Object}
+         */
         this._entities_pool = {};
 
-        this._entities_pool_size = 0;
         /**
-         * Ordered linked list with system instances. The update method iterates
+         * Size of entities pool.
+         * @type {Number}
+         */
+        this._entities_pool_size = 0;
+        
+        /**
+         * Ordered singly linked list with system instances. The update method iterates
          * through them on every tick and call their update method.
          * @type {OrderedLinkedList}
          */
@@ -89,7 +98,7 @@
 
         this._entities_to_remove = [];
 
-        this._blank_family = new app.Family("empty");
+        this.BLANK_FAMILY = new app.Family("empty");
 
         //initializing component pool
         for (var i = 0; i < _next_c_id; i += 1) {
@@ -215,13 +224,17 @@
 
             return id;
         },
+        getNewEntity: function (name, id) {
+            var e = this._entities_pool[name].pop() || new app.Entity(name, this.game);
+            e.setId(id);
+
+            return e;
+        },
         canModify: function () {
             return _can_modify;
         },
         create: function (name) {
-            var families;
-            var i, max;
-            var f;
+            var f, families;
 
             var args = Array.prototype.slice.call(arguments, 1);
             args.unshift(this.game);
@@ -232,18 +245,15 @@
                 this._entities_pool[name] = [];
             }
 
-            var e = this._entities_pool[name].pop() || new app.Entity(name, this.game);
-            e.setId(id);
+            var e = this.getNewEntity(name, id);
 
-            //applying creational function to entity object
             _entity_pattern[name].pattern.create.apply(e, args);
 
             this._entities[id] = e;
 
             families = _entity_pattern[name].families;
 
-            max = families.length;
-            for (i = 0; i < max; i += 1) {
+            for (var i = 0, max = families.length; i < max; i += 1) {
                 f = families[i];
 
                 if (!this._families.hasOwnProperty(f)) {
@@ -260,21 +270,18 @@
         remove: function (e) {
             var args;
             var id = e.id;
-            var i, max;
             var f, e_f_id;
             var families = _entity_pattern[e.name].families;
 
             //already removed
-            if (typeof this._entities[id] === "undefined") {
-                
+            if (typeof this._entities[id] === "undefined") {          
                 return;
             }
 
             args = Array.prototype.slice.call(arguments, 2);
             args.unshift(this.game);
 
-            max = families.length;
-            for (i = 0; i < max; i += 1) {
+            for (var i = 0, max = families.length; i < max; i += 1) {
                 f = families[i];
                 
                 this._families[f].remove(e);
@@ -290,6 +297,7 @@
             //this._entities_pool_size += 1;
 
             delete this._entities[id];
+            delete thie._entity_family_index[id];
 
             this._e_ids_to_reuse.push(id);
 
@@ -348,9 +356,7 @@
             }
 
             if (!this._families.hasOwnProperty(family)) {
-                //app.Game.log("there is no such family, empty array returned.");
-
-                return this._blank_family;
+                return this.BLANK_FAMILY;
             } else {
                 return this._families[family];
             }
@@ -360,9 +366,9 @@
 
             var system = _system_manifest[name];
 
+            system.name = name;
             system.game = this.game;
             system.engine = this;
-            system.name = name;
 
             system.init && system.init.apply(system, args);
 

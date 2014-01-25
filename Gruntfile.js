@@ -29,27 +29,13 @@ module.exports = function(grunt) {
                 }
             }
         },
-
-        /*'closure-compiler': {
-            build: {
-              closurePath: '../cc',
-              js: 'build/<%= pkg.name %>.js',
-              jsOutputFile: 'build/<%= pkg.name %>.min.js',
-              maxBuffer: 500,
-              options: {
-                compilation_level: 'ADVANCED_OPTIMIZATIONS',
-                language_in: 'ECMASCRIPT5_STRICT'
-              }
-            }
-        },*/
-
         
         uglify: {
             options: {
                 banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
                 //       + '"use strict";',
                 mangle: true,
-                sourceMap: 'build/entropy.map.js'
+                sourceMap: 'entropy.map.js'
                 //wrap: true
             },
             build: {
@@ -64,10 +50,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-wrap');
-    //grunt.loadNpmTasks('grunt-closure-compiler');
     grunt.loadNpmTasks('grunt-contrib-uglify');
 
     // Default task(s).
-    grunt.registerTask('default', ['clean', 'concat', 'wrap',/* 'closure-compiler',*/ 'uglify']);
+    grunt.registerTask('default', ['clean', 'concat', 'wrap', 'uglify']);
 
 };

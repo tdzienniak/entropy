@@ -219,11 +219,20 @@ global["Entropy"] = app = Entropy;
          */
         this._components_pool_size = 0;
         
+        /**
+         * Entities pool object. Keys are entity pattern names.
+         * @type {Object}
+         */
         this._entities_pool = {};
 
-        this._entities_pool_size = 0;
         /**
-         * Ordered linked list with system instances. The update method iterates
+         * Size of entities pool.
+         * @type {Number}
+         */
+        this._entities_pool_size = 0;
+        
+        /**
+         * Ordered singly linked list with system instances. The update method iterates
          * through them on every tick and call their update method.
          * @type {OrderedLinkedList}
          */
@@ -239,7 +248,7 @@ global["Entropy"] = app = Entropy;
 
         this._entities_to_remove = [];
 
-        this._blank_family = new app.Family("empty");
+        this.BLANK_FAMILY = new app.Family("empty");
 
         //initializing component pool
         for (var i = 0; i < _next_c_id; i += 1) {
@@ -365,13 +374,17 @@ global["Entropy"] = app = Entropy;
 
             return id;
         },
+        getNewEntity: function (name, id) {
+            var e = this._entities_pool[name].pop() || new app.Entity(name, this.game);
+            e.setId(id);
+
+            return e;
+        },
         canModify: function () {
             return _can_modify;
         },
         create: function (name) {
-            var families;
-            var i, max;
-            var f;
+            var f, families;
 
             var args = Array.prototype.slice.call(arguments, 1);
             args.unshift(this.game);
@@ -382,18 +395,15 @@ global["Entropy"] = app = Entropy;
                 this._entities_pool[name] = [];
             }
 
-            var e = this._entities_pool[name].pop() || new app.Entity(name, this.game);
-            e.setId(id);
+            var e = this.getNewEntity(name, id);
 
-            //applying creational function to entity object
             _entity_pattern[name].pattern.create.apply(e, args);
 
             this._entities[id] = e;
 
             families = _entity_pattern[name].families;
 
-            max = families.length;
-            for (i = 0; i < max; i += 1) {
+            for (var i = 0, max = families.length; i < max; i += 1) {
                 f = families[i];
 
                 if (!this._families.hasOwnProperty(f)) {
@@ -410,21 +420,18 @@ global["Entropy"] = app = Entropy;
         remove: function (e) {
             var args;
             var id = e.id;
-            var i, max;
             var f, e_f_id;
             var families = _entity_pattern[e.name].families;
 
             //already removed
-            if (typeof this._entities[id] === "undefined") {
-                
+            if (typeof this._entities[id] === "undefined") {          
                 return;
             }
 
             args = Array.prototype.slice.call(arguments, 2);
             args.unshift(this.game);
 
-            max = families.length;
-            for (i = 0; i < max; i += 1) {
+            for (var i = 0, max = families.length; i < max; i += 1) {
                 f = families[i];
                 
                 this._families[f].remove(e);
@@ -440,6 +447,7 @@ global["Entropy"] = app = Entropy;
             //this._entities_pool_size += 1;
 
             delete this._entities[id];
+            delete thie._entity_family_index[id];
 
             this._e_ids_to_reuse.push(id);
 
@@ -498,9 +506,7 @@ global["Entropy"] = app = Entropy;
             }
 
             if (!this._families.hasOwnProperty(family)) {
-                //app.Game.log("there is no such family, empty array returned.");
-
-                return this._blank_family;
+                return this.BLANK_FAMILY;
             } else {
                 return this._families[family];
             }
@@ -510,9 +516,9 @@ global["Entropy"] = app = Entropy;
 
             var system = _system_manifest[name];
 
+            system.name = name;
             system.game = this.game;
             system.engine = this;
-            system.name = name;
 
             system.init && system.init.apply(system, args);
 
@@ -850,20 +856,20 @@ global["Entropy"] = app = Entropy;
 
     var _states = {
         dummy: {
-            onEnter: function (game) {
+            init: function (game) {
                 //dummy enter
             },
-            onReturn: function (game) {
+            enter: function (game) {
                 //dummy return
             },
-            onExit: function (game) {
+            exit: function (game) {
                 //dummy exit
             }
         }
     };
 
     var _current_state = "dummy";
-    var _entered_states = {};
+    var _initiated_states = {};
     var _e_patterns = {};
 
     function Game (starting_state) {
@@ -933,19 +939,18 @@ global["Entropy"] = app = Entropy;
             var args = Array.prototype.slice.call(arguments, 1);
             args.unshift(this);
 
-            _states[_current_state].onExit.apply(_states[_current_state], args);
-            
+            _states[_current_state].exit && _states[_current_state].exit.apply(_states[_current_state], args);
 
-            if (name in _entered_states) {
+            if (name in _initiated_states) {
                 _current_state = name;
-                _states[name].onReturn.apply(_states[name], args);
+                _states[name].enter && _states[name].enter.apply(_states[name], args);
             } else {
                 _current_state = name;
-                _states[name].onEnter.apply(_states[name], args);
-                _entered_states[name] = true;
+                _states[name].init && _states[name].init.apply(_states[name], args);
+                _states[name].enter && _states[name].enter.apply(_states[name], args);
+                _initiated_states[name] = true;
             }
             
-
             console.log(_current_state);
         },
         setRenderer: function (renderer) {
@@ -1130,174 +1135,6 @@ global["Entropy"] = app = Entropy;
     };
 
     app["Input"] = Input;
-})(app);
-
-/**
- * Ordered single linked list implementation.
- * 
- * @author "Tymoteusz Dzienniak"
- * @license MIT license
- */
-
-(function (app) {
-
-    /**
-     * Linked list conctructor.
-     * It initializes head and tail properties with null value.
-     */
-    function OrderedLinkedList () {
-        this.head = this.tail = null;
-    }
-
-    /**
-     * Returns node object.
-     * @param {any} data data to store in node
-     */
-    var Node = function (data) {
-        return {
-            next: null,
-            priority: null,
-            data: data
-        };
-    };
-
-    OrderedLinkedList.prototype = {
-
-        /**
-         * Adds new node at the end of the list.
-         * Function is only a syntax sugar.
-         * @param  {any} data any valid JavaScript data
-         * @return {OrderedLinkedList} this
-         */
-        append: function (data) {
-            return this.insert(data);
-        },
-
-        /**
-         * Removes given node from list.
-         * @param  {Node} node
-         * @return {undefined}
-         */
-        remove: function (node) {
-            if (node === this.head) {
-                this.head = this.head.next;
-
-                return this;
-            }
-
-            var i = this.head;
-
-            while (i.next !== node) {
-                i = i.next;
-            }
-
-            i.next = node.next;
-
-            if (node === this.tail) {
-                this.tail = i;
-            }
-
-            node = null;
-
-            return this;
-        },
-        /**
-         * Insert new node into list.
-         * 
-         * @param  {any} data     data to store in list node
-         * @param  {number} priority [optional] if specified, function inserts data before node with higher priority
-         * @return {object}       list instance             
-         */
-        insert: function (data, priority) {
-            var node = Node(data);
-
-            /*
-             * list is empty
-             */
-            if (this.head === null) {
-                node.priority = priority || 0;
-                this.head = this.tail = node;
-
-                return this;
-            }
-
-            var current = this.head;
-
-            node.priority = priority || this.tail.priority;
-
-            /*
-             * list contains only one node (head === tail)
-             */
-            if (current.next === null) {
-                if (current.priority <= node.priority) {
-                    current.next = node;
-                    this.tail = current.next;
-                } else {
-                    this.head = node;
-                    this.head.next = this.tail = current;
-                }
-
-                return this;
-            }
-
-            /*
-             * node priority is greater or equal tail priority
-             * node should become tail
-             */
-            if (node.priority >= this.tail.priority) {
-                this.tail.next = node;
-                this.tail = node;
-
-                return this;
-            }
-
-            /*
-             * node priority is less than head priority
-             * node should become head
-             */
-            if (node.priority < this.head.priority) {
-                node.next = this.head;
-                this.head = node;
-
-                return this;
-            }
-
-            /*
-             * list has more than one node
-             */
-            while (current.next !== null) { 
-               if (current.next.priority > node.priority) {
-                    node.next = current.next;
-                    current.next = node;
-
-                    break;
-                }
-
-                current = current.next;
-            }
-
-            return this;
-        },
-        /**
-         * Iterates over all list nodes, starting from head, calling function for every node.
-         * @param  {Function} fn [description]
-         * @return {[type]}      [description]
-         */
-        iterate: function (fn) {
-            for (var node = this.head; node; node = node.next) {
-                fn(this, node);
-            }
-        },
-        /**
-         * Clears list.
-         * @return {[type]} [description]
-         */
-        clear: function () {
-            this.head = this.tail = null;
-        }
-    };
-
-    app["OrderedLinkedList"] = OrderedLinkedList;
 })(app);
 
 /**
