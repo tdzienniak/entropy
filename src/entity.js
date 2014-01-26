@@ -52,7 +52,7 @@
 
     p.remove = function (name, soft_delete) {
         var lowercase_name = name.toLowerCase();
-
+        
         if (soft_delete && this.components[lowercase_name].deleted) {
             //nothing to soft delete
             return this;
@@ -77,7 +77,9 @@
 
     p.removeAllComponents = function (soft_delete) {
         for (var lowercase_name in this.components) {
-            this.remove(this.components[lowercase_name].name, soft_delete);
+            if (this.components.hasOwnProperty(lowercase_name)) {
+                this.remove(this.components[lowercase_name].name, soft_delete);
+            }
         }
 
         return this;

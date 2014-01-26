@@ -250,6 +250,8 @@ global["Entropy"] = app = Entropy;
 
         this.BLANK_FAMILY = new app.Family("empty");
 
+        this._clear = false;
+
         //initializing component pool
         for (var i = 0; i < _next_c_id; i += 1) {
             this._components_pool[i] = [];
@@ -447,14 +449,18 @@ global["Entropy"] = app = Entropy;
             //this._entities_pool_size += 1;
 
             delete this._entities[id];
-            delete thie._entity_family_index[id];
+            delete this._entity_family_index[id];
 
             this._e_ids_to_reuse.push(id);
 
             this._entities_count -= 1;
         },
         removeAllEntities: function () {
+            this._entities.forEach(function (entity) {
+                this.remove(entity);
+            }, this);
 
+            return this;
         },
         markForRemoval: function (e) {
             this._entities_to_remove.push(e);
@@ -497,6 +503,9 @@ global["Entropy"] = app = Entropy;
         },
         getAllEntities: function () {
             return this._entities.map(function (entity) {
+                if (typeof entity === "undefined") {
+                    debugger;
+                }
                 return entity;
             });
         },
@@ -574,10 +583,17 @@ global["Entropy"] = app = Entropy;
 
             this._entities_to_remove.length = 0;
 
+            if (this._clear) {
+                this.removeAllSystems();
+                this.removeAllEntities();
+
+                this._clear = false;
+            }
+
             this._updating = false;
         },
         clear: function () {
-
+            this._clear = true;
         },
         isUpdating: function () {
             return this._updating;
@@ -644,7 +660,7 @@ global["Entropy"] = app = Entropy;
 
     p.remove = function (name, soft_delete) {
         var lowercase_name = name.toLowerCase();
-
+        
         if (soft_delete && this.components[lowercase_name].deleted) {
             //nothing to soft delete
             return this;
@@ -669,7 +685,9 @@ global["Entropy"] = app = Entropy;
 
     p.removeAllComponents = function (soft_delete) {
         for (var lowercase_name in this.components) {
-            this.remove(this.components[lowercase_name].name, soft_delete);
+            if (this.components.hasOwnProperty(lowercase_name)) {
+                this.remove(this.components[lowercase_name].name, soft_delete);
+            }
         }
 
         return this;
@@ -1445,7 +1463,11 @@ global["Entropy"] = app = Entropy;
             callbacks.push([that, callback]);
         },
         start: function () {
-            _raf_id = raf(tick);
+            if (_paused) {
+                this.resume();
+            } else {
+                _raf_id = raf(tick);    
+            }
         }
     };
 

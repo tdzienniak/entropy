@@ -138,7 +138,11 @@
             callbacks.push([that, callback]);
         },
         start: function () {
-            _raf_id = raf(tick);
+            if (_paused) {
+                this.resume();
+            } else {
+                _raf_id = raf(tick);    
+            }
         }
     };
 
