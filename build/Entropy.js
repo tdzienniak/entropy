@@ -4,9 +4,43 @@ var app;
 
 var VERSION = "0.1";
 
+var _events = {};
+
 var Entropy = {
     getVersion: function () {
         return "v" + VERSION;
+    },
+    addEventListener: function (event, fn, once) {
+        if ( ! _events.hasOwnProperty(event)) {
+            _events[event] = {
+                listeners: []
+            };
+        }
+
+        _events[event].listeners.push({
+            fn: fn,
+            once: once
+        });
+    },
+    trigger: function (event, event_object, binding) {
+        if ( ! _events.hasOwnProperty(event)) {
+             return;  
+        }
+
+        var i = 0;
+        var listener;
+
+        while (i < i < _events[event].listeners.length) {
+            listener = _events[event].listeners[i];
+
+            listener.fn.call(binding, event_object);
+
+            if (listener.once) {
+                _events[event].listeners.splice(i, 1);
+            } else {
+                i += 1;
+            }
+        }
     }
 };
 
@@ -14,8 +48,12 @@ var Entropy = {
 /*  I call them pseudo global, cause they are visible only in the scope of Entropy modules,
     not in the global scope. */
 
-function isString(val) {
-    return typeof val === "string" || val instanceof String;
+function isString(value) {
+    return typeof value === "string" || value instanceof String;
+}
+
+function isUndefined(value) {
+    return typeof value === "undefined";
 }
 
 global["Entropy"] = app = Entropy;
@@ -149,8 +187,8 @@ global["Entropy"] = app = Entropy;
 })(app);
 
 (function (app) {
-    var _component_manifest = {};
-    var _system_manifest = {};
+    var _component_pattern = {};
+    var _system_pattern = {};
     var _entity_pattern = {};
     var _can_modify = true;
     var _next_c_id = 0;
@@ -271,11 +309,11 @@ global["Entropy"] = app = Entropy;
             app.Game.error("Entropy: component should be plain object.");
         }
 
-        if (typeof _component_manifest[name] !== "undefined") {
+        if (typeof _component_pattern[name] !== "undefined") {
             app.Game.error("Entropy: you can't specify same component twice.");
         }
 
-        _component_manifest[name] = [
+        _component_pattern[name] = [
             _next_c_id,
             component
         ];
@@ -298,7 +336,7 @@ global["Entropy"] = app = Entropy;
             app.Game.error("Entropy: system should be plain object.");
         }
 
-        if (typeof _system_manifest[name] !== "undefined") {
+        if (typeof _system_pattern[name] !== "undefined") {
             app.Game.error("Entropy: you can't specify same system twice.");
         }
 
@@ -306,7 +344,7 @@ global["Entropy"] = app = Entropy;
             app.Game.error("Entropy: system should specify 'update' method.");
         }
 
-        _system_manifest[name] = system;
+        _system_pattern[name] = system;
     };
 
     Engine.entity = function (name, family, pattern) {
@@ -322,10 +360,10 @@ global["Entropy"] = app = Entropy;
 
     Engine.prototype = {
         getComponentPattern: function (name) {
-            return _component_manifest[name][1];
+            return _component_pattern[name][1];
         },
         getNewComponent: function (name) {
-            var id = _component_manifest[name][0];
+            var id = _component_pattern[name][0];
 
             if (this._components_pool[id].length > 0) {
                 this._components_pool_size -= 1;
@@ -343,17 +381,11 @@ global["Entropy"] = app = Entropy;
             }
         },
         addComponentToPool: function (name, obj) {
-            var id = _component_manifest[name][0];
+            var id = _component_pattern[name][0];
 
             this._components_pool_size += 1;
 
             return this._components_pool[id].push(obj);
-        },
-        setComponentsIndex: function (e_id, c_id) {
-            this._components_index[e_id][c_id] = true;
-        },
-        unsetComponentsIndex: function (e_id, c_id) {
-            this._components_index[e_id][c_id] = false;
         },
         createComponentsIndex: function (e_id) {
             this._components_index[e_id] = [];
@@ -362,6 +394,13 @@ global["Entropy"] = app = Entropy;
                 this._components_index[e_id][i] = false;
             }
         },
+        setComponentsIndex: function (e_id, c_id) {
+            this._components_index[e_id][c_id] = true;
+        },
+        unsetComponentsIndex: function (e_id, c_id) {
+            this._components_index[e_id][c_id] = false;
+        },
+        
         obtainEntityId: function () {
             var id;
 
@@ -379,6 +418,8 @@ global["Entropy"] = app = Entropy;
         getNewEntity: function (name, id) {
             var e = this._entities_pool[name].pop() || new app.Entity(name, this.game);
             e.setId(id);
+            /*var e = new app.Entity(name, this.game);
+            e.setId(id);*/
 
             return e;
         },
@@ -478,7 +519,7 @@ global["Entropy"] = app = Entropy;
             var e_id, c_id, found;
 
             c_array = c_array.map(function (name) {
-                return _component_manifest[name][0];
+                return _component_pattern[name][0];
             });
 
             max1 = this._components_index.length;
@@ -523,7 +564,7 @@ global["Entropy"] = app = Entropy;
         addSystem: function (name, priority) {
             var args = Array.prototype.slice.call(arguments, 2);
 
-            var system = _system_manifest[name];
+            var system = _system_pattern[name];
 
             system.name = name;
             system.game = this.game;
@@ -535,15 +576,33 @@ global["Entropy"] = app = Entropy;
 
             return this;
         },
+        addSystems: function () {
+            var args = Array.prototype.slice.call(arguments);
+            
+            for (var i = 0; i < args.length; i += 1) {
+                console.log(args[i]);
+                this.addSystem.apply(this, args[i]);
+            }
+
+            return this;
+        },
         removeSystem: function (system) {
-            if (!this.isUpdating()) {
+            if ( ! this.isUpdating()) {
+                var args = Array.prototype.slice.call(arguments, 1);
+
+                system.remove && system.remove.apply(system, args);
+
                 this._systems.remove(system);
             }
 
             return this;
         },
         removeAllSystems: function () {
-            this._systems.clear();
+            while (this._systems.head) {
+                this.removeSystem(this._systems.head.data);
+            }
+
+            return this;
         },
         isSystemActive: function (name) {
             var node = this._systems.head;
@@ -562,15 +621,15 @@ global["Entropy"] = app = Entropy;
             this._updating = true;
 
             var node = this._systems.head;
-
             while (node) {
                 node.data.update(delta, event);
 
                 node = node.next;
             }
 
-            node = this._systems.head;
+            this._updating = false;
 
+            node = this._systems.head;
             while (node) {
                 node.data.afterUpdate && node.data.afterUpdate(delta, event);
 
@@ -583,17 +642,14 @@ global["Entropy"] = app = Entropy;
 
             this._entities_to_remove.length = 0;
 
-            if (this._clear) {
+            app.trigger("afterupdate", null, this);
+        },
+        clear: function () {
+            app.addEventListener("afterupdate", function (e) {
                 this.removeAllSystems();
                 this.removeAllEntities();
 
-                this._clear = false;
-            }
-
-            this._updating = false;
-        },
-        clear: function () {
-            this._clear = true;
+            }, true);
         },
         isUpdating: function () {
             return this._updating;
@@ -948,7 +1004,6 @@ global["Entropy"] = app = Entropy;
     };
 
     Game.prototype = {
-        
         changeState: function (name) {
             if (typeof name !== "string" || !(name in _states)) {
                 Game.error("no such state or state name not a string.");
@@ -1176,19 +1231,17 @@ global["Entropy"] = app = Entropy;
      * Returns node object.
      * @param {any} data data to store in node
      */
-    var Node = function (data) {
-        return {
-            next: null,
-            priority: null,
-            data: data
-        };
-    };
+    function Node (data) {
+            this.next = null;
+            this.priority = null;
+            this.data = data;
+    }
 
     OrderedLinkedList.prototype = {
 
         /**
          * Adds new node at the end of the list.
-         * Function is only a syntax sugar.
+         * Function is only a syntactic sugar.
          * @param  {any} data any valid JavaScript data
          * @return {OrderedLinkedList} this
          */
@@ -1197,12 +1250,12 @@ global["Entropy"] = app = Entropy;
         },
 
         /**
-         * Removes given node from list.
-         * @param  {Node} node
+         * Removes given node (or node with given data) from list.
+         * @param  {Node|data} node
          * @return {undefined}
          */
         remove: function (node) {
-            if (node === this.head) {
+            if (node === this.head || node === this.head.data) {
                 this.head = this.head.next;
 
                 return this;
@@ -1210,13 +1263,13 @@ global["Entropy"] = app = Entropy;
 
             var i = this.head;
 
-            while (i.next !== node) {
+            while (i.next !== node && i.next.data !== node) {
                 i = i.next;
             }
 
             i.next = node.next;
 
-            if (node === this.tail) {
+            if (node === this.tail || node === this.tail.data) {
                 this.tail = i;
             }
 
@@ -1232,7 +1285,7 @@ global["Entropy"] = app = Entropy;
          * @return {object}       list instance             
          */
         insert: function (data, priority) {
-            var node = Node(data);
+            var node = new Node(data);
 
             /*
              * list is empty
@@ -1322,6 +1375,87 @@ global["Entropy"] = app = Entropy;
 
     app["OrderedLinkedList"] = OrderedLinkedList;
 })(app);
+
+(function() {
+  var slice = [].slice;
+
+  function queue(parallelism) {
+    var q,
+        tasks = [],
+        started = 0, // number of tasks that have been started (and perhaps finished)
+        active = 0, // number of tasks currently being executed (started but not finished)
+        remaining = 0, // number of tasks not yet finished
+        popping, // inside a synchronous task callback?
+        error = null,
+        await = noop,
+        all;
+
+    if (!parallelism) parallelism = Infinity;
+
+    function pop() {
+      while (popping = started < tasks.length && active < parallelism) {
+        var i = started++,
+            t = tasks[i],
+            a = slice.call(t, 1);
+        a.push(callback(i));
+        ++active;
+        t[0].apply(null, a);
+      }
+    }
+
+    function callback(i) {
+      return function(e, r) {
+        --active;
+        if (error != null) return;
+        if (e != null) {
+          error = e; // ignore new tasks and squelch active callbacks
+          started = remaining = NaN; // stop queued tasks from starting
+          notify();
+        } else {
+          tasks[i] = r;
+          if (--remaining) popping || pop();
+          else notify();
+        }
+      };
+    }
+
+    function notify() {
+      if (error != null) await(error);
+      else if (all) await(error, tasks);
+      else await.apply(null, [error].concat(tasks));
+    }
+
+    return q = {
+      defer: function() {
+        if (!error) {
+          tasks.push(arguments);
+          ++remaining;
+          pop();
+        }
+        return q;
+      },
+      await: function(f) {
+        await = f;
+        all = false;
+        if (!remaining) notify();
+        return q;
+      },
+      awaitAll: function(f) {
+        await = f;
+        all = true;
+        if (!remaining) notify();
+        return q;
+      }
+    };
+  }
+
+  function noop() {}
+
+  queue.version = "1.0.7";
+  if (typeof define === "function" && define.amd) define(function() { return queue; });
+  else if (typeof module === "object" && module.exports) module.exports = queue;
+  else this.queue = queue;
+})();
 
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating

@@ -77,7 +77,6 @@
     };
 
     Game.prototype = {
-        
         changeState: function (name) {
             if (typeof name !== "string" || !(name in _states)) {
                 Game.error("no such state or state name not a string.");

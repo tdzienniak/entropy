@@ -35,9 +35,6 @@
             this.components[lowercase_name] = this.engine.getNewComponent(name);
         } else {
             this.components[lowercase_name].deleted = false;
-            /*if (!this.recycled) {
-                app.Game.warning(" you are trying to add same component twice. Existing component will be overridden.");
-            }*/
         }
 
         component_pattern.init.apply(
