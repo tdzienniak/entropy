@@ -19,19 +19,17 @@
      * Returns node object.
      * @param {any} data data to store in node
      */
-    var Node = function (data) {
-        return {
-            next: null,
-            priority: null,
-            data: data
-        };
-    };
+    function Node (data) {
+            this.next = null;
+            this.priority = null;
+            this.data = data;
+    }
 
     OrderedLinkedList.prototype = {
 
         /**
          * Adds new node at the end of the list.
-         * Function is only a syntax sugar.
+         * Function is only a syntactic sugar.
          * @param  {any} data any valid JavaScript data
          * @return {OrderedLinkedList} this
          */
@@ -40,12 +38,12 @@
         },
 
         /**
-         * Removes given node from list.
-         * @param  {Node} node
+         * Removes given node (or node with given data) from list.
+         * @param  {Node|data} node
          * @return {undefined}
          */
         remove: function (node) {
-            if (node === this.head) {
+            if (node === this.head || node === this.head.data) {
                 this.head = this.head.next;
 
                 return this;
@@ -53,13 +51,13 @@
 
             var i = this.head;
 
-            while (i.next !== node) {
+            while (i.next !== node && i.next.data !== node) {
                 i = i.next;
             }
 
             i.next = node.next;
 
-            if (node === this.tail) {
+            if (node === this.tail || node === this.tail.data) {
                 this.tail = i;
             }
 
@@ -75,7 +73,7 @@
          * @return {object}       list instance             
          */
         insert: function (data, priority) {
-            var node = Node(data);
+            var node = new Node(data);
 
             /*
              * list is empty

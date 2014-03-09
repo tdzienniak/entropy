@@ -3,20 +3,20 @@
 
     var _states = {
         dummy: {
-            onEnter: function (game) {
+            init: function (game) {
                 //dummy enter
             },
-            onReturn: function (game) {
+            enter: function (game) {
                 //dummy return
             },
-            onExit: function (game) {
+            exit: function (game) {
                 //dummy exit
             }
         }
     };
 
     var _current_state = "dummy";
-    var _entered_states = {};
+    var _initiated_states = {};
     var _e_patterns = {};
 
     function Game (starting_state) {
@@ -49,11 +49,15 @@
     };
 
     Game.log = function (message) {
-        console.log(message);
+        console.log("Entropy: ", message);
     };
 
     Game.error = function (message) {
         throw new Error(["Entropy: ", message].join(" "));
+    };
+
+    Game.warning = function (message) {
+        console.warn("Entropy: ", message);
     };
 
     Game.constans = function (name, value) {
@@ -73,7 +77,6 @@
     };
 
     Game.prototype = {
-        
         changeState: function (name) {
             if (typeof name !== "string" || !(name in _states)) {
                 Game.error("no such state or state name not a string.");
@@ -82,19 +85,18 @@
             var args = Array.prototype.slice.call(arguments, 1);
             args.unshift(this);
 
-            _states[_current_state].onExit.apply(_states[_current_state], args);
-            
+            _states[_current_state].exit && _states[_current_state].exit.apply(_states[_current_state], args);
 
-            if (name in _entered_states) {
+            if (name in _initiated_states) {
                 _current_state = name;
-                _states[name].onReturn.apply(_states[name], args);
+                _states[name].enter && _states[name].enter.apply(_states[name], args);
             } else {
                 _current_state = name;
-                _states[name].onEnter.apply(_states[name], args);
-                _entered_states[name] = true;
+                _states[name].init && _states[name].init.apply(_states[name], args);
+                _states[name].enter && _states[name].enter.apply(_states[name], args);
+                _initiated_states[name] = true;
             }
             
-
             console.log(_current_state);
         },
         setRenderer: function (renderer) {

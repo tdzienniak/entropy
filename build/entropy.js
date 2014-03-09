@@ -4,23 +4,83 @@ var app;
 
 var VERSION = "0.1";
 
+var _events = {};
+
 var Entropy = {
     getVersion: function () {
         return "v" + VERSION;
+    },
+    addEventListener: function (event, fn, once) {
+        if ( ! _events.hasOwnProperty(event)) {
+            _events[event] = {
+                listeners: []
+            };
+        }
+
+        _events[event].listeners.push({
+            fn: fn,
+            once: once
+        });
+    },
+    trigger: function (event, event_object, binding) {
+        if ( ! _events.hasOwnProperty(event)) {
+             return;  
+        }
+
+        var i = 0;
+        var listener;
+
+        while (i < _events[event].listeners.length) {
+            listener = _events[event].listeners[i];
+
+            listener.fn.call(binding, event_object);
+
+            if (listener.once) {
+                _events[event].listeners.splice(i, 1);
+            } else {
+                i += 1;
+            }
+        }
     }
+    
 };
+
+Entropy.Utils = {
+        isString: function (value) {
+            return typeof value === "string" || value instanceof String;
+        },
+        isUndefined: function (value) {
+            return typeof value === "undefined";
+        },
+
+        extend: function (destination) {
+            var sources = this.slice.call(arguments, 1);
+
+            sources.forEach(function (source) {
+                for (var property in source) {
+                    if (source.hasOwnProperty(property)) {
+                        destination[property] = source[property];
+                    }
+                }
+            });
+        },
+
+        slice: Array.prototype.slice
+    };
 
 /* -- pseudo-global helper functions -- */
 /*  I call them pseudo global, cause they are visible only in the scope of Entropy modules,
     not in the global scope. */
 
-function isString(val) {
-    return typeof val === "string" || val instanceof String;
+function isString(value) {
+    return typeof value === "string" || value instanceof String;
 }
 
-function distance(x1, y1, x2, y2) {
-    return Math.sqrt(Math.pow(2, x1 - x2) + Math.pow(2, y1 - y2));
+function isUndefined(value) {
+    return typeof value === "undefined";
 }
+
+var slice = Array.prototype.slice;
 
 global["Entropy"] = app = Entropy;
 
@@ -153,96 +213,44 @@ global["Entropy"] = app = Entropy;
 })(app);
 
 (function (app) {
-    var _component_manifest = {};
-    var _system_manifest = {};
+    var _component_pattern = {};
+    var _system_pattern = {};
+    var _entity_pattern = {};
     var _can_modify = true;
-    var _next_c_id = 0;
+    var _next_component_id = 0;
 
     function Engine (game) {
-        _can_modify = false;
-
-        /**
-         * Main game object reference.
-         * @type {Game}
-         */
         this.game = game;
 
-        /**
-         * Greatest entity id so far.
-         * Variable is used to assign unique ids to new entities.
-         * @type {Number}
-         */
-        this._greatest_e_id = 0;
-
-        /**
-         * Array with entity ids to reuse. These come from entities removals.
-         * @type {Array}
-         */
-        this._e_ids_to_reuse = [];
-
-        /**
-         * 2D array with entity-component idicators. Values are simply true or false.
-         * For example, if [2][3] == true, means, that entity with id 2 has component
-         * with id 3. Components ids can be obtained via component manifest.
-         * 
-         * @type {Array}
-         */
+        this._greatest_entity_id = 0;
+        this._entity_ids_to_reuse = [];
         this._entities = [];
-
-        /**
-         * Helper variable used to simplify using of add and remove methods.
-         * It stores id of current worked on entity.
-         * @type {Number}
-         */
-        this._current_e_id = null;
-
-        /**
-         * Counter of all entities present at the system.
-         * @type {Number}
-         */
         this._entities_count = 0;
 
-        /**
-         * 2D array similar to entities array. However, istead of bool values
-         * it contains plain objects - real component instances. 
-         * @type {Array}
-         */
-        this._components = [];
+        this._components_index = [];
+        this._components_pool = new app.Pool();
 
-        /**
-         * Component pool. Contains componet object that can be reused when creating 
-         * or modifying entities. For more GC friendlyness.
-         * @type {Array}
-         */
-        this._component_pool = [];
+        this._entities_pool = new app.Pool();
 
-        /**
-         * Size of component pool.
-         * @type {Number}
-         */
-        this._component_pool_size = 0;
-        //this._nodes = {};
-        
-        /**
-         * Ordered linked list with system instances. The update method iterates
-         * through them on every tick and call their update method.
-         * @type {OrderedLinkedList}
-         */
         this._systems = new app.OrderedLinkedList();
 
-
-        this._updating = false;
-        this._entities_map = [];
         this._families = {
-            none: []
+            none: new app.Family("none")
         };
-        this._entity_family_map = [];
+
+        this._entity_to_family_mapping = [];
 
         this._entities_to_remove = [];
 
+        this.BLANK_FAMILY = new app.Family("empty");
+
+        this._updating = false;
+
+        _can_modify = false;
+
         //initializing component pool
-        for (var i = 0; i < _next_c_id; i += 1) {
-            this._component_pool[i] = [];
+        for (var i = 0; i < _next_component_id; i += 1) {
+            this._components_pool[i] = [];
         }
     }
 
@@ -259,18 +267,18 @@ global["Entropy"] = app = Entropy;
             app.Game.error("Entropy: component should be plain object.");
         }
 
-        if (typeof _component_manifest[name] !== "undefined") {
+        if (typeof _component_pattern[name] !== "undefined") {
             app.Game.error("Entropy: you can't specify same component twice.");
         }
 
-        _component_manifest[name] = [
-            _next_c_id,
+        _component_pattern[name] = [
+            _next_component_id,
             component
         ];
 
         //Entropy.trigger("componentadded", this._greatest_c_id);
 
-        _next_c_id += 1;
+        _next_component_id += 1;
     };
 
     Engine.system = function (name, system) {
@@ -286,365 +294,648 @@ global["Entropy"] = app = Entropy;
             app.Game.error("Entropy: system should be plain object.");
         }
 
-        if (typeof _system_manifest[name] !== "undefined") {
+        if (typeof _system_pattern[name] !== "undefined") {
             app.Game.error("Entropy: you can't specify same system twice.");
         }
 
-        if (!system.hasOwnProperty("update")) {
+
+        if (!("update" in system)) {
             app.Game.error("Entropy: system should specify 'update' method.");
         }
 
-        _system_manifest[name] = system;
+        _system_pattern[name] = system;
     };
 
-    // Engine.node = function (name, node) {
-    //     //_node_manifest[name] = node;
-    // };
-
-    Engine.prototype = {
-        canModify: function () {
-            return _can_modify;
-        },
-        createEntity: function (family) {
-            if (typeof family !== "string") {
-                app.Game.error("Entropy: family name should be string.");
-            }
-
-            var id;
-
-            family = family || "none";
-
-            var families = family.split("|");
-
-            if (this._e_ids_to_reuse.length !== 0) {
-                id = this._e_ids_to_reuse.pop();
-            } else {
-                id = this._greatest_e_id;
-                this._greatest_e_id += 1;
-
-                this._entities[id] = [];
-                this._components[id] = [];
-
-                for (var i = 0; i < this._next_c_id; i += 1) {
-                    this._entities[id][i] = false;
-                    this._components[id][i] = false;
-                }
-            }
-
-            this._entities_map[id] = {
-                _e_id: id
-            };
-
-            for (var i = 0, max = families.length; i < max; i += 1) {
-                var f = families[i];
-
-                //adding entity to family
-                if (!(f in this._families)) {
-                    this._families[f] = [];
-                }
-
-                this._families[f].push(id);
-            }
-
-            this._entity_family_map[id] = family;
-
-            this._current_e_id = id;
-
-            this._entities_count += 1;
-
-            return id;
-        },
-        removeEntity: function (e_id) {
-            for (var i = 0; i < this._entities[e_id].length; i += 1) {
-                if (this._entities[e_id][i]) {
-                    var c_name = this._components[e_id][i]._name;
-
-                    this.remove(e_id, c_name);
-                }
-            }
-
-            delete this._entities_map[e_id];
-
-            var family = this._entity_family_map[e_id];
-            var families = family.split("|");
-
-            for (var i = 0, max = families.length; i < max; i += 1) {
-                var f = families[i];
-
-                var e_f_id = this._families[f].indexOf(e_id);
-
-                if (e_f_id !== -1) {
-                    this._families[f].splice(e_f_id, 1);
-                } else {
-                    //app.Game.error(" there is no such entity in this family.");
-                }
-            }
-
-            this._e_ids_to_reuse.push(e_id);
-
-            this._entities_count -= 1;
-
-            return this;
-        },
-        removeAllEntities: function () {
-            for (var i = 0, max = this._entities.length; i < max; i += 1) {
-                var e_id = this._entities[i];
-
-                this.removeEntity(e_id);
-            }
-        },
-        add: function (e_id, name) {
-            var c_name;
-            var new_c;
-            var args;
-            var c_id;
-
-            if (typeof e_id === "number") {
-                args = Array.prototype.slice.call(arguments, 2);
-                c_name = name;
-            } else {
-                //this function can be used either with two or one parameter
-                //if used wiht one, the only parameter is the name of component to add
-                //but has been mapped to e_id argument
-                c_name = e_id; 
-
-                e_id = this._current_e_id;
-
-                args = Array.prototype.slice.call(arguments, 1);
-            }
-            
-            c_id = _component_manifest[c_name][0];
-
-            if (this._component_pool[c_id].length !== 0) {
-                new_c = this._component_pool[c_id].pop();
-                this._component_pool_size--;
-            } else {
-                new_c = {};
-            }
-
-            this._entities[e_id][c_id] = true;
-            this._entities_map[e_id][c_name.toLowerCase()] =
-                this._components[e_id][c_id] =
-                _component_manifest[c_name][1].init.apply(new_c, args);
-
-            //to which entity component belongs
-            this._components[e_id][c_id]._e_id = e_id;
-
-            this._components[e_id][c_id]._name = c_name;
-
-            return this;
-        },
-        markForRemoval: function (id) {
-            this._entities_to_remove.push(id);
-        },
-        remove: function (e_id, name) {
-            var c_name;
-            var args;
-
-            if (typeof e_id === "number") {
-                args = Array.prototype.slice.call(arguments, 2);
-                c_name = name;
-            } else {
-                //this function can be used either with two or one parameter
-                //if used wiht one, the only parameter is the name of component to add
-                //but has been mapped to id argument
-                c_name = e_id; 
-
-                e_id = this._current_e_id;
-
-                args = Array.prototype.slice.call(arguments, 1);
-            }
-
-            args.unshift(this.game);
-
-            var c_id = _component_manifest[c_name][0];
-            var c = this._components[e_id][c_id];
-
-            this._component_pool[c_id].push(c);
-            this._component_pool_size += 1;
-
-            if (_component_manifest[c_name][1].hasOwnProperty("remove")) {
-                _component_manifest[c_name][1].remove.apply(c, args);
-            }
-
-            this._components[e_id][c_id] = null;
-
-            this._entities[e_id][c_id] = false;
-
-            delete this._entities_map[e_id][c_name.toLowerCase()];
-
-            return this;
-        },
-        getComponents: function (c_array) {
-            var c_matched = [];
-
-            for (var i = 0, len = c_array.length; i < len; i += 1) {
-                c_array[i] = _component_manifest[c_array[i]][0];
-            }
-
-            for (var e_id = 0, len = this._entities.length; e_id < len; e_id += 1) {
-                var temp = [];
-
-                for (var c_id = 0, len2 = c_array.length; c_id < len2; c_id += 1) {
-                    if (this._entities[e_id][c_array[c_id]]) {
-                        temp.push(this._components[e_id][c_array[c_id]]);
-                    }
-                }
-
-                if (temp.length === c_array.length) {
-                    c_matched.push(temp.slice(0)) //copying temp array
-                }
-            }
-
-            return c_matched;
-        },
-        getEntity: function (e_id) {
-            return this._entities_map[e_id];
-        },
-        getEntitiesWith: function (c_array) {
-            var e_matched = [];
-
-            for (var i = 0, max = c_array.length; i < max; i += 1) {
-                c_array[i] = _component_manifest[c_array[i]][0];
-            }
-
-            for (var e_id = 0, max = this._entities.length; e_id < max; e_id += 1) {
-                var found = 0;
-
-                for (var c_id = 0, len2 = c_array.length; c_id < len2; c_id += 1) {
-                    if (this._entities[e_id][c_array[c_id]]) {
-                        found += 1;
-                    }
-                }
-
-                if (found === c_array.length) {
-                    e_matched.push(this._entities_map[e_id]); //copying temp array
-                }
-            }
-
-            return e_matched;
-        },
-        getAllEntities: function () {
-            return this._entities_map.map(function (entity) {
-                return entity;
-            });
-        },
-        getFamily: function (family) {
-            if (!isString(family)) {
-                app.Game.error("family name should be string.");
-            }
-
-            if (!(family in this._families)) {
-                //app.Game.log("there is no such family, empty array returned.");
-
-                return [];
-            }
-
-            return this._families[family].map(function (e_id) {
-                return this._entities_map[e_id];
-            }, this);
-        },
-        addSystem: function (name, priority) {
-            var args = Array.prototype.slice.call(arguments, 2);
-
-            var system = _system_manifest[name];
-
-            system.game = this.game;
-            system._name = name;
-
-            system.init && system.init.apply(system, args);
-
-            this._systems.insert(system, priority);
-
-            return this;
-        },
-        removeSystem: function (system) {
-            if (!this.isUpdating()) {
-                this._systems.remove(system);
-            }
-
-            return this;
-        },
-        removeAllSystems: function () {
-            this._systems.clear();
-        },
-        isSystemActive: function (name) {
-            var node = this._systems.head;
-
-            while (node) {
-                if (node.data._name === name) {
-                    return true;
-                }
-
-                node = node.next;
-            }
-
-            return false;
-        },
-        update: function (delta, event) {
-            this._updating = true;
-
-            var node = this._systems.head;
-
-            while (node) {
-                node.data.update(delta, event);
-
-                node = node.next;
-            }
-
-            node = this._systems.head;
-
-            while (node) {
-                node.data.afterUpdate && node.data.afterUpdate(delta, event);
-
-                node = node.next;
-            }
-
-            for (var i = 0, max = this._entities_to_remove.length; i < max; i++) {
-                this.removeEntity(this._entities_to_remove[i]);
-            }
-
-            this._entities_to_remove.length = 0;
-
-            //Entropy.trigger("updatecomplete");
-
-            this._updating = false;
-        },
-        clear: function () {
-
-        },
-        isUpdating: function () {
-            return this._updating;
-        },
-        getComponentPoolSize: function () {
-            return this._component_pool_size;
+    Engine.entity = function (name, family, pattern) {
+        if (family === "") {
+            family = "none";
         }
+
+        _entity_pattern[name] = {
+            families: family.split("|"),
+            pattern: pattern
+        };
     };
+
+    var p = Engine.prototype;
+
+    p.getComponentPattern = function (name) {
+        return _component_pattern[name][1];
+    }
+
+    p.getNewComponent = function (name) {
+        var id = _component_pattern[name][0];
+
+        if (this._components_pool.exists(id)) {
+
+            var new_component = this._components_pool.get(id);
+            new_component.deleted = false;
+
+            return new_component;
+        } else {
+            return {
+                id: id,
+                name: name,
+                deleted: false
+            };
+        }
+    }
+
+    p.addComponentToPool = function (name, obj) {
+        var id = _component_pattern[name][0];
+
+        return this._components_pool.add(id, obj);
+    }
+
+    p.setComponentsIndex = function (entity_id, c_id) {
+        this._components_index[entity_id][c_id] = true;
+    }
+
+    p.unsetComponentsIndex = function (entity_id, c_id) {
+        this._components_index[entity_id][c_id] = false;
+    }
+
+    
+
+    p.create = function (name) {
+        var args = slice.call(arguments, 1);
+        args.unshift(this.game);
+
+        var entity = this._getNewEntity(name);
+        var pattern = this._getEntityPattern(name);
+
+        pattern.create.apply(entity, args);
+
+        this._addEntityToFamilies(entity);
+        this._addEntityToSystem(entity);
+    }
+
+    p.remove = function (entity) {
+        var args;
+        var id = entity.id;
+        var f, e_f_id;
+        var families = this._getFamiliesOfEntity(entity.name);
+
+        //already removed
+        if (typeof this._entities[id] === "undefined") {          
+            return;
+        }
+
+        args = slice.call(arguments, 2);
+        args.unshift(this.game);
+
+        for (var i = 0, max = families.length; i < max; i += 1) {
+            f = families[i];
+            
+            this._families[f].remove(entity);
+        }
+
+        var pattern = this._getEntityPattern(entity.name);
+
+        pattern.remove && pattern.remove.apply(entity, args);
+
+        entity.removeAllComponents(true);
+
+        this._entities_pool.add(entity.name, entity);
+
+        delete this._entities[id];
+        delete this._entity_to_family_mapping[id];
+
+        this._entity_ids_to_reuse.push(id);
+
+        this._entities_count -= 1;
+    }
+
+    p.removeAllEntities = function () {
+        if ( ! this.isUpdating()) {
+            this._entities.forEach(function (entity) {
+                this.remove(entity);
+            }, this);
+        } else {
+            app.Game.warning("entities couldn't be removed due to engine's still running.");
+        }
+
+        return this;
+    }
+
+    p.markForRemoval = function (e) {
+        this._entities_to_remove.push(e);
+    }
+
+    p.getEntity = function (id) {
+        if ( ! isUndefined(this._entities[id])) {
+            return this._entities[id];
+        } else {
+            return null;
+        }
+    }
+
+    p.getEntitiesWith = function (c_array) {
+        var e_matched = [];
+        var i, max1, max2;
+        var entity_id, c_id, found;
+
+        c_array = c_array.map(function (name) {
+            return _component_pattern[name][0];
+        });
+
+        max1 = this._components_index.length;
+        for (entity_id = 0; entity_id < max1; entity_id += 1) {
+            found = 0;
+
+            max2 = c_array.length;
+            for (i = 0; i < max2; i += 1) {
+                c_id = c_array[i];
+
+                if (this._components_index[entity_id][c_id]) {
+                    found += 1;
+                }
+            }
+
+            if (found === c_array.length) {
+                e_matched.push(this._entities[entity_id]); //copying temp array
+            }
+        }
+
+        return e_matched;
+    }
+
+    p.getAllEntities = function () {
+        return this._entities.map(function (entity) {
+            return entity;
+        });
+    }
+
+    p.getFamily = function (family) {
+        if ( ! isString(family)) {
+            app.Game.error("family name must be a string.");
+        }
+
+        if (this._families.hasOwnProperty(family)) {
+            return this._families[family];
+        } else {
+            return this.BLANK_FAMILY;
+        }
+    }
+
+    p.addSystem = function (name, priority) {
+        var args = Array.prototype.slice.call(arguments, 2);
+
+        var system = _system_pattern[name];
+
+        system.name = name;
+        system.game = this.game;
+        system.engine = this;
+
+        system.init && system.init.apply(system, args);
+
+        this._systems.insert(system, priority);
+
+        return this;
+    }
+
+    p.addSystems = function () {
+        for (var i = 0; i < arguments.length; i += 1) {
+            this.addSystem.apply(this, arguments[i]);
+        }
+
+        return this;
+    }
+
+    p.removeSystem = function (system) {
+        if ( ! this.isUpdating()) {
+            var args = Array.prototype.slice.call(arguments, 1);
+
+            system.remove && system.remove.apply(system, args);
+
+            this._systems.remove(system);
+        }
+
+        return this;
+    }
+
+    p.removeAllSystems = function () {
+        while (this._systems.head) {
+            this.removeSystem(this._systems.head.data);
+        }
+
+        return this;
+    }
+
+    p.isSystemActive = function (name) {
+        var node = this._systems.head;
+
+        while (node) {
+            if (node.data.name === name) {
+                return true;
+            }
+
+            node = node.next;
+        }
+
+        return false;
+    }
+
+    p.update = function (delta, event) {
+        this._updating = true;
+
+        var node = this._systems.head;
+        while (node) {
+            node.data.update(delta, event);
+
+            node = node.next;
+        }
+
+        this._updating = false;
+
+        node = this._systems.head;
+        while (node) {
+            node.data.afterUpdate && node.data.afterUpdate(delta, event);
+
+            node = node.next;
+        }
+
+        for (var i = 0, max = this._entities_to_remove.length; i < max; i++) {
+            this.remove(this._entities_to_remove[i]);
+        }
+
+        this._entities_to_remove.length = 0;
+
+        app.trigger("afterupdate", null, this);
+    }
+
+    p.clear = function () {
+        app.addEventListener("afterupdate", function (e) {
+            this.removeAllSystems();
+            this.removeAllEntities();
+
+        }, true);
+    }
+
+    p.canModify = function () {
+        return _can_modify;
+    }
+
+    p.isUpdating = function () {
+        return this._updating;
+    }
+
+    p.getComponentPoolSize = function () {
+        return this._component_pool_size;
+    }
+
+    p._createComponentsIndex = function (entity_id) {
+        this._components_index[entity_id] = [];
+
+        for (var i = 0; i < _next_component_id; i += 1) {
+            this._components_index[entity_id][i] = false;
+        }
+    }
+
+    p._addEntityToFamilies = function (entity) {
+        var families =  this._getFamiliesOfEntity(entity.name);
+
+        for (var i = 0, max = families.length; i < max; i += 1) {
+            var family = families[i];
+
+            if ( ! (family in this._families)) {
+                this._families[family] = new app.Family(family);
+            }
+
+            this._families[family].append(entity);
+        }
+    }
+
+    p._getFamiliesOfEntity = function(name) {
+        return _entity_pattern[name].families;
+    }
+
+    /*p._createPoolForEntity = function (name) {
+        if (!this._entities_pool.hasOwnProperty(name)) {
+            this._entities_pool[name] = [];
+        }
+    }*/
+
+    p._addEntityToSystem = function (entity) {
+        this._entities[entity.id] = entity;
+
+        this._entities_count += 1;
+    }
+
+    p._getIdForNewEntity = function () {
+        var id;
+
+        if (this._entity_ids_to_reuse.length !== 0) {
+            id = this._entity_ids_to_reuse.pop();
+        } else {
+            id = this._greatest_entity_id;
+            this._greatest_entity_id += 1;
+
+            this._createComponentsIndex(id);
+        }
+
+        return id;
+    }
+
+    p._getNewEntity = function (name) {
+        var entity = this._entities_pool.get(name) || new app.Entity(name, this.game);
+        entity.setId(this._getIdForNewEntity());
+
+        return entity;
+    }
+
+    p._getEntityPattern = function (name) {
+        if (name in _entity_pattern) {
+            return _entity_pattern[name].pattern;
+        } else {
+            app.Game.error(["pattern for entity", name, "does not exist."].join(" "));
+        }
+    }
+
+
 
     app["Engine"] = Engine;
 })(app);
 
+(function (app) {
 
+    function Entity (name, game) {
+        this.id = 0;
+        this.name = name;
+        this.engine = game.engine;
+        this.game = game;
+        this.components = {};
+        this.recycled = false;
+
+        this.states = {
+            default: {
+                onEnter: function () {},
+                onExit: function () {}
+            }
+        };
+
+        this.current_state = "default";
+    }
+
+    var p = Entity.prototype;
+
+    p.add = function (name) {
+        var args = [];
+
+        if (arguments.length > 1) {
+            args = Array.prototype.slice.call(arguments, 1);
+        }
+
+        var lowercase_name = name.toLowerCase();
+
+        var component_pattern = this.engine.getComponentPattern(name);
+    
+        if (!this.components.hasOwnProperty(lowercase_name)) {
+            this.components[lowercase_name] = this.engine.getNewComponent(name);
+        } else {
+            this.components[lowercase_name].deleted = false;
+        }
+
+        component_pattern.init.apply(
+            this.components[lowercase_name],
+            args
+        );
+
+        this.engine.setComponentsIndex(this.id, this.components[lowercase_name].id);
+
+        return this;
+    };
+
+    p.remove = function (name, soft_delete) {
+        var lowercase_name = name.toLowerCase();
+        
+        if (soft_delete && this.components[lowercase_name].deleted) {
+            //nothing to soft delete
+            return this;
+        }
+
+        if (this.components.hasOwnProperty(lowercase_name)) {
+            var component_pattern = this.engine.getComponentPattern(name);
+
+            if (!soft_delete) {
+                this.engine.addComponentToPool(name, this.components[lowercase_name]);
+
+                delete this.components[lowercase_name];
+            } else {
+                this.components[lowercase_name].deleted = true;
+            }
+
+            this.engine.unsetComponentsIndex(this.id, this.components[lowercase_name].id);
+        }
+
+        return this;
+    };
+
+    p.removeAllComponents = function (soft_delete) {
+        for (var lowercase_name in this.components) {
+            if (this.components.hasOwnProperty(lowercase_name)) {
+                this.remove(this.components[lowercase_name].name, soft_delete);
+            }
+        }
+
+        return this;
+    };
+
+    p.setId = function (id) {
+        this.id = id;
+    };
+
+    p.setRecycled = function () {
+        this.recycled = true;
+    };
+
+    p.addState = function (name, obj) {
+        if (!this.states.hasOwnProperty(name)) {
+            this.states[name] = obj;
+        } else {
+            app.Game.warning("such state already exists.");
+        }
+
+        return this;
+    };
+
+    p.state = function (name) {
+        var args = [];
+
+        if (arguments.length > 1) {
+            args = Array.prototype.slice.call(arguments, 1);
+        }
+
+        this.states[this.current_state].onExit.apply(
+            this.states[this.current_state],
+            args);
+
+        this.current_state = name;
+
+        return this;
+    };
+
+
+    app["Entity"] = Entity;
+
+})(app);
+
+(function (app) {
+
+    /**
+     * Internal node constructor.
+     * @param {any} data any type of data, in most cases an Entity instance
+     * @private
+     * @constructor
+     */
+    function Node (data) {
+        this.data = data;
+        this.next = null;
+    }
+
+    Node.prototype = {
+        getComponents: function () {
+            return this.data.components;
+        }
+    };
+
+    /**
+     * Family implemented as singly linked list.
+     * @param {String} name Family name
+     * @constructor
+     */
+    function Family (name) {
+        /**
+         * Family name.
+         * @type {String}
+         */
+        this.name = name;
+
+        /**
+         * Linked list head. Null if list is empty.
+         * @type {Node|null}
+         */
+        this.head = null;
+
+        /**
+         * Helper variable indicating whether brake current iteration or not.
+         * @type {Boolean}
+         */
+        this.break_iteration = false;
+    }
+
+    Family.prototype = {
+        /**
+         * Appends data (entity) at the beginnig of the list. Appended node becomes new head.
+         * @param  {Entity} entity entity object
+         * @return {Family} Family instance
+         */
+        append: function (entity) {
+            var node = new Node(entity);
+
+            node.next = this.head;
+            this.head = node;
+
+            return this;
+        },
+
+        /**
+         * Removes given node/entity from the family.
+         * @param  {Node|Entity} data entity or node to remove
+         * @return {Family}      Family instance
+         */
+        remove: function (data) {
+            var node = this.findPrecedingNode(data);
+            
+            if (node === null) { //remove head
+                this.head = this.head.next;
+            } else if (node !== -1) {
+                var obolete_node = node.next;
+                node.next = node.next.next;
+                //prepare for removal by GC
+                obolete_node = null;
+            }
+        },
+
+        /**
+         * Finds node preceding given data.
+         * @param  {Node|Entity} data Entity or Node instance
+         * @returns {Node} if data is found
+         * @returns {null} if data is head
+         * @returns {Number} -1 if there is no such data
+         */
+        findPrecedingNode: function (data) {
+            //if data is head, there is no preceiding node, null returned
+            if (data instanceof Node && data === this.head ||
+                data instanceof app.Entity && this.head.data === data) {
+                return null;
+            }
+
+            var node = this.head;
+            while (node) {
+                if ((data instanceof Node && node.next === data) ||
+                    (data instanceof app.Entity && node.next !== null && node.next.data === data)) {
+                    return node;
+                }
+
+                node = node.next;
+            }
+
+            return -1;
+        },
+
+        /**
+         * Calls given callback for each node in the family.
+         * @param  {Function} fn      callback function
+         * @param  {object}   binding [description]
+         */
+        iterate: function (fn, binding) {
+            binding = binding || (function () { return this; })();
+
+            var node = this.head;
+
+            while (node) {
+
+                fn.call(binding, node.data, node.data.components, node, this);
+
+                if (this.break_iteration) break;
+
+                node = node.next;
+            }
+
+            this.break_iteration = false;
+        },
+        breakIteration: function () {
+            this.break_iteration = true;
+        },
+        one: function () {
+            return this.head.data;
+        }
+    };
+
+    app["Family"] = Family;
+
+})(app);
 
 (function (app) {
     _consts = {};
 
     var _states = {
         dummy: {
-            onEnter: function (game) {
+            init: function (game) {
                 //dummy enter
             },
-            onReturn: function (game) {
+            enter: function (game) {
                 //dummy return
             },
-            onExit: function (game) {
+            exit: function (game) {
                 //dummy exit
             }
         }
     };
 
     var _current_state = "dummy";
-    var _entered_states = {};
+    var _initiated_states = {};
     var _e_patterns = {};
 
     function Game (starting_state) {
@@ -677,11 +968,15 @@ global["Entropy"] = app = Entropy;
     };
 
     Game.log = function (message) {
-        console.log(message);
+        console.log("Entropy: ", message);
     };
 
     Game.error = function (message) {
         throw new Error(["Entropy: ", message].join(" "));
+    };
+
+    Game.warning = function (message) {
+        console.warn("Entropy: ", message);
     };
 
     Game.constans = function (name, value) {
@@ -701,7 +996,6 @@ global["Entropy"] = app = Entropy;
     };
 
     Game.prototype = {
-        
         changeState: function (name) {
             if (typeof name !== "string" || !(name in _states)) {
                 Game.error("no such state or state name not a string.");
@@ -710,19 +1004,18 @@ global["Entropy"] = app = Entropy;
             var args = Array.prototype.slice.call(arguments, 1);
             args.unshift(this);
 
-            _states[_current_state].onExit.apply(_states[_current_state], args);
-            
+            _states[_current_state].exit && _states[_current_state].exit.apply(_states[_current_state], args);
 
-            if (name in _entered_states) {
+            if (name in _initiated_states) {
                 _current_state = name;
-                _states[name].onReturn.apply(_states[name], args);
+                _states[name].enter && _states[name].enter.apply(_states[name], args);
             } else {
                 _current_state = name;
-                _states[name].onEnter.apply(_states[name], args);
-                _entered_states[name] = true;
+                _states[name].init && _states[name].init.apply(_states[name], args);
+                _states[name].enter && _states[name].enter.apply(_states[name], args);
+                _initiated_states[name] = true;
             }
             
-
             console.log(_current_state);
         },
         setRenderer: function (renderer) {
@@ -756,6 +1049,31 @@ global["Entropy"] = app = Entropy;
     };
 
     app["Game"] = Game;
+})(app);
+
+(function (app) {
+    "use strict";
+
+    function Index (dimension) {
+        this._index = [];
+
+        this.dimension = dimension;
+    }
+
+    var p = Index.prototype;
+
+    p.set = function () {
+
+    };
+
+    p.unset = function () {
+
+    };
+
+    p.clear = function () {
+        
+    }
+
 })(app);
 
 (function (app) {
@@ -930,19 +1248,17 @@ global["Entropy"] = app = Entropy;
      * Returns node object.
      * @param {any} data data to store in node
      */
-    var Node = function (data) {
-        return {
-            next: null,
-            priority: null,
-            data: data
-        };
-    };
+    function Node (data) {
+            this.next = null;
+            this.priority = null;
+            this.data = data;
+    }
 
     OrderedLinkedList.prototype = {
 
         /**
          * Adds new node at the end of the list.
-         * Function is only a syntax sugar.
+         * Function is only a syntactic sugar.
          * @param  {any} data any valid JavaScript data
          * @return {OrderedLinkedList} this
          */
@@ -951,12 +1267,12 @@ global["Entropy"] = app = Entropy;
         },
 
         /**
-         * Removes given node from list.
-         * @param  {Node} node
+         * Removes given node (or node with given data) from list.
+         * @param  {Node|data} node
          * @return {undefined}
          */
         remove: function (node) {
-            if (node === this.head) {
+            if (node === this.head || node === this.head.data) {
                 this.head = this.head.next;
 
                 return this;
@@ -964,13 +1280,13 @@ global["Entropy"] = app = Entropy;
 
             var i = this.head;
 
-            while (i.next !== node) {
+            while (i.next !== node && i.next.data !== node) {
                 i = i.next;
             }
 
             i.next = node.next;
 
-            if (node === this.tail) {
+            if (node === this.tail || node === this.tail.data) {
                 this.tail = i;
             }
 
@@ -986,7 +1302,7 @@ global["Entropy"] = app = Entropy;
          * @return {object}       list instance             
          */
         insert: function (data, priority) {
-            var node = Node(data);
+            var node = new Node(data);
 
             /*
              * list is empty
@@ -1075,6 +1391,41 @@ global["Entropy"] = app = Entropy;
     };
 
     app["OrderedLinkedList"] = OrderedLinkedList;
+})(app);
+
+(function (Entropy) {
+
+    function Pool () {
+        this.size = 0;
+        this.pool = {};
+    }
+
+    Entropy.Utils.extend(Pool.prototype, {
+        add: function (key, value) {
+            if ( ! (key in this.pool)) {
+                this.pool[key] = [];
+            }
+
+            this.size += 1;
+
+            return this.pool[key].push(value);
+        },
+        get: function (key) {
+            if (this.exists(key)) {
+                this.size -= 1;
+
+                return this.pool[key].pop();
+            } else {
+                return false;
+            }
+        },
+        exists: function (key) {
+            return key in this.pool && this.pool[key].length > 0;
+        }
+    });
+
+    Entropy.Pool = Pool;
+
 })(app);
 
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
@@ -1211,19 +1562,48 @@ global["Entropy"] = app = Entropy;
             if (_paused && !is_running) {
                 is_running = true;
                 _paused = false;
-
-                //this.start();
             }
         },
         addListener: function (that, callback) {
             callbacks.push([that, callback]);
         },
         start: function () {
-            _raf_id = raf(tick);
+            if (_paused) {
+                this.resume();
+            } else {
+                _raf_id = raf(tick);    
+            }
         }
     };
 
     app["Ticker"] = Ticker;
+})(app);
+
+(function (app) {
+
+    app.Utils = {
+        isString: function (value) {
+            return typeof value === "string" || value instanceof String;
+        },
+        isUndefined: function (value) {
+            return typeof value === "undefined";
+        },
+
+        extend: function (destination) {
+            var sources = this.slice.call(arguments, 1);
+
+            sources.forEach(function (source) {
+                for (var property in source) {
+                    if (source.hasOwnProperty(property)) {
+                        destination[property] = source[property];
+                    }
+                }
+            });
+        },
+
+        slice: Array.prototype.slice
+    };
+
 })(app);
 
 (function (app) {

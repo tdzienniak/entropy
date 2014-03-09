@@ -132,15 +132,17 @@
             if (_paused && !is_running) {
                 is_running = true;
                 _paused = false;
-
-                //this.start();
             }
         },
         addListener: function (that, callback) {
             callbacks.push([that, callback]);
         },
         start: function () {
-            _raf_id = raf(tick);
+            if (_paused) {
+                this.resume();
+            } else {
+                _raf_id = raf(tick);    
+            }
         }
     };
 
