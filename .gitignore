@@ -2,7 +2,6 @@
 test/
 node_modules/
 
-
 #Exclude project config files
 *.sublime-project
 *.sublime-namespace

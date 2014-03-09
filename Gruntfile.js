@@ -43,6 +43,9 @@ module.exports = function(grunt) {
                   'build/entropy.min.js': ['<%= concat.build.dest %>']
                 }
             }
+        },
+        qunit: {
+            all: ['tests/*.html']
         }
     });
 
@@ -51,8 +54,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-wrap');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-qunit');
 
     // Default task(s).
-    grunt.registerTask('default', ['clean', 'concat', 'wrap', 'uglify']);
+    grunt.registerTask('default', ['clean', 'concat', 'wrap', 'uglify', 'qunit']);
 
 };

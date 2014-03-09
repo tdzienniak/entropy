@@ -30,7 +30,7 @@ var Entropy = {
         var i = 0;
         var listener;
 
-        while (i < i < _events[event].listeners.length) {
+        while (i < _events[event].listeners.length) {
             listener = _events[event].listeners[i];
 
             listener.fn.call(binding, event_object);
@@ -42,7 +42,31 @@ var Entropy = {
             }
         }
     }
+    
 };
+
+Entropy.Utils = {
+        isString: function (value) {
+            return typeof value === "string" || value instanceof String;
+        },
+        isUndefined: function (value) {
+            return typeof value === "undefined";
+        },
+
+        extend: function (destination) {
+            var sources = this.slice.call(arguments, 1);
+
+            sources.forEach(function (source) {
+                for (var property in source) {
+                    if (source.hasOwnProperty(property)) {
+                        destination[property] = source[property];
+                    }
+                }
+            });
+        },
+
+        slice: Array.prototype.slice
+    };
 
 /* -- pseudo-global helper functions -- */
 /*  I call them pseudo global, cause they are visible only in the scope of Entropy modules,
@@ -55,6 +79,8 @@ function isString(value) {
 function isUndefined(value) {
     return typeof value === "undefined";
 }
+
+var slice = Array.prototype.slice;
 
 global["Entropy"] = app = Entropy;
 
@@ -191,107 +217,39 @@ global["Entropy"] = app = Entropy;
     var _system_pattern = {};
     var _entity_pattern = {};
     var _can_modify = true;
-    var _next_c_id = 0;
+    var _next_component_id = 0;
 
     function Engine (game) {
-        _can_modify = false;
-
-        /**
-         * Main game object reference.
-         * @type {Game}
-         */
         this.game = game;
 
-        /**
-         * Greatest entity id so far.
-         * Variable is used to assign unique ids to new entities.
-         * @type {Number}
-         */
-        this._greatest_e_id = 0;
-
-        /**
-         * Array with entity ids to reuse. These come from entities removals.
-         * @type {Array}
-         */
-        this._e_ids_to_reuse = [];
-
-        /**
-         * 2D array with entity-component idicators. Values are simply true or false.
-         * For example, if [2][3] == true, means, that entity with id 2 has component
-         * with id 3. Components ids can be obtained via component manifest.
-         * 
-         * @type {Array}
-         */
+        this._greatest_entity_id = 0;
+        this._entity_ids_to_reuse = [];
         this._entities = [];
-
-        /**
-         * Helper variable used to simplify using of add and remove methods.
-         * It stores id of current worked on entity.
-         * @type {Number}
-         */
-        this._current_e_id = null;
-
-        /**
-         * Counter of all entities present at the system.
-         * @type {Number}
-         */
         this._entities_count = 0;
 
-        /**
-         * 2D array similar to entities array. However, istead of bool values
-         * it contains plain objects - real component instances. 
-         * @type {Array}
-         */
         this._components_index = [];
+        this._components_pool = new app.Pool();
 
-        /**
-         * Component pool. Contains componet object that can be reused when creating 
-         * or modifying entities. For more GC friendlyness.
-         * @type {Array}
-         */
-        this._components_pool = [];
+        this._entities_pool = new app.Pool();
 
-        /**
-         * Size of component pool.
-         * @type {Number}
-         */
-        this._components_pool_size = 0;
-        
-        /**
-         * Entities pool object. Keys are entity pattern names.
-         * @type {Object}
-         */
-        this._entities_pool = {};
-
-        /**
-         * Size of entities pool.
-         * @type {Number}
-         */
-        this._entities_pool_size = 0;
-        
-        /**
-         * Ordered singly linked list with system instances. The update method iterates
-         * through them on every tick and call their update method.
-         * @type {OrderedLinkedList}
-         */
         this._systems = new app.OrderedLinkedList();
-
-        this._updating = false;
 
         this._families = {
             none: new app.Family("none")
         };
 
-        this._entity_family_index = [];
+        this._entity_to_family_mapping = [];
 
         this._entities_to_remove = [];
 
         this.BLANK_FAMILY = new app.Family("empty");
 
-        this._clear = false;
+        this._updating = false;
+
+        _can_modify = false;
 
         //initializing component pool
-        for (var i = 0; i < _next_c_id; i += 1) {
+        for (var i = 0; i < _next_component_id; i += 1) {
             this._components_pool[i] = [];
         }
     }
@@ -314,13 +272,13 @@ global["Entropy"] = app = Entropy;
         }
 
         _component_pattern[name] = [
-            _next_c_id,
+            _next_component_id,
             component
         ];
 
         //Entropy.trigger("componentadded", this._greatest_c_id);
 
-        _next_c_id += 1;
+        _next_component_id += 1;
     };
 
     Engine.system = function (name, system) {
@@ -358,306 +316,342 @@ global["Entropy"] = app = Entropy;
         };
     };
 
-    Engine.prototype = {
-        getComponentPattern: function (name) {
-            return _component_pattern[name][1];
-        },
-        getNewComponent: function (name) {
-            var id = _component_pattern[name][0];
+    var p = Engine.prototype;
 
-            if (this._components_pool[id].length > 0) {
-                this._components_pool_size -= 1;
+    p.getComponentPattern = function (name) {
+        return _component_pattern[name][1];
+    }
 
-                var new_component = this._components_pool[id].pop();
-                new_component.deleted = false;
+    p.getNewComponent = function (name) {
+        var id = _component_pattern[name][0];
 
-                return new_component;
-            } else {
-                return {
-                    id: id,
-                    name: name,
-                    deleted: false
-                };
-            }
-        },
-        addComponentToPool: function (name, obj) {
-            var id = _component_pattern[name][0];
+        if (this._components_pool.exists(id)) {
 
-            this._components_pool_size += 1;
+            var new_component = this._components_pool.get(id);
+            new_component.deleted = false;
 
-            return this._components_pool[id].push(obj);
-        },
-        createComponentsIndex: function (e_id) {
-            this._components_index[e_id] = [];
+            return new_component;
+        } else {
+            return {
+                id: id,
+                name: name,
+                deleted: false
+            };
+        }
+    }
 
-            for (var i = 0; i < _next_c_id; i += 1) {
-                this._components_index[e_id][i] = false;
-            }
-        },
-        setComponentsIndex: function (e_id, c_id) {
-            this._components_index[e_id][c_id] = true;
-        },
-        unsetComponentsIndex: function (e_id, c_id) {
-            this._components_index[e_id][c_id] = false;
-        },
-        
-        obtainEntityId: function () {
-            var id;
+    p.addComponentToPool = function (name, obj) {
+        var id = _component_pattern[name][0];
 
-            if (this._e_ids_to_reuse.length !== 0) {
-                id = this._e_ids_to_reuse.pop();
-            } else {
-                id = this._greatest_e_id;
-                this._greatest_e_id += 1;
+        return this._components_pool.add(id, obj);
+    }
 
-                this.createComponentsIndex(id);
-            }
+    p.setComponentsIndex = function (entity_id, c_id) {
+        this._components_index[entity_id][c_id] = true;
+    }
 
-            return id;
-        },
-        getNewEntity: function (name, id) {
-            var e = this._entities_pool[name].pop() || new app.Entity(name, this.game);
-            e.setId(id);
-            /*var e = new app.Entity(name, this.game);
-            e.setId(id);*/
+    p.unsetComponentsIndex = function (entity_id, c_id) {
+        this._components_index[entity_id][c_id] = false;
+    }
 
-            return e;
-        },
-        canModify: function () {
-            return _can_modify;
-        },
-        create: function (name) {
-            var f, families;
+    
 
-            var args = Array.prototype.slice.call(arguments, 1);
-            args.unshift(this.game);
-  
-            var id = this.obtainEntityId();
+    p.create = function (name) {
+        var args = slice.call(arguments, 1);
+        args.unshift(this.game);
 
-            if (!this._entities_pool.hasOwnProperty(name)) {
-                this._entities_pool[name] = [];
-            }
+        var entity = this._getNewEntity(name);
+        var pattern = this._getEntityPattern(name);
 
-            var e = this.getNewEntity(name, id);
+        pattern.create.apply(entity, args);
 
-            _entity_pattern[name].pattern.create.apply(e, args);
+        this._addEntityToFamilies(entity);
+        this._addEntityToSystem(entity);
+    }
 
-            this._entities[id] = e;
+    p.remove = function (entity) {
+        var args;
+        var id = entity.id;
+        var f, e_f_id;
+        var families = this._getFamiliesOfEntity(entity.name);
 
-            families = _entity_pattern[name].families;
+        //already removed
+        if (typeof this._entities[id] === "undefined") {          
+            return;
+        }
 
-            for (var i = 0, max = families.length; i < max; i += 1) {
-                f = families[i];
+        args = slice.call(arguments, 2);
+        args.unshift(this.game);
 
-                if (!this._families.hasOwnProperty(f)) {
-                    this._families[f] = new app.Family(f);
-                }
+        for (var i = 0, max = families.length; i < max; i += 1) {
+            f = families[i];
+            
+            this._families[f].remove(entity);
+        }
 
-                this._families[f].append(e);
-            }
+        var pattern = this._getEntityPattern(entity.name);
 
-            this._entity_family_index[id] = families;
+        pattern.remove && pattern.remove.apply(entity, args);
 
-            this._entities_count += 1;
-        },
-        remove: function (e) {
-            var args;
-            var id = e.id;
-            var f, e_f_id;
-            var families = _entity_pattern[e.name].families;
+        entity.removeAllComponents(true);
 
-            //already removed
-            if (typeof this._entities[id] === "undefined") {          
-                return;
-            }
+        this._entities_pool.add(entity.name, entity);
 
-            args = Array.prototype.slice.call(arguments, 2);
-            args.unshift(this.game);
+        delete this._entities[id];
+        delete this._entity_to_family_mapping[id];
 
-            for (var i = 0, max = families.length; i < max; i += 1) {
-                f = families[i];
-                
-                this._families[f].remove(e);
-            }
+        this._entity_ids_to_reuse.push(id);
 
-            //optionaly call remove method
-            _entity_pattern[e.name].pattern.remove  && _entity_pattern[e.name].pattern.remove.apply(e, args);
+        this._entities_count -= 1;
+    }
 
-            //soft delete all components
-            e.removeAllComponents(true);
-
-            this._entities_pool[e.name].push(e);
-            //this._entities_pool_size += 1;
-
-            delete this._entities[id];
-            delete this._entity_family_index[id];
-
-            this._e_ids_to_reuse.push(id);
-
-            this._entities_count -= 1;
-        },
-        removeAllEntities: function () {
+    p.removeAllEntities = function () {
+        if ( ! this.isUpdating()) {
             this._entities.forEach(function (entity) {
                 this.remove(entity);
             }, this);
-
-            return this;
-        },
-        markForRemoval: function (e) {
-            this._entities_to_remove.push(e);
-        },
-        getEntity: function (id) {
-            if (typeof this._entities[id] !== "undefined") {
-                return this._entities[id];
-            } else {
-                return null;
-            }
-        },
-        getEntitiesWith: function (c_array) {
-            var e_matched = [];
-            var i, max1, max2;
-            var e_id, c_id, found;
-
-            c_array = c_array.map(function (name) {
-                return _component_pattern[name][0];
-            });
-
-            max1 = this._components_index.length;
-            for (e_id = 0; e_id < max1; e_id += 1) {
-                found = 0;
-
-                max2 = c_array.length;
-                for (i = 0; i < max2; i += 1) {
-                    c_id = c_array[i];
-
-                    if (this._components_index[e_id][c_id]) {
-                        found += 1;
-                    }
-                }
-
-                if (found === c_array.length) {
-                    e_matched.push(this._entities[e_id]); //copying temp array
-                }
-            }
-
-            return e_matched;
-        },
-        getAllEntities: function () {
-            return this._entities.map(function (entity) {
-                if (typeof entity === "undefined") {
-                    debugger;
-                }
-                return entity;
-            });
-        },
-        getFamily: function (family) {
-            if (!isString(family)) {
-                app.Game.error("family name must be a string.");
-            }
-
-            if (!this._families.hasOwnProperty(family)) {
-                return this.BLANK_FAMILY;
-            } else {
-                return this._families[family];
-            }
-        },
-        addSystem: function (name, priority) {
-            var args = Array.prototype.slice.call(arguments, 2);
-
-            var system = _system_pattern[name];
-
-            system.name = name;
-            system.game = this.game;
-            system.engine = this;
-
-            system.init && system.init.apply(system, args);
-
-            this._systems.insert(system, priority);
-
-            return this;
-        },
-        addSystems: function () {
-            var args = Array.prototype.slice.call(arguments);
-            
-            for (var i = 0; i < args.length; i += 1) {
-                console.log(args[i]);
-                this.addSystem.apply(this, args[i]);
-            }
-
-            return this;
-        },
-        removeSystem: function (system) {
-            if ( ! this.isUpdating()) {
-                var args = Array.prototype.slice.call(arguments, 1);
-
-                system.remove && system.remove.apply(system, args);
-
-                this._systems.remove(system);
-            }
-
-            return this;
-        },
-        removeAllSystems: function () {
-            while (this._systems.head) {
-                this.removeSystem(this._systems.head.data);
-            }
-
-            return this;
-        },
-        isSystemActive: function (name) {
-            var node = this._systems.head;
-
-            while (node) {
-                if (node.data.name === name) {
-                    return true;
-                }
-
-                node = node.next;
-            }
-
-            return false;
-        },
-        update: function (delta, event) {
-            this._updating = true;
-
-            var node = this._systems.head;
-            while (node) {
-                node.data.update(delta, event);
-
-                node = node.next;
-            }
-
-            this._updating = false;
-
-            node = this._systems.head;
-            while (node) {
-                node.data.afterUpdate && node.data.afterUpdate(delta, event);
-
-                node = node.next;
-            }
-
-            for (var i = 0, max = this._entities_to_remove.length; i < max; i++) {
-                this.remove(this._entities_to_remove[i]);
-            }
-
-            this._entities_to_remove.length = 0;
-
-            app.trigger("afterupdate", null, this);
-        },
-        clear: function () {
-            app.addEventListener("afterupdate", function (e) {
-                this.removeAllSystems();
-                this.removeAllEntities();
-
-            }, true);
-        },
-        isUpdating: function () {
-            return this._updating;
-        },
-        getComponentPoolSize: function () {
-            return this._component_pool_size;
+        } else {
+            app.Game.warning("entities couldn't be removed due to engine's still running.");
         }
-    };
+
+        return this;
+    }
+
+    p.markForRemoval = function (e) {
+        this._entities_to_remove.push(e);
+    }
+
+    p.getEntity = function (id) {
+        if ( ! isUndefined(this._entities[id])) {
+            return this._entities[id];
+        } else {
+            return null;
+        }
+    }
+
+    p.getEntitiesWith = function (c_array) {
+        var e_matched = [];
+        var i, max1, max2;
+        var entity_id, c_id, found;
+
+        c_array = c_array.map(function (name) {
+            return _component_pattern[name][0];
+        });
+
+        max1 = this._components_index.length;
+        for (entity_id = 0; entity_id < max1; entity_id += 1) {
+            found = 0;
+
+            max2 = c_array.length;
+            for (i = 0; i < max2; i += 1) {
+                c_id = c_array[i];
+
+                if (this._components_index[entity_id][c_id]) {
+                    found += 1;
+                }
+            }
+
+            if (found === c_array.length) {
+                e_matched.push(this._entities[entity_id]); //copying temp array
+            }
+        }
+
+        return e_matched;
+    }
+
+    p.getAllEntities = function () {
+        return this._entities.map(function (entity) {
+            return entity;
+        });
+    }
+
+    p.getFamily = function (family) {
+        if ( ! isString(family)) {
+            app.Game.error("family name must be a string.");
+        }
+
+        if (this._families.hasOwnProperty(family)) {
+            return this._families[family];
+        } else {
+            return this.BLANK_FAMILY;
+        }
+    }
+
+    p.addSystem = function (name, priority) {
+        var args = Array.prototype.slice.call(arguments, 2);
+
+        var system = _system_pattern[name];
+
+        system.name = name;
+        system.game = this.game;
+        system.engine = this;
+
+        system.init && system.init.apply(system, args);
+
+        this._systems.insert(system, priority);
+
+        return this;
+    }
+
+    p.addSystems = function () {
+        for (var i = 0; i < arguments.length; i += 1) {
+            this.addSystem.apply(this, arguments[i]);
+        }
+
+        return this;
+    }
+
+    p.removeSystem = function (system) {
+        if ( ! this.isUpdating()) {
+            var args = Array.prototype.slice.call(arguments, 1);
+
+            system.remove && system.remove.apply(system, args);
+
+            this._systems.remove(system);
+        }
+
+        return this;
+    }
+
+    p.removeAllSystems = function () {
+        while (this._systems.head) {
+            this.removeSystem(this._systems.head.data);
+        }
+
+        return this;
+    }
+
+    p.isSystemActive = function (name) {
+        var node = this._systems.head;
+
+        while (node) {
+            if (node.data.name === name) {
+                return true;
+            }
+
+            node = node.next;
+        }
+
+        return false;
+    }
+
+    p.update = function (delta, event) {
+        this._updating = true;
+
+        var node = this._systems.head;
+        while (node) {
+            node.data.update(delta, event);
+
+            node = node.next;
+        }
+
+        this._updating = false;
+
+        node = this._systems.head;
+        while (node) {
+            node.data.afterUpdate && node.data.afterUpdate(delta, event);
+
+            node = node.next;
+        }
+
+        for (var i = 0, max = this._entities_to_remove.length; i < max; i++) {
+            this.remove(this._entities_to_remove[i]);
+        }
+
+        this._entities_to_remove.length = 0;
+
+        app.trigger("afterupdate", null, this);
+    }
+
+    p.clear = function () {
+        app.addEventListener("afterupdate", function (e) {
+            this.removeAllSystems();
+            this.removeAllEntities();
+
+        }, true);
+    }
+
+    p.canModify = function () {
+        return _can_modify;
+    }
+
+    p.isUpdating = function () {
+        return this._updating;
+    }
+
+    p.getComponentPoolSize = function () {
+        return this._component_pool_size;
+    }
+
+    p._createComponentsIndex = function (entity_id) {
+        this._components_index[entity_id] = [];
+
+        for (var i = 0; i < _next_component_id; i += 1) {
+            this._components_index[entity_id][i] = false;
+        }
+    }
+
+    p._addEntityToFamilies = function (entity) {
+        var families =  this._getFamiliesOfEntity(entity.name);
+
+        for (var i = 0, max = families.length; i < max; i += 1) {
+            var family = families[i];
+
+            if ( ! (family in this._families)) {
+                this._families[family] = new app.Family(family);
+            }
+
+            this._families[family].append(entity);
+        }
+    }
+
+    p._getFamiliesOfEntity = function(name) {
+        return _entity_pattern[name].families;
+    }
+
+    /*p._createPoolForEntity = function (name) {
+        if (!this._entities_pool.hasOwnProperty(name)) {
+            this._entities_pool[name] = [];
+        }
+    }*/
+
+    p._addEntityToSystem = function (entity) {
+        this._entities[entity.id] = entity;
+
+        this._entities_count += 1;
+    }
+
+    p._getIdForNewEntity = function () {
+        var id;
+
+        if (this._entity_ids_to_reuse.length !== 0) {
+            id = this._entity_ids_to_reuse.pop();
+        } else {
+            id = this._greatest_entity_id;
+            this._greatest_entity_id += 1;
+
+            this._createComponentsIndex(id);
+        }
+
+        return id;
+    }
+
+    p._getNewEntity = function (name) {
+        var entity = this._entities_pool.get(name) || new app.Entity(name, this.game);
+        entity.setId(this._getIdForNewEntity());
+
+        return entity;
+    }
+
+    p._getEntityPattern = function (name) {
+        if (name in _entity_pattern) {
+            return _entity_pattern[name].pattern;
+        } else {
+            app.Game.error(["pattern for entity", name, "does not exist."].join(" "));
+        }
+    }
+
+
 
     app["Engine"] = Engine;
 })(app);
@@ -699,9 +693,6 @@ global["Entropy"] = app = Entropy;
             this.components[lowercase_name] = this.engine.getNewComponent(name);
         } else {
             this.components[lowercase_name].deleted = false;
-            /*if (!this.recycled) {
-                app.Game.warning(" you are trying to add same component twice. Existing component will be overridden.");
-            }*/
         }
 
         component_pattern.init.apply(
@@ -1060,6 +1051,31 @@ global["Entropy"] = app = Entropy;
 })(app);
 
 (function (app) {
+    "use strict";
+
+    function Index (dimension) {
+        this._index = [];
+
+        this.dimension = dimension;
+    }
+
+    var p = Index.prototype;
+
+    p.set = function () {
+
+    };
+
+    p.unset = function () {
+
+    };
+
+    p.clear = function () {
+        
+    }
+
+})(app);
+
+(function (app) {
     //var key_names = ["BACKSPACE", "TAB", "ENTER", "SHIFT", "CTRL", "ALT", "PAUSE_BREAK", "CAPS_LOCK ", "ESCAPE", "SPACE", "PAGE_UP", "PAGE_DOWN", "END", "HOME", "LEFT_ARROW", "UP_ARROW", "RIGHT_ARROW", "DOWN_ARROW", "INSERT", "DELETE", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "LEFT_WINDOW_KEY", "RIGHT_WINDOW_KEY", "SELECT_KEY", "NUMPAD_0", "NUMPAD_1", "NUMPAD_2", "NUMPAD_3", "NUMPAD_4", "NUMPAD_5", "NUMPAD_6", "NUMPAD_7", "NUMPAD_8", "NUMPAD_9", "MULTIPLY", "ADD", "SUBTRACT", "DECIMAL_POINT", "DIVIDE", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F1", "F11", "F12", "NUM_LOCK", "SCROLL_LOCK", "SEMI_COLON", "EQUAL_SIGN", "COMMA", "DASH", "PERIOD", "FORWARD_SLASH", "GRAVE_ACCENT", "OPEN_BRACKET", "BACK_SLASH", "CLOSE_BRAKET", "SINGLE_QUOTE"];
 
     var _keys = {
@@ -1376,86 +1392,40 @@ global["Entropy"] = app = Entropy;
     app["OrderedLinkedList"] = OrderedLinkedList;
 })(app);
 
-(function() {
-  var slice = [].slice;
+(function (Entropy) {
 
-  function queue(parallelism) {
-    var q,
-        tasks = [],
-        started = 0, // number of tasks that have been started (and perhaps finished)
-        active = 0, // number of tasks currently being executed (started but not finished)
-        remaining = 0, // number of tasks not yet finished
-        popping, // inside a synchronous task callback?
-        error = null,
-        await = noop,
-        all;
-
-    if (!parallelism) parallelism = Infinity;
-
-    function pop() {
-      while (popping = started < tasks.length && active < parallelism) {
-        var i = started++,
-            t = tasks[i],
-            a = slice.call(t, 1);
-        a.push(callback(i));
-        ++active;
-        t[0].apply(null, a);
-      }
+    function Pool () {
+        this.size = 0;
+        this.pool = {};
     }
 
-    function callback(i) {
-      return function(e, r) {
-        --active;
-        if (error != null) return;
-        if (e != null) {
-          error = e; // ignore new tasks and squelch active callbacks
-          started = remaining = NaN; // stop queued tasks from starting
-          notify();
-        } else {
-          tasks[i] = r;
-          if (--remaining) popping || pop();
-          else notify();
+    Entropy.Utils.extend(Pool.prototype, {
+        add: function (key, value) {
+            if ( ! (key in this.pool)) {
+                this.pool[key] = [];
+            }
+
+            this.size += 1;
+
+            return this.pool[key].push(value);
+        },
+        get: function (key) {
+            if (this.exists(key)) {
+                this.size -= 1;
+
+                return this.pool[key].pop();
+            } else {
+                return false;
+            }
+        },
+        exists: function (key) {
+            return key in this.pool && this.pool[key].length > 0;
         }
-      };
-    }
+    });
 
-    function notify() {
-      if (error != null) await(error);
-      else if (all) await(error, tasks);
-      else await.apply(null, [error].concat(tasks));
-    }
+    Entropy.Pool = Pool;
 
-    return q = {
-      defer: function() {
-        if (!error) {
-          tasks.push(arguments);
-          ++remaining;
-          pop();
-        }
-        return q;
-      },
-      await: function(f) {
-        await = f;
-        all = false;
-        if (!remaining) notify();
-        return q;
-      },
-      awaitAll: function(f) {
-        await = f;
-        all = true;
-        if (!remaining) notify();
-        return q;
-      }
-    };
-  }
-
-  function noop() {}
-
-  queue.version = "1.0.7";
-  if (typeof define === "function" && define.amd) define(function() { return queue; });
-  else if (typeof module === "object" && module.exports) module.exports = queue;
-  else this.queue = queue;
-})();
+})(app);
 
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
@@ -1606,6 +1576,33 @@ global["Entropy"] = app = Entropy;
     };
 
     app["Ticker"] = Ticker;
+})(app);
+
+(function (app) {
+
+    app.Utils = {
+        isString: function (value) {
+            return typeof value === "string" || value instanceof String;
+        },
+        isUndefined: function (value) {
+            return typeof value === "undefined";
+        },
+
+        extend: function (destination) {
+            var sources = this.slice.call(arguments, 1);
+
+            sources.forEach(function (source) {
+                for (var property in source) {
+                    if (source.hasOwnProperty(property)) {
+                        destination[property] = source[property];
+                    }
+                }
+            });
+        },
+
+        slice: Array.prototype.slice
+    };
+
 })(app);
 
 (function (app) {
