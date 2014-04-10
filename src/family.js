@@ -1,4 +1,5 @@
-(function (app) {
+(function (Entropy) {
+    var Entity = Entropy.Entity;
 
     /**
      * Internal node constructor.
@@ -85,14 +86,14 @@
         findPrecedingNode: function (data) {
             //if data is head, there is no preceiding node, null returned
             if (data instanceof Node && data === this.head ||
-                data instanceof app.Entity && this.head.data === data) {
+                data instanceof Entity && this.head.data === data) {
                 return null;
             }
 
             var node = this.head;
             while (node) {
                 if ((data instanceof Node && node.next === data) ||
-                    (data instanceof app.Entity && node.next !== null && node.next.data === data)) {
+                    (data instanceof Entity && node.next !== null && node.next.data === data)) {
                     return node;
                 }
 
@@ -131,6 +132,6 @@
         }
     };
 
-    app["Family"] = Family;
+    Entropy.Family = Family;
 
-})(app);
+})(root);

@@ -1,55 +1,45 @@
-(function (app) {
-    _consts = {};
+(function (Entropy) {
+    "use strict";
 
-    var _states = {
-        dummy: {
-            init: function (game) {
-                //dummy enter
-            },
-            enter: function (game) {
-                //dummy return
-            },
-            exit: function (game) {
-                //dummy exit
-            }
-        }
+    var Utils = Entropy.Utils;
+
+    var FN = 0, BINDING = 1, ARGS = 2;
+
+    var _queue = [];
+    var _states = {};
+    var _current_state = {
+        transitions: {}
     };
 
-    var _current_state = "dummy";
-    var _initiated_states = {};
-    var _e_patterns = {};
+    var _consts = {};
 
     function Game (starting_state) {
-        this.input = new app["Input"](this);
-        this.engine = new app["Engine"](this);
-        this.ticker = new app["Ticker"](this);
+        this.input = new Entropy.Input(this);
+        this.engine = new Entropy.Engine(this);
+        this.ticker = new Entropy.Ticker(this);
 
-        this.ticker.addListener(this.engine, this.engine.update);
+        this.ticker.on("tick", this.engine.update, this.engine);
 
         this.changeState(starting_state);
     }
 
-    Game.addState = function (name, state_obj) {
-        if (typeof name !== "string") {
-            Game.error("state name should be type of string.");
+    Game.State = function (state) {
+        if (typeof state !== "object") {
+            Game.error("State must be an object.");
+            return;
         }
 
-        _states[name] = state_obj;
-    };
-
-    Game.entityPattern = function (name, family, obj) {
-        if (arguments.length !== 3) {
-            Game.error("wrong number of arguments for ent. pattern.");
+        if (!("transitions" in state)) {
+            state.transitions = {};
         }
 
-        _e_patterns[name] = {
-            family: family,
-            pattern: obj
-        };
+        state.initialized = false;
+
+        _states[state.name] = state;
     };
 
     Game.log = function (message) {
-        console.log("Entropy: ", message);
+        console.log(["Entropy: ", message].join(" "));
     };
 
     Game.error = function (message) {
@@ -57,7 +47,7 @@
     };
 
     Game.warning = function (message) {
-        console.warn("Entropy: ", message);
+        console.warn(["Entropy: ", message].join(" "));
     };
 
     Game.constans = function (name, value) {
@@ -76,41 +66,94 @@
         }
     };
 
-    Game.prototype = {
+    /**
+     * [dummy description]
+     * @param  {Function} done
+     * @return {[type]}
+     */
+    function dummy (done) {
+        done();
+    }
+
+    /**
+     * [shift description]
+     * @return {[type]}
+     */
+    function shift() {
+        if (typeof _queue[0] === "undefined") {
+            return;
+        }
+
+        var fn = _queue[0][FN] || dummy;
+        var binding = _queue[0][BINDING] || null;
+        var args = _queue[0][ARGS] || [];
+
+        _queue.shift();
+
+        args.push(next);
+        
+        fn.apply(binding, args);
+    }
+
+    /**
+     * [next description]
+     * @return {Function}
+     */
+    function next() {
+        shift();
+    }
+
+    /**
+     * [setCurrentState description]
+     * @param {[type]}   state
+     * @param {Function} callback
+     */
+    function setCurrentState (state, callback) {
+        _current_state = state;
+        callback();
+    }
+
+    Utils.extend(Game.prototype, {
         changeState: function (name) {
-            if (typeof name !== "string" || !(name in _states)) {
-                Game.error("no such state or state name not a string.");
+            var args = Utils.slice.call(arguments, 1);
+
+            var next_state = _states[name];
+
+            _current_state.onExit && _queue.push([_current_state.onExit, _current_state, [this]]);
+
+            if (!next_state.initialized) {
+                next_state.initialize && _queue.push([next_state.initialize, next_state, [this]]);
+
+                next_state.initialized = true;
             }
 
-            var args = Array.prototype.slice.call(arguments, 1);
+            if (name in _current_state.transitions) {
+                args.unshift(next_state);
+                args.unshift(this);
+
+                _queue.push([
+                    _current_state[_current_state.transitions[name]],
+                    _current_state,
+                    args
+                ]);
+
+                args.shift();
+                args.shift();
+            }
+
+            _queue.push([setCurrentState, null, [next_state]]);
+
             args.unshift(this);
 
-            _states[_current_state].exit && _states[_current_state].exit.apply(_states[_current_state], args);
+            next_state.onEnter && _queue.push([next_state.onEnter, next_state, args]);
 
-            if (name in _initiated_states) {
-                _current_state = name;
-                _states[name].enter && _states[name].enter.apply(_states[name], args);
-            } else {
-                _current_state = name;
-                _states[name].init && _states[name].init.apply(_states[name], args);
-                _states[name].enter && _states[name].enter.apply(_states[name], args);
-                _initiated_states[name] = true;
-            }
-            
-            console.log(_current_state);
+            shift();
         },
         setRenderer: function (renderer) {
             this.renderer = renderer;
         },
         setStage: function (stage) {
             this.stage = stage;
-        },
-        create: function (name) {
-            var args = Array.prototype.slice.call(arguments, 1);
-
-            this.engine.createEntity(_e_patterns[name]["family"]);
-
-            return _e_patterns[name].pattern.create.apply(this.engine, args);
         },
         start: function () {
             this.ticker.start();
@@ -127,7 +170,7 @@
 
             Game.log("Game resumed!");
         }
-    };
+    });
 
-    app["Game"] = Game;
-})(app);
+    Entropy.Game = Game;
+})(root);

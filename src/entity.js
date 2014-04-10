@@ -1,4 +1,5 @@
-(function (app) {
+(function (Entropy) {
+    "use strict";
 
     function Entity (name, game) {
         this.id = 0;
@@ -37,7 +38,7 @@
             this.components[lowercase_name].deleted = false;
         }
 
-        component_pattern.init.apply(
+        component_pattern.initialize.apply(
             this.components[lowercase_name],
             args
         );
@@ -117,6 +118,6 @@
     };
 
 
-    app["Entity"] = Entity;
+    Entropy.Entity = Entity;
 
-})(app);
+})(root);

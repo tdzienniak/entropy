@@ -1,13 +1,13 @@
-(function (app) {
-
-    app.Utils = {
+(function (Entropy) {
+    "use strict";
+    
+    var Utils = {
         isString: function (value) {
             return typeof value === "string" || value instanceof String;
         },
         isUndefined: function (value) {
             return typeof value === "undefined";
         },
-
         extend: function (destination) {
             var sources = this.slice.call(arguments, 1);
 
@@ -19,8 +19,9 @@
                 }
             });
         },
-
         slice: Array.prototype.slice
     };
 
-})(app);
+    Entropy.Utils = Utils;
+    
+})(root);

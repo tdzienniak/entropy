@@ -59,92 +59,110 @@
  
 })();
 
-(function (app) {
-    var FPS = 60,
-        MAX_FRAME_TIME = 1000 / FPS * 2,
-        _paused = false,
-        _ticks = 0,
-        callbacks = [],
-        raf = window.requestAnimationFrame,
-        last_time_value = 0,
-        is_running = false,
-        currentFPS = FPS,
-        _raf_id = 0;
+(function (Entropy) {
+    "use strict";
+
+    var EventEmitter = Entropy.EventEmitter;
+    var Utils = Entropy.Utils;
+
+    var FPS = 60;
+    var MAX_FRAME_TIME = 1000 / FPS * 2;
+
+    var _paused = false;
+    var _ticks = 0;
+    var _callbacks = [];
+    var raf = window.requestAnimationFrame;
+    var _last_time_value = 0;
+    var _is_running = false;
+    var _current_FPS = FPS;
+    var _raf_id = -1;
 
     var event = {};
 
     function Ticker (game) {
         this.game = game;
+
+        EventEmitter.call(this);
     }
 
-    function tick (time) {
-        raf(tick);
+    Utils.extend(Ticker.prototype, EventEmitter.prototype);
 
-        if (_paused) {
-            is_running = false;
-            return;
-        }
-
-        time = time || performance.now();
-
-        var delta = time - last_time_value;
-
-        if (delta >= MAX_FRAME_TIME) {
-            delta = 1000 / FPS;
-        }
-
-        last_time_value = time;
-
-        /*if (_ticks % FPS === 0) {
-            currentFPS = 1000 / delta;
-        }*/
-
-        event.delta = delta;
-        event.ticks = _ticks;
-        event.paused = _paused;
-
-        for (var i = 0, len = callbacks.length; i < len; i++) {
-            callbacks[i][1].call(callbacks[i][0], delta, event);
-        }
-
-        _ticks++;
-    }
-
-    Ticker.prototype = {
-        /*currentFPS: function () {
-            return Math.round(currentFPS);
-        },*/
+    Utils.extend(Ticker.prototype, {
         setFPS: function (fps) {
             FPS = fps || FPS;
         },
         getFPS: function () {
             return FPS;
         },
+        getCurrentFPS: function () {
+            return Math.round(_current_FPS);
+        },
         getTicks: function () {
             return _ticks;
         },
         pause: function () {
             _paused = true;
-
-            //cancelAnimationFrame(_raf_id);
         },
         resume: function () {
-            if (_paused && !is_running) {
-                is_running = true;
+            if (_paused && !_is_running) {
+                _is_running = true;
                 _paused = false;
+                this.emit("resume");
             }
-        },
-        addListener: function (that, callback) {
-            callbacks.push([that, callback]);
         },
         start: function () {
             if (_paused) {
                 this.resume();
+            } else if (_is_running) {
+                return;
             } else {
-                _raf_id = raf(tick);    
-            }
-        }
-    };
+                _raf_id = raf(this._tick.bind(this));
+                this.emit("start");
 
-    app["Ticker"] = Ticker;
-})(app);
+                return;  
+            }
+        },
+        stop: function () {
+            if (_raf_id !== -1) {
+                window.cancelAnimationFrame(_raf_id);
+                _paused = false;
+                _is_running = false;
+
+                this.emit("stop");
+            }
+        },
+        _tick: function (time) {
+            _raf_id= raf(this._tick.bind(this));
+
+            if (_paused) {
+                _is_running = false;
+                return;
+            }
+
+            time = time || performance.now();
+
+            var delta = time - _last_time_value;
+
+            if (delta >= MAX_FRAME_TIME) {
+                delta = 1000 / FPS;
+            }
+
+            _last_time_value = time;
+
+            if (_ticks % FPS === 0) {
+                _current_FPS = 1000 / delta;
+            }
+
+            event.delta = delta;
+            event.ticks = _ticks;
+            event.paused = _paused;
+
+            this.emit("tick", event);
+
+            _ticks++;
+        }
+    });
+
+    Entropy.Ticker = Ticker;
+    
+})(root);

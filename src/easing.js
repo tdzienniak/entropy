@@ -1,4 +1,6 @@
-(function (app) {
+(function (Entropy) {
+    "use strict";
+    
     /**
      * Easing functions by Robert Panner
      * http://www.robertpenner.com/easing/
@@ -6,7 +8,7 @@
      * t: current time, b: beginning value, c: change in value, d: duration
      */
 
-    app.Easing = {
+    var Easing = {
         Linear: {
             In: function (t, b, c, d) {
                 return c * t / d + b;
@@ -123,5 +125,6 @@
         }
     };
 
+    Entropy.Easing = Easing;
 
-})(app);
+})(root);

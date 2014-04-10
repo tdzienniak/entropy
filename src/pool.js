@@ -6,8 +6,8 @@
     }
 
     Entropy.Utils.extend(Pool.prototype, {
-        add: function (key, value) {
-            if ( ! (key in this.pool)) {
+        push: function (key, value) {
+            if (!(key in this.pool)) {
                 this.pool[key] = [];
             }
 
@@ -15,8 +15,8 @@
 
             return this.pool[key].push(value);
         },
-        get: function (key) {
-            if (this.exists(key)) {
+        pop: function (key) {
+            if (this.has(key)) {
                 this.size -= 1;
 
                 return this.pool[key].pop();
@@ -24,11 +24,13 @@
                 return false;
             }
         },
-        exists: function (key) {
+        has: function (key) {
             return key in this.pool && this.pool[key].length > 0;
+        },
+        size: function () {
+            return this.size;
         }
     });
 
     Entropy.Pool = Pool;
-
-})(app);
+})(root);

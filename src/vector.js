@@ -1,4 +1,4 @@
-(function (app) {
+(function (Entropy) {
 
     function degToRad(degrees) {
         return degrees * Math.PI / 180;
@@ -264,5 +264,6 @@
         return "x: " + this.x + ", y: " + this.y + ", angle: " + this.angle + ", length: " + this.length;
     };
 
-    app["Vector"] = Vector;
-})(app);
+    Entropy.Vector = Vector;
+    
+})(root);

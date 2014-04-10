@@ -1,12 +1,6 @@
-/**
- * Ordered single linked list implementation.
- * 
- * @author "Tymoteusz Dzienniak"
- * @license MIT license
- */
-
-(function (app) {
-
+(function (Entropy) {
+    "use strict";
+    
     /**
      * Linked list conctructor.
      * It initializes head and tail properties with null value.
@@ -161,5 +155,5 @@
         }
     };
 
-    app["OrderedLinkedList"] = OrderedLinkedList;
-})(app);
+    Entropy.OrderedLinkedList = OrderedLinkedList;
+})(root);

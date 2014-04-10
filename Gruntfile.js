@@ -4,6 +4,24 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
 
+        entropy: [
+            "src/intro.js",
+            "src/core.js",
+            "src/utils.js",
+            "src/easing.js",
+            "src/vector.js",
+            "src/eventemitter.js",
+            "src/orderedlinkedlist.js",
+            "src/pool.js",
+            "src/ticker.js",
+            "src/entity.js",
+            "src/family.js",
+            "src/game.js",
+            "src/engine.js",
+            "src/input.js",
+            "src/outro.js"
+        ],
+
         clean: {
             build: ['build']
         },
@@ -14,7 +32,7 @@ module.exports = function(grunt) {
             },
             build: {
                 // the files to concatenate
-                src: ['src/**/*.js'],
+                src: ['<%= entropy %>'],
                 // the location of the resulting JS file
                 dest: 'build/entropy.js'
           }
@@ -57,6 +75,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-qunit');
 
     // Default task(s).
-    grunt.registerTask('default', ['clean', 'concat', 'wrap', 'uglify', 'qunit']);
+    grunt.registerTask('default', ['clean', 'concat', /*'wrap', */'uglify'/*, /*'qunit'*/]);
 
 };
