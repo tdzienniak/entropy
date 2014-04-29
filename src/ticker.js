@@ -132,6 +132,7 @@
             }
         },
         _tick: function (time) {
+            time = time || 0;
             _raf_id= raf(this._tick.bind(this));
 
             if (_paused) {
@@ -155,6 +156,7 @@
 
             event.delta = delta;
             event.ticks = _ticks;
+            event.time = time;
             event.paused = _paused;
 
             this.emit("tick", event);
@@ -164,5 +166,5 @@
     });
 
     Entropy.Ticker = Ticker;
-    
+
 })(root);

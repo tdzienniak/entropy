@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Physics with Entropy, p2.js and PIXI</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+    <script src="../lib/p2.min.js"></script>
+    <script src="../lib/pixi.min.js"></script>
+    <script src="../../build/entropy.min.js"></script>
+    <script>
+        /*
+         * STATES
+         */
+        
+        Entropy.Game.State({
+            name: "initialize",
+            initialize: function (game, done) {
+                Entropy.Const("WIDTH", 600);
+                Entropy.Const("HEIGHT", 400);
+                Entropy.Const("ZOOM", 100);
+
+                var interactive = true;
+                var stage = new PIXI.Stage(0xffffff, interactive);
+                var renderer = new PIXI.autoDetectRenderer(Entropy.WIDTH, Entropy.HEIGHT, null, false, true);
+
+                game.setRenderer(renderer);
+                game.setStage(stage);
+
+                var world = new p2.World();
+
+                world.defaultContactMaterial.friction = 0.5;
+                world.setGlobalStiffness(1e5);
+
+                game.world = world;
+
+                document.body.appendChild(renderer.view);
+
+                done();
+            },
+            onEnter: function (game, done) {
+                //Init materials
+                var groundMaterial = new p2.Material(),
+                    characterMaterial = new p2.Material(),
+                    boxMaterial = new p2.Material();
+
+                // Init contactmaterials
+                var groundCharacterCM = new p2.ContactMaterial(groundMaterial, characterMaterial,{
+                    friction : 0.0, // No friction between character and ground
+                });
+
+                var boxCharacterCM = new p2.ContactMaterial(boxMaterial, characterMaterial,{
+                    friction : 0.0, // No friction between character and boxes
+                });
+
+                var boxGroundCM = new p2.ContactMaterial(boxMaterial, groundMaterial,{
+                    friction : 0.6, // Between boxes and ground
+                });
+
+                game.world.addContactMaterial(groundCharacterCM);
+                game.world.addContactMaterial(boxCharacterCM);
+                game.world.addContactMaterial(boxGroundCM);
+
+                //Add player entity
+                game.engine.create("Player", characterMaterial);
+
+                //Add ground
+                game.engine.create("Ground", groundMaterial);
+
+                //Add platforms
+                var platformPositions = [[2,0],[0,1],[-2,2]];
+                
+                for (var i = 0; i < platformPositions.length; i++){
+                    game.engine.create("Platform", platformPositions[i][0], platformPositions[i][1], groundMaterial);
+                }
+
+                //Add boxes
+                var boxPositions = [[2,1],[0,2],[-2,3]];
+                for (i = 0; i < boxPositions.length; i++){
+                    game.engine.create("Box", boxPositions[i][0], boxPositions[i][1], boxMaterial);
+                }
+
+                game.engine.addSystems(
+                    ["PlatformsMovement", 0],
+                    ["PlayerMovement", 0],
+                    ["RenderBodies", 1],
+                    ["StepWorld", 2],
+                    ["Render", 2]
+                );
+
+                game.start();
+                done();
+            }
+        });
+    </script>
+    <script>
+        /*
+         * COMPONENTS
+         */
+        
+        Entropy.Engine.Component({
+            name: "Body",
+            initialize: function (body) {
+                this.body = body;
+            }
+        });
+
+        Entropy.Engine.Component({
+            name: "Color",
+            initialize: function (color) {
+                this.color = color;
+            }
+        });
+    </script>
+    <script>
+        /*
+         * ENTITIES
+         */
+        
+        Entropy.Engine.Entity({
+            name: "Player",
+            family: "Player|Bodies",
+            create: function (game, material) {
+                var characterShape = new p2.Rectangle(0.5,1);
+                var characterBody = new p2.Body({
+                    mass: 1,
+                    position:[0,3],
+                    fixedRotation: true,
+                });
+
+                characterBody.addShape(characterShape);
+
+                game.world.addBody(characterBody);
+
+                characterShape.material = material;
+                characterBody.damping = 0.5;
+
+                this.add("Body", characterBody)
+                    .add("Color", 0xff0000);
+            }
+        });
+
+        Entropy.Engine.Entity({
+            name: "Ground",
+            family: "Ground",
+            create: function (game, material) {
+                var planeShape = new p2.Plane();
+                var planeBody = new p2.Body({
+                  position:[0,-1]
+                });
+
+                planeBody.addShape(planeShape);
+
+                game.world.addBody(planeBody);
+
+                planeShape.material = material;
+
+                this.add("Body", planeBody)
+                    .add("Color", 0xff0000);
+            }
+        });
+
+        Entropy.Engine.Entity({
+            name: "Box",
+            family: "Boxes|Bodies",
+            create: function (game, x, y, material) {
+                var boxShape = new p2.Rectangle(0.8,0.8);
+                var boxBody = new p2.Body({
+                    mass: 1,
+                    position: [x, y],
+                });
+
+                boxBody.addShape(boxShape);
+
+                game.world.addBody(boxBody);
+
+                boxShape.material = material;
+
+                this.add("Body", boxBody)
+                    .add("Color", 0xff0000);
+            }
+        });
+
+        Entropy.Engine.Entity({
+            name: "Platform",
+            family: "Platforms|Bodies",
+            create: function (game, x, y, material) {
+                var platformBody = new p2.Body({
+                    mass: 0, // Static
+                    position: [x, y],
+                });
+
+                platformShape = new p2.Rectangle(1, 0.3);
+
+                platformBody.motionState = p2.Body.KINEMATIC;
+                platformBody.addShape(platformShape);
+
+                game.world.addBody(platformBody);
+
+                platformShape.material = material;
+
+                this.add("Body", platformBody)
+                    .add("Color", 0x4e7326);
+            }
+        });
+    </script>
+    <script>
+         /*
+         * SYSTEMS
+         */
+        Entropy.Engine.System({
+            name: "Render",
+            initialize: function () {
+                this.stage = this.game.stage;
+                this.renderer = this.game.renderer;
+            },
+            update: function (delta, event) {
+                this.renderer.render(this.stage);
+            }
+        });
+
+        Entropy.Engine.System({
+            name: "StepWorld",
+            initialize: function () {
+                this.stepInterval = 1/60;
+            },
+            update: function () {
+                this.game.world.step(this.stepInterval);
+            }
+        });
+
+         Entropy.Engine.System({
+            name: "PlatformsMovement",
+            update: function (delta, event) {
+                var platforms = this.engine.getFamily("Platforms");
+                platforms.iterate(function (p, pc) {
+                     pc.body.body.velocity[0] = Math.sin(event.time*0.001);
+                });
+            }
+        });
+
+        Entropy.Engine.System({
+            name: "RenderBodies",
+            initialize: function () {
+                this.graphics = new PIXI.Graphics();
+
+                this.graphics.position.x =  this.game.renderer.width / 2; // center at origin
+                this.graphics.position.y =  this.game.renderer.height / 2;
+                this.graphics.scale.x =  50;  // zoom in
+                this.graphics.scale.y = -50; 
+                this.game.stage.addChild(this.graphics);
+            },
+            update: function (delta) {
+                var bodies = this.engine.getFamily("Bodies");
+                var ground = this.engine.getFamily("Ground").one().components;
+
+                this.graphics.clear();
+
+                bodies.iterate(function (b, bc) {
+                    var x = bc.body.body.position[0],
+                        y = bc.body.body.position[1],
+                        width = bc.body.body.shapes[0].width,
+                        height = bc.body.body.shapes[0].height;
+
+                    this.graphics.beginFill(bc.color.color, 1);
+                    this.graphics.drawRect(x - width/2, y - height/2, width, height);
+                    this.graphics.endFill();
+                }, this);
+
+                var y = ground.body.body.position[1];
+
+                this.graphics.beginFill(0x4e7326, 1);
+                this.graphics.drawRect(-Entropy.WIDTH/2, y, Entropy.WIDTH, -Entropy.HEIGHT);
+                this.graphics.endFill();
+
+            },
+            remove: function () {
+                this.game.stage.removeChild(this.graphics);
+            }
+        });
+
+        Entropy.Engine.System({
+            name: "PlayerMovement",
+            initialize: function () {
+                this.yAxis = p2.vec2.fromValues(0,1);
+                this.walkSpeed = 2;
+                this.jumpSpeed = 6;
+            },
+            update: function (delta) {
+                var player = this.engine.getFamily("Player").one().components;
+                var pressedKeys = this.game.input.getPressedKeys();
+
+                if (pressedKeys.UP_ARROW || pressedKeys.SPACE) {
+                    if (this.canJump(player.body.body)) {
+                        player.body.body.velocity[1] = this.jumpSpeed;
+                    }
+                }
+
+                if(pressedKeys.RIGHT_ARROW) {
+                    player.body.body.velocity[0] = this.walkSpeed;
+                } else if (pressedKeys.LEFT_ARROW) {
+                    player.body.body.velocity[0] = -this.walkSpeed;
+                } else {
+                    player.body.body.velocity[0] = 0;
+                }
+            },
+            remove: function () {
+                this.game.stage.removeChild(this.graphics);
+            },
+            canJump: function (playerBody) {
+                for (var i = 0; i < this.game.world.narrowphase.contactEquations.length; i++) {
+                    var c = this.game.world.narrowphase.contactEquations[i];
+
+                    if (c.bodyA === playerBody || c.bodyB === playerBody) {
+                        var d = p2.vec2.dot(c.normalA, this.yAxis);
+
+                        if (c.bodyA === playerBody) {
+                            d *= -1;
+                        } 
+
+                        if (d > 0.5) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+        });
+
+
+
+    </script>
+    <script>
+        window.addEventListener("load", function () {
+            var game = new Entropy.Game("initialize");
+        }, false);
+    </script>
+</head>
+<body>
+    <p><b>Entropy framework and p2.js physics engine demo</b><br />
+    This is the same demo as shown <a href="http://schteppe.github.io/p2.js/examples/canvas/character.html">here</a>, remade with Entropy and PIXI.<br />
+    Controls: arrows + space</p>
+</body>
+</html>

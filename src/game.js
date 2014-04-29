@@ -50,7 +50,7 @@
         console.warn(["Entropy: ", message].join(" "));
     };
 
-    Game.constans = function (name, value) {
+    Game.Const = function (name, value) {
         if (typeof name !== "string" || name === "") {
             Game.error("constans name should be non-empty string.");
         }

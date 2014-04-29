@@ -15,6 +15,34 @@ var root = {};
         return "v" + VERSION;
     };
 
+    Entropy.log = function (message) {
+        console.log(["Entropy: ", message].join(" "));
+    };
+
+    Entropy.error = function (message) {
+        throw new Error(["Entropy: ", message].join(" "));
+    };
+
+    Entropy.warning = function (message) {
+        console.warn(["Entropy: ", message].join(" "));
+    };
+
+    Entropy.Const = function (name, value) {
+        if (typeof name !== "string" || name === "") {
+            Entropy.error("constans name should be non-empty string.");
+        }
+
+        name = name.toUpperCase();
+
+        if (Entropy.hasOwnProperty(name)) {
+            Entropy.error("can't define same constans twice.");
+        } else {
+            Object.defineProperty(Entropy, name, {
+                value: value
+            });
+        }
+    };
+
 })(root);
 
 (function (Entropy) {
@@ -851,6 +879,7 @@ var root = {};
             }
         },
         _tick: function (time) {
+            time = time || 0;
             _raf_id= raf(this._tick.bind(this));
 
             if (_paused) {
@@ -874,6 +903,7 @@ var root = {};
 
             event.delta = delta;
             event.ticks = _ticks;
+            event.time = time;
             event.paused = _paused;
 
             this.emit("tick", event);
@@ -883,7 +913,7 @@ var root = {};
     });
 
     Entropy.Ticker = Ticker;
-    
+
 })(root);
 
 (function (Entropy) {
@@ -1200,7 +1230,7 @@ var root = {};
         console.warn(["Entropy: ", message].join(" "));
     };
 
-    Game.constans = function (name, value) {
+    Game.Const = function (name, value) {
         if (typeof name !== "string" || name === "") {
             Game.error("constans name should be non-empty string.");
         }
