@@ -1,14 +1,704 @@
 /**
+ * @license BitSet.js v1.0.0 05/03/2014
+ * http://www.xarg.org/2014/03/javascript-bit-array/
+ *
+ * Copyright (c) 2014, Robert Eisele (robert@xarg.org)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ **/
+
+/**
+ * BitSet Class
+ * 
+ * @param {number|String=} alloc The number of bits to use at max, or a bit-string to copy
+ * @param {number=} value The default value for the bits
+ * @constructor
+ **/
+
+(function () {
+
+function BitSet(alloc, value) {
+
+    if (alloc === undefined) {
+        alloc = 31;
+    } else if (typeof alloc === 'string') {
+        alloc = alloc['length'];
+    }
+    
+    if (value !== 1) {
+        value = 0;
+    } else {
+        value = 2147483647;
+    }
+
+    /**
+     * @const
+     * @type {number}
+     */
+    var size = 31;
+
+    /**
+     * 
+     * @type {number}
+     */
+    var length = Math.ceil(alloc / size);
+
+    for (var i = length; i--; ) {
+        this[i] = value;
+    }
+
+    if (typeof alloc === 'string') {
+
+        for (i = alloc['length']; i--; ) {
+            this['set'](i, alloc.charAt(i));
+        }
+    }
+
+    var transformRange = function(obj, from, to, mode) {
+
+        // determine param type
+        if (to === undefined) {
+
+            if (from === undefined) {
+                from = 0;
+                to = length * size - 1;
+            } else {
+                to = from;
+            }
+        }
+
+        // check range
+        if (from < 0 || to < from || size * length <= to) {
+            return null;
+        }
+
+        for (var i = length; i--; ) {
+
+            // determine local start and end
+            var s = Math.max(from, i * size);
+            var e = Math.min(to, size - 1 + size * i);
+
+            if (s <= e) {
+
+                /**
+                 * @type {number}
+                 Original derivated formula: ~(((1 << (e % size - s % size + 1)) - 1) << s % size)
+                 Simplified: */
+                var mask = ~(1 << (1 + e % size)) + (1 << s % size);
+
+                if (mode === 0)
+                    obj[i] &= mask;
+                else
+                    obj[i] ^= ~mask;
+            }
+        }
+        return obj;
+    };
+
+    this['size'] = size * length;
+    this['length'] = length;
+
+
+    /**
+     * Creates the bitwise AND of two sets. The result is stored in-place.
+     *
+     * Ex:
+     * bs1 = new BitSet(10);
+     * bs2 = new BitSet(10);
+     *
+     * bs1.and(bs2);
+     * 
+     * @param {BitSet} obj A bitset object
+     * @returns {BitSet} this
+     */
+    this['and'] = function(obj) {
+
+        if (obj instanceof BitSet) {
+
+            for (var i = length; i--; ) {
+                this[i] &= obj[i] || 0;
+            }
+        }
+        return this;
+    };
+
+
+    /**
+     * Creates the bitwise OR of two sets. The result is stored in-place.
+     *
+     * Ex:
+     * bs1 = new BitSet(10);
+     * bs2 = new BitSet(10);
+     *
+     * bs1.or(bs2);
+     * 
+     * @param {BitSet} obj A bitset object
+     * @returns {BitSet} this
+     */
+    this['or'] = function(obj) {
+
+        if (obj instanceof BitSet) {
+
+            for (var i = length; i--; ) {
+                this[i] |= obj[i] || 0;
+            }
+        }
+        return this;
+    };
+
+
+    /**
+     * Creates the bitwise NAND of two sets. The result is stored in-place.
+     *
+     * Ex:
+     * bs1 = new BitSet(10);
+     * bs2 = new BitSet(10);
+     *
+     * bs1.nand(bs2);
+     * 
+     * @param {BitSet} obj A bitset object
+     * @returns {BitSet} this
+     */
+    this['nand'] = function(obj) {
+
+        if (obj instanceof BitSet) {
+
+            for (var i = length; i--; ) {
+                this[i] = ~(this[i] & (obj[i] || 0));
+            }
+        }
+        return this;
+    };
+
+
+    /**
+     * Creates the bitwise NOR of two sets. The result is stored in-place.
+     *
+     * Ex:
+     * bs1 = new BitSet(10);
+     * bs2 = new BitSet(10);
+     *
+     * bs1.or(bs2);
+     * 
+     * @param {BitSet} obj A bitset object
+     * @returns {BitSet} this
+     */
+    this['nor'] = function(obj) {
+
+        if (obj instanceof BitSet) {
+
+            for (var i = length; i--; ) {
+                this[i] = ~(this[i] | (obj[i] || 0));
+            }
+        }
+        return this;
+    };
+
+
+    /**
+     * Creates the bitwise NOT of a set. The result is stored in-place.
+     *
+     * Ex:
+     * bs1 = new BitSet(10);
+     *
+     * bs1.not();
+     * 
+     * @returns {BitSet} this
+     */
+    this['not'] = function() {
+
+        for (var i = length; i--; ) {
+            this[i] = ~this[i];
+        }
+        return this;
+    };
+
+    /**
+     * Creates the bitwise XOR of two sets. The result is stored in-place.
+     *
+     * Ex:
+     * bs1 = new BitSet(10);
+     * bs2 = new BitSet(10);
+     *
+     * bs1.xor(bs2);
+     * 
+     * @param {BitSet} obj A bitset object
+     * @returns {BitSet} this
+     */
+    this['xor'] = function(obj) {
+
+        if (obj instanceof BitSet) {
+
+            for (var i = length; i--; ) {
+                this[i] = (this[i] ^ (obj[i] || 0));
+            }
+        }
+        return this;
+    };
+
+
+    /**
+     * Compares two BitSet objects
+     * 
+     * Ex:
+     * bs1 = new BitSet(10);
+     * bs2 = new BitSet(10);
+     * 
+     * bs1.equals(bs2) ? 'yes' : 'no'
+     *
+     * @param {BitSet} obj A bitset object
+     * @returns {boolean} Whether the two BitSets are similar
+     */
+    this['equals'] = function(obj) {
+
+        if (obj instanceof BitSet) {
+
+            if (obj['length'] !== length) {
+                return false;
+            }
+
+            for (var i = length; i--; ) {
+
+                if (obj[i] !== this[i])
+                    return false;
+            }
+
+        } else {
+            return false;
+        }
+        return true;
+    };
+
+    /**
+     * Tests if one bitset is subset of another
+     *
+     * @param {BitSet} obj BitSet object to test against
+     * @returns {boolean} true if 
+     */
+    this['subsetOf'] = function(obj) {
+        if (obj instanceof BitSet) {
+            if (obj['length'] !== length) {
+                return false;
+            }
+
+            for (var i = length; i--; ) {
+                if ((obj[i] & this[i]) !== this[i]) {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Clones the actual object
+     * 
+     * Ex:
+     * bs1 = new BitSet(10);
+     * bs2 = bs1.clone();
+     *
+     * @returns {BitSet} A new BitSet object, containing a copy of the actual object
+     */
+    this['clone'] = function() {
+
+        /**
+         * 
+         * @type {BitSet}
+         */
+        var tmp = new BitSet(this['size']);
+
+        for (var i = length; i--; ) {
+            tmp[i] = this[i];
+        }
+        return tmp;
+    };
+
+    /**
+     * Check if the BitSet is empty, means all bits are unset
+     * 
+     * Ex:
+     * bs1 = new BitSet(10);
+     * 
+     * bs1.isEmpty() ? 'yes' : 'no'
+     *
+     * @returns {boolean} Whether the bitset is empty
+     */
+    this['isEmpty'] = function() {
+
+        for (var i = length; i--; ) {
+            if (0 !== this[i])
+                return false;
+        }
+        return true;
+    };
+
+    /**
+     * Overrides the toString method to get a binary representation of the BitSet
+     *
+     * @returns string A binary string
+     */
+    this['toString'] = function(sep) {
+
+        var str = "";
+        for (var i = length; i--; ) {
+
+            if (i + 1 < length && sep !== undefined)
+                str += String(sep);
+
+            var tmp = this[i].toString(2);
+            str += (new Array(1 + size - tmp['length']).join("0"));
+            str += tmp;
+        }
+        return str;
+    };
+
+    /**
+     * Calculates the number of bits set
+     * 
+     * Ex:
+     * bs1 = new BitSet(10);
+     * 
+     * var num = bs1.cardinality();
+     *
+     * @returns {number} The number of bits set
+     */
+    this['cardinality'] = function() {
+
+        for (var n, num = 0, i = length; i--; ) {
+
+            for (n = this[i]; n; n &= n - 1, num++) {
+            }
+        }
+        return num;
+    };
+
+
+    /**
+     * Calculates the Most Significant Bit / log base two
+     * 
+     * Ex:
+     * bs1 = new BitSet(10);
+     * 
+     * var logbase2 = bs1.msb();
+     * 
+     * var truncatedTwo = Math.pow(2, logbase2); // May overflow!
+     *
+     * @returns {number} The index of the highest bit set
+     */
+    this['msb'] = function() {
+
+        for (var i = length; i--; ) {
+
+            var v = this[i];
+            var c = 0;
+
+            if (v) {
+
+                for (; (v >>= 1); c++) {
+
+                }
+                return size * i + c;
+            }
+        }
+        return 0;
+    };
+
+
+    /**
+     * Set a single bit flag
+     * 
+     * Ex:
+     * bs1 = new BitSet(10);
+     * 
+     * bs1.set(3, 1);
+     *
+     * @param {number} ndx The index of the bit to be set
+     * @param {number=} value Optional value that should be set on the index (0 or 1)
+     * @returns {BitSet} this
+     */
+    this['set'] = function(ndx, value) {
+
+        if (value === undefined) {
+            value = 1;
+        }
+
+        if (0 <= ndx && ndx < size * length) {
+
+            var slot = ndx / size | 0;
+
+            this[slot] ^= (1 << ndx % size) & (-(value & 1) ^ this[slot]);
+
+            return this;
+        }
+        return null;
+    };
+
+    /**
+     * Set a range of bits
+     * 
+     * Ex:
+     * bs1 = new BitSet();
+     * 
+     * bs1.setRange(0, 5, "01011");
+     * bs1.setRange(10, 15, 1);
+     *
+     * @param {number} from The start index of the range to be set
+     * @param {number} to The end index of the range to be set
+     * @param {number|String=} value Optional value that should be set on the index (0 or 1), or a bit string of the length of the window
+     * @returns {BitSet} this
+     */
+    this['setRange'] = function(from, to, value) {
+
+        if (from <= to && 0 <= from && to < size * length) {
+
+            if (typeof value === "string") {
+
+                // If window size is != string length, abort
+                if (to - from !== value.length) {
+                    return null;
+                }
+
+                for (var i = 0; i < value.length; i++) {
+                    this['set'](i + from, value.charAt(value.length - i - 1));
+                }
+
+            } else {
+
+                if (undefined === value) {
+                    value = 1;
+                }
+
+                for (var i = from; i <= to; i++) {
+                    this['set'](i, value);
+                }
+            }
+
+            return this;
+        }
+        return null;
+    };
+
+    /**
+     * Get a single bit flag of a certain bit position
+     * 
+     * Ex:
+     * bs1 = new BitSet();
+     * var isValid = bs1.get(12);
+     * 
+     * @param {number} ndx the index to be fetched
+     * @returns {number|null} The binary flag
+     */
+    this['get'] = function(ndx) {
+
+        if (0 <= ndx && ndx < size * length) {
+
+            return (this[ndx / size | 0] >> (ndx % size)) & 1;
+        }
+        return null;
+    };
+
+    /**
+     * Gets an entire range as a new bitset object
+     * 
+     * Ex:
+     * bs1 = new BitSet();
+     * bs1.getRange(4, 8);
+     * 
+     * @param {number} from The start index of the range to be get
+     * @param {number} to The end index of the range to be get
+     * @returns {BitSet} A new smaller bitset object, containing the extracted range 
+     */
+    this['getRange'] = function(from, to) {
+
+        if (from <= to && 0 <= from && to < size * length) {
+
+            var tmp = new BitSet(to - from + 1);
+
+            // Quite okay for a first naive implementation, needs improvement
+            for (var i = from; i <= to; i++) {
+                tmp['set'](i - from, this['get'](i));
+            }
+            return tmp;
+        }
+        return null;
+    };
+
+    /**
+     * Clear a range of bits by setting it to 0
+     * 
+     * Ex:
+     * bs1 = new BitSet();
+     * bs1.clear(); // Clear entire set
+     * bs1.clear(5); // Clear single bit
+     * bs1.clar(3,10); // Clear a bit range
+     * 
+     * @param {number=} from The start index of the range to be cleared
+     * @param {number=} to The end index of the range to be cleared
+     * @returns {BitSet} this
+     */
+    this['clear'] = function(from, to) {
+
+        return transformRange(this, from, to, 0);
+    };
+
+    /**
+     * Flip/Invert a range of bits by setting
+     * 
+     * Ex:
+     * bs1 = new BitSet();
+     * bs1.flip(); // Flip entire set
+     * bs1.flip(5); // Flip single bit
+     * bs1.flip(3,10); // Flip a bit range
+     * 
+     * @param {number=} from The start index of the range to be flipped
+     * @param {number=} to The end index of the range to be flipped
+     * @returns {BitSet} this
+     */
+    this['flip'] = function(from, to) {
+
+        return transformRange(this, from, to, 1);
+    };
+}
+
+ this.BitSet = BitSet;
+})();
+
+/**
 * @author       Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>
 * @license      {@link https://github.com/RainPhilosopher/Entropy/blob/master/LICENSE|MIT License}
 */
 
 (function () {
 
+/* Fancy intro message */
+console.log(
+    "%c %c %c Entropy 0.1 - Entity System Framework for JavaScript %c %c ",
+    "background: rgb(200, 200,200);", 
+    "background: rgb(80, 80, 80);",
+    "color: white; background: black;",
+    "background: rgb(80, 80, 80);",
+    "background: rgb(200, 200, 200);"
+);
+
 var root = {};
 
 (function (Entropy) {
+    "use strict";
+    
+    var Utils = {
+        isString: function (value) {
+            return typeof value === "string" || value instanceof String;
+        },
+        isObject: function (value) {
+            return typeof value === "object";
+        },
+        isArray: function (value) {
+            return Object.prototype.toString.call(value) === '[object Array]'; 
+        },
+        isUndefined: function (value) {
+            return typeof value === "undefined";
+        },
+        extend: function (destination) {
+            var sources = this.slice(arguments, 1);
 
+            sources.forEach(function (source) {
+                for (var property in source) {
+                    if (source.hasOwnProperty(property)) {
+                        destination[property] = source[property];
+                    }
+                }
+            });
+        },
+        slice: function (arr, index) {
+            return Array.prototype.slice.call(arr, index);
+        }
+    };
+
+    Entropy.Utils = Utils;
+    
+})(root);
+
+(function (Entropy) {
+    "use strict";
+
+    var Utils = Entropy.Utils;
+
+    function EventEmitter () {
+        this._events = {};
+    }
+
+    Utils.extend(EventEmitter.prototype, {
+        on: function (event, fn, binding, once) {
+            once = once || false;
+
+            if (typeof binding !== "object") {
+                binding = null;
+            }
+
+            if (!(event in this._events)) {
+                this._events[event] = {
+                    listeners: []
+                };
+            }
+
+            this._events[event].listeners.push({
+                fn: fn,
+                binding: binding,
+                once: once
+            });
+        },
+        once: function (event, fn, binding) {
+            this.on(event, fn, binding, true);
+        },
+        emit: function (event, eventObject) {
+            if (!(event in this._events)) {
+                return;  
+            }
+
+            var i = 0;
+            var listener;
+
+            while (i < this._events[event].listeners.length) {
+                listener = this._events[event].listeners[i];
+
+                listener.fn.call(listener.binding, eventObject);
+
+                if (listener.once) {
+                    this._events[event].listeners.splice(i, 1);
+                } else {
+                    i += 1;
+                }
+            }
+        },
+        off: function (event, fn) {
+            if (!(event in this._events)) {
+                return;
+            }
+
+            for (var i = 0; i < this._events[event].listeners.length; i += 1) {
+                if (this._events[event].listeners[i].fn === fn) {
+                    this._events[event].listeners.splice(i, 1);
+                    return;
+                }
+            }
+        },
+        allOff: function () {
+            this._events = {};
+        }
+    });
+
+    Entropy.EventEmitter = EventEmitter;
+
+})(root);
+
+
+(function (Entropy) {
+
+    var Utils = Entropy.Utils;
+    var EventEmitter = Entropy.EventEmitter;
+    
     var VERSION = 0.1;
 
     Entropy.getVersion = function () {
@@ -43,34 +733,9 @@ var root = {};
         }
     };
 
-})(root);
+    EventEmitter.call(Entropy);
+    Utils.extend(Entropy, EventEmitter.prototype);
 
-(function (Entropy) {
-    "use strict";
-    
-    var Utils = {
-        isString: function (value) {
-            return typeof value === "string" || value instanceof String;
-        },
-        isUndefined: function (value) {
-            return typeof value === "undefined";
-        },
-        extend: function (destination) {
-            var sources = this.slice.call(arguments, 1);
-
-            sources.forEach(function (source) {
-                for (var property in source) {
-                    if (source.hasOwnProperty(property)) {
-                        destination[property] = source[property];
-                    }
-                }
-            });
-        },
-        slice: Array.prototype.slice
-    };
-
-    Entropy.Utils = Utils;
-    
 })(root);
 
 (function (Entropy) {
@@ -476,80 +1141,6 @@ var root = {};
 
 (function (Entropy) {
     "use strict";
-
-    var Utils = Entropy.Utils;
-
-    function EventEmitter () {
-        this._events = {};
-    }
-
-    Utils.extend(EventEmitter.prototype, {
-        on: function (event, fn, binding, once) {
-            once = once || false;
-
-            if (typeof binding !== "object") {
-                binding = null;
-            }
-
-            if (!(event in this._events)) {
-                this._events[event] = {
-                    listeners: []
-                };
-            }
-
-            this._events[event].listeners.push({
-                fn: fn,
-                binding: binding,
-                once: once
-            });
-        },
-        once: function (event, fn, binding) {
-            this.on(event, fn, binding, true);
-        },
-        emit: function (event, eventObject) {
-            if (!(event in this._events)) {
-                return;  
-            }
-
-            var i = 0;
-            var listener;
-
-            while (i < this._events[event].listeners.length) {
-                listener = this._events[event].listeners[i];
-
-                listener.fn.call(listener.binding, eventObject);
-
-                if (listener.once) {
-                    this._events[event].listeners.splice(i, 1);
-                } else {
-                    i += 1;
-                }
-            }
-        },
-        off: function (event, fn) {
-            if (!(event in this._events)) {
-                return;
-            }
-
-            for (var i = 0; i < this._events[event].listeners.length; i += 1) {
-                if (this._events[event].listeners[i].fn === fn) {
-                    this._events[event].listeners.splice(i, 1);
-                    return;
-                }
-            }
-        },
-        allOff: function () {
-            this._events = {};
-        }
-    });
-
-    Entropy.EventEmitter = EventEmitter;
-
-})(root);
-
-
-(function (Entropy) {
-    "use strict";
     
     /**
      * Linked list conctructor.
@@ -919,122 +1510,234 @@ var root = {};
 (function (Entropy) {
     "use strict";
 
+    var Utils = Entropy.Utils;
+    var EventEmitter = Entropy.EventEmitter;
+
     function Entity (name, game) {
         this.id = 0;
         this.name = name;
+        this.pattern = {};
         this.engine = game.engine;
         this.game = game;
         this.components = {};
         this.recycled = false;
+        this.bitset = new BitSet(100);
 
-        this.states = {
-            default: {
-                onEnter: function () {},
-                onExit: function () {}
-            }
-        };
+        this._inFinalState = false;
+        this._stateChanges = [];
+        this._stateObject = {};
+        this._currentStates = [];
 
-        this.current_state = "default";
+        this.engine.on("engine:updateFinished", this._applyStateChanges, this);
     }
 
-    var p = Entity.prototype;
+    Utils.extend(Entity.prototype, {
+        add: function (name) {
+            var args = [];
 
-    p.add = function (name) {
-        var args = [];
+            if (arguments.length > 1) {
+                args = Utils.slice(arguments, 1);
+            }
 
-        if (arguments.length > 1) {
-            args = Array.prototype.slice.call(arguments, 1);
-        }
+            var lowercase_name = name.toLowerCase();
 
-        var lowercase_name = name.toLowerCase();
-
-        var component_pattern = this.engine.getComponentPattern(name);
-    
-        if (!this.components.hasOwnProperty(lowercase_name)) {
-            this.components[lowercase_name] = this.engine.getNewComponent(name);
-        } else {
-            this.components[lowercase_name].deleted = false;
-        }
-
-        component_pattern.initialize.apply(
-            this.components[lowercase_name],
-            args
-        );
-
-        this.engine.setComponentsIndex(this.id, this.components[lowercase_name].id);
-
-        return this;
-    };
-
-    p.remove = function (name, soft_delete) {
-        var lowercase_name = name.toLowerCase();
-        
-        if (soft_delete && this.components[lowercase_name].deleted) {
-            //nothing to soft delete
-            return this;
-        }
-
-        if (this.components.hasOwnProperty(lowercase_name)) {
             var component_pattern = this.engine.getComponentPattern(name);
-
-            if (!soft_delete) {
-                this.engine.addComponentToPool(name, this.components[lowercase_name]);
-
-                delete this.components[lowercase_name];
+        
+            if (!(lowercase_name in this.components)) {
+                this.components[lowercase_name] = this.engine.getNewComponent(name);
             } else {
-                this.components[lowercase_name].deleted = true;
+                this.components[lowercase_name].deleted = false;
             }
 
-            this.engine.unsetComponentsIndex(this.id, this.components[lowercase_name].id);
-        }
+            component_pattern.initialize.apply(
+                this.components[lowercase_name],
+                args
+            );
 
-        return this;
-    };
+            this.bitset.set(this.components[lowercase_name].bit);
 
-    p.removeAllComponents = function (soft_delete) {
-        for (var lowercase_name in this.components) {
-            if (this.components.hasOwnProperty(lowercase_name)) {
-                this.remove(this.components[lowercase_name].name, soft_delete);
+            //this.engine.setComponentsIndex(this.id, this.components[lowercase_name].id);
+
+            return this;
+        },
+
+        remove: function (name, soft_delete) {
+            var lowercase_name = name.toLowerCase();
+            
+            if (soft_delete && this.components[lowercase_name].deleted) {
+                //nothing to soft delete
+                return this;
+            }
+
+            if (lowercase_name in this.components) {
+                var component_pattern = this.engine.getComponentPattern(name);
+
+                if (!soft_delete) {
+                    this.engine.addComponentToPool(name, this.components[lowercase_name]);
+
+                    delete this.components[lowercase_name];
+                } else {
+                    this.components[lowercase_name].deleted = true;
+                }
+
+                this.bitset.clear(this.components[lowercase_name].bit);
+
+                //this.engine.unsetComponentsIndex(this.id, this.components[lowercase_name].id);
+            }
+
+            return this;
+        },
+
+        removeAllComponents: function (soft_delete) {
+            for (var lowercase_name in this.components) {
+                if (this.components.hasOwnProperty(lowercase_name)) {
+                    this.remove(this.components[lowercase_name].name, soft_delete);
+                }
+            }
+
+            return this;
+        },
+
+        setId: function (id) {
+            this.id = id;
+        },
+        getPattern: function () {
+            return this.pattern;
+        },
+        setPattern: function (pattern) {
+            this.pattern = pattern;
+        },
+
+        setRecycled: function () {
+            this.recycled = true;
+        },
+
+        addState: function (name, obj) {
+            if (!this.states.hasOwnProperty(name)) {
+                this.states[name] = obj;
+            } else {
+                app.Game.warning("such state already exists.");
+            }
+
+            return this;
+        },
+
+        enter: function (name) {
+            if (this._inFinalState) {
+                Entropy.log("entity " + this.name + " is in its final state.");
+                return this;
+            }
+
+            var args = Utils.slice(arguments, 1);
+
+            if (this.pattern.states && !this.pattern.states[name]) {
+                Entropy.warning("there is no state " + name + " for entity " + this.name);
+                return this;
+            }
+
+            var pattern = this.pattern.states[name];
+
+            if (pattern.excluding) {
+                this._exitAllStates();
+            }
+
+            this._stateChanges.push({
+                name: name,
+                action: "enter",
+                args: args
+            });
+
+            return this;
+        },
+        exit: function (name) {
+            if (this._inFinalState) {
+                Entropy.warning("entity " + this.name + " is in its final state.");
+
+                return this;
+            }
+
+            if (!this.in(name)) {
+                Entropy.warning("entity " + this.name + " is not in state " + name + ". No exiting required.");
+
+                return this;
+            }
+
+            var args = Utils.slice(arguments, 1);
+
+            this._stateChanges.push({
+                name: name,
+                action: "exit",
+                args: args
+            });
+
+            return this;
+        },
+        in: function () {
+            if (arguments.length === 0) {
+                return false;
+            }
+
+            var states = Utils.slice(arguments, 0);
+
+            for (var i = states.length - 1; i > -1; i--) {
+                var state = states[i];
+                if (this._currentStates.indexOf(state) === -1) {
+                    return false;
+                }
+            }
+
+            return true;
+        },
+        _getStatePattern: function (name) {
+            return this.engine._getStatePattern(this.name, name);
+        },
+        _exitAllStates: function () {
+            this._currentStates.forEach(function (state) {
+                this.exit(this.state);
+            }, this);
+
+            return this;
+        },
+        _applyStateChanges: function () {
+
+            var change;
+
+            while (change = this._stateChanges.shift()) {
+                if (this._inFinalState) {
+                    return;
+                }
+
+                if ("states" in this.pattern && change.name in this.pattern.states) {
+                    if (
+                        change.action === "enter" && this.in(change.name) ||
+                        change.action === "exit" && !this.in(change.name)
+                    ) {
+                        continue;
+                    }
+
+                    var pattern = this.pattern.states[change.name];
+
+                    this._stateObject[change.name] = this._stateObject[change.name] || {};
+
+                    change.args.unshift(this._stateObject[change.name]);
+
+                    console.log("enter");
+                    pattern[change.action] && pattern[change.action].apply(this, change.args);
+
+                    if (change.action === "enter") {
+                        this._currentStates.push(change.name);
+                    } else if (change.action === "exit") {
+                        this._currentStates.splice(this._currentStates.indexOf(change.name), 1);
+                        delete this._stateObject[change.name];
+                    }
+
+                    if (pattern.final) {
+                        this._inFinalState = true;
+                    }
+                }
             }
         }
-
-        return this;
-    };
-
-    p.setId = function (id) {
-        this.id = id;
-    };
-
-    p.setRecycled = function () {
-        this.recycled = true;
-    };
-
-    p.addState = function (name, obj) {
-        if (!this.states.hasOwnProperty(name)) {
-            this.states[name] = obj;
-        } else {
-            app.Game.warning("such state already exists.");
-        }
-
-        return this;
-    };
-
-    p.state = function (name) {
-        var args = [];
-
-        if (arguments.length > 1) {
-            args = Array.prototype.slice.call(arguments, 1);
-        }
-
-        this.states[this.current_state].onExit.apply(
-            this.states[this.current_state],
-            args);
-
-        this.current_state = name;
-
-        return this;
-    };
-
+    });
 
     Entropy.Entity = Entity;
 
@@ -1042,7 +1745,7 @@ var root = {};
 
 (function (Entropy) {
     var Entity = Entropy.Entity;
-
+    var Utils = Entropy.Utils;
     /**
      * Internal node constructor.
      * @param {any} data any type of data, in most cases an Entity instance
@@ -1152,12 +1855,12 @@ var root = {};
          */
         iterate: function (fn, binding) {
             binding = binding || (function () { return this; })();
+            var args = Utils.slice(arguments, 2);
 
             var node = this.head;
 
             while (node) {
-
-                fn.call(binding, node.data, node.data.components, node, this);
+                 fn.call(binding, node.data, node.data.components, node, this);
 
                 if (this.break_iteration) break;
 
@@ -1295,7 +1998,7 @@ var root = {};
 
     Utils.extend(Game.prototype, {
         changeState: function (name) {
-            var args = Utils.slice.call(arguments, 1);
+            var args = Utils.slice(arguments, 1);
 
             var next_state = _states[name];
 
@@ -1374,10 +2077,13 @@ var root = {};
     function Engine (game) {
         this.game = game;
 
-        this._greatest_entity_id = 0;
-        this._entity_ids_to_reuse = [];
+        this._greatestEntityId = 0;
+        this._entityIdsToReuse = [];
         this._entities = [];
         this._entitiesCount = 0;
+
+        this._searchingBitSet = new BitSet(100);
+        this._excludingBitSet = new BitSet(100);
 
         this._componentsIndex = [];
         this._componentsPool = new Pool();
@@ -1406,7 +2112,7 @@ var root = {};
         }*/
         EventEmitter.call(this);
 
-        this.on("updateFinished", this._removeMarkedEntities, this);
+        this.on("engine:updateFinished", this._removeMarkedEntities, this);
     }
 
     Engine.Component = function (component) {
@@ -1422,10 +2128,10 @@ var root = {};
             Entropy.Game.error("Entropy: you can't specify same component twice.");
         }
 
-        _componentPatterns[component.name] = [
-            _next_component_id,
-            component
-        ];
+        _componentPatterns[component.name] = {
+            bit: _next_component_id,
+            pattern: component
+        };
 
         _next_component_id += 1;
     };
@@ -1470,28 +2176,26 @@ var root = {};
             return this._componentsPool.size();
         },
         getComponentPattern: function (name) {
-            return _componentPatterns[name][1];
+            return _componentPatterns[name].pattern;
         },
         getNewComponent: function (name) {
-            var id = _componentPatterns[name][0];
+            var bit = _componentPatterns[name].bit;
 
-            if (this._componentsPool.has(id)) {
-                var component = this._componentsPool.pop(id);
+            if (this._componentsPool.has(bit)) {
+                var component = this._componentsPool.pop(bit);
                 component.deleted = false;
 
                 return component;
             } else {
                 return {
-                    id: id,
+                    bit: bit,
                     name: name,
                     deleted: false
                 };
             }
         },
         addComponentToPool: function (name, obj) {
-            var id = _componentPatterns[name][0];
-
-            return this._componentsPool.push(id, obj);
+            return this._componentsPool.push(_componentPatterns[name].bit, obj);
         },
         setComponentsIndex: function (entityId, componentId) {
             this._componentsIndex[entityId][componentId] = true;
@@ -1500,7 +2204,7 @@ var root = {};
             this._componentsIndex[entityId][componentId] = false;
         },
         create: function (name) {
-            var args = Utils.slice.call(arguments, 1);
+            var args = Utils.slice(arguments, 1);
             args.unshift(this.game);
 
             var entity = this._getNewEntity(name);
@@ -1514,37 +2218,27 @@ var root = {};
             return this;
         },
         remove: function (entity) {
-            var args;
-            var id = entity.id;
-            var f, e_f_id;
-            var families = this._getFamiliesOfEntity(entity.name);
-
             //already removed
-            if (typeof this._entities[id] === "undefined") {          
+            if (Utils.isUndefined(this._entities[entity.id])) {          
                 return;
             }
 
-            args = Utils.slice.call(arguments, 2);
+            var args = Utils.slice(arguments, 2);
             args.unshift(this.game);
 
-            for (var i = 0, max = families.length; i < max; i += 1) {
-                f = families[i];
-                
-                this._families[f].remove(entity);
-            }
-
-            var pattern = this._getEntityPattern(entity.name);
+            var pattern = entity.getPattern();
 
             pattern.remove && pattern.remove.apply(entity, args);
 
+            this._removeEntityFromFamilies(entity);
             entity.removeAllComponents(true);
 
             this._entitiesPool.push(entity.name, entity);
 
-            delete this._entities[id];
-            delete this._entity_to_family_mapping[id];
+            delete this._entities[entity.id];
+            delete this._entity_to_family_mapping[entity.id];
 
-            this._entity_ids_to_reuse.push(id);
+            this._entityIdsToReuse.push(entity.id);
 
             this._entitiesCount -= 1;
 
@@ -1556,13 +2250,13 @@ var root = {};
                     this.remove(entity);
                 }, this);
             } else {
-                Entropy.Game.warning("entities couldn't be removed due to engine's still running.");
+                Entropy.Game.warning("entities couldn't be removed because engine's still running.");
             }
 
             return this;
         },
-        markForRemoval: function (e) {
-            this._entitiesToRemove.push(e);
+        markForRemoval: function (entity) {
+            this._entitiesToRemove.push(entity);
         },
         getEntity: function (id) {
             if (!Utils.isUndefined(this._entities[id])) {
@@ -1571,34 +2265,40 @@ var root = {};
                 return null;
             }
         },
-        getEntitiesWith: function (c_array) {
-            var e_matched = [];
-            var i, max1, max2;
-            var entity_id, c_id, found;
+        getEntitiesWith: function (components) {
+            var matchedEntities = [];
 
-            c_array = c_array.map(function (name) {
-                return _componentPatterns[name][0];
-            });
+            this._searchingBitSet.clear();
+            this._excludingBitSet.clear();
 
-            max1 = this._componentsIndex.length;
-            for (entity_id = 0; entity_id < max1; entity_id += 1) {
-                found = 0;
+            if (!Utils.isArray(components) && Utils.isObject(components)) {
+                components.without && components.without.forEach(function (component) {
+                    this._excludingBitSet.set(_componentPatterns[component].bit);
+                }, this);
 
-                max2 = c_array.length;
-                for (i = 0; i < max2; i += 1) {
-                    c_id = c_array[i];
+                components = components.with;
+            }
 
-                    if (this._componentsIndex[entity_id][c_id]) {
-                        found += 1;
-                    }
-                }
+            if (Utils.isArray(components)) {
+                components.forEach(function (component) {
+                    this._searchingBitSet.set(_componentPatterns[component].bit);
+                }, this);
+            }
 
-                if (found === c_array.length) {
-                    e_matched.push(this._entities[entity_id]); //copying temp array
+            for (var entityId = 0, max = this._entities.length; entityId < max; entityId += 1) {
+                if (
+                    !Utils.isUndefined(this._entities[entityId]) &&
+                    this._searchingBitSet.subsetOf(this._entities[entityId].bitset) &&
+                    this._excludingBitSet.and(this._entities[entityId].bitset).isEmpty()
+                ) {
+                    matchedEntities.push(this._entities[entityId]);
                 }
             }
 
-            return e_matched;
+            return matchedEntities;
+        },
+        getEntitiesByName: function (names) {
+
         },
         getAllEntities: function () {
             return this._entities.map(function (entity) {
@@ -1617,7 +2317,7 @@ var root = {};
             }
         },
         addSystem: function (name, priority) {
-            var args = Utils.slice.call(arguments, 2);
+            var args = Utils.slice(arguments, 2);
             var pattern = _systemPatterns[name];
 
             var system = {};
@@ -1642,7 +2342,7 @@ var root = {};
         },
         removeSystem: function (system) {
             if ( ! this.isUpdating()) {
-                var args = Utils.slice.call(arguments, 1);
+                var args = Utils.slice(arguments, 1);
                 var pattern = _systemPatterns[system.name];
 
                 pattern.remove && pattern.remove.apply(system, args);
@@ -1658,6 +2358,12 @@ var root = {};
             }
 
             return this;
+        },
+        clear: function () {
+            this.once("engine:updateFinished", function (e) {
+                this.removeAllSystems();
+                this.removeAllEntities();
+            }, this);
         },
         isSystemActive: function (name) {
             var node = this._systems.head;
@@ -1689,7 +2395,7 @@ var root = {};
 
             this._afterUpdate(delta, event);
 
-            this.emit("updateFinished", null);
+            this.emit("engine:updateFinished", null);
         },
         _beforeUpdate: function (delta, event) {
             var node = this._systems.head;
@@ -1714,12 +2420,6 @@ var root = {};
 
             this._entitiesToRemove.length = 0;
         },
-        clear: function () {
-            this.once("updateFinished", function (e) {
-                this.removeAllSystems();
-                this.removeAllEntities();
-            }, this);
-        },
         _createComponentsIndex: function (entityId) {
             this._componentsIndex[entityId] = [];
 
@@ -1728,7 +2428,7 @@ var root = {};
             }
         },
         _addEntityToFamilies: function (entity) {
-            var families =  this._getFamiliesOfEntity(entity.name);
+            var families = this._getFamiliesOfEntity(entity.name);
 
             for (var i = 0, max = families.length; i < max; i += 1) {
                 var family = families[i];
@@ -1738,6 +2438,15 @@ var root = {};
                 }
 
                 this._families[family].append(entity);
+            }
+        },
+        _removeEntityFromFamilies: function (entity) {
+            var families = this._getFamiliesOfEntity(entity.name);
+
+            for (var i = 0, max = families.length; i < max; i += 1) {
+                var family = families[i];
+                
+                this._families[family].remove(entity);
             }
         },
         _getFamiliesOfEntity: function(name) {
@@ -1757,11 +2466,11 @@ var root = {};
         _getIdForNewEntity: function () {
             var id;
 
-            if (this._entity_ids_to_reuse.length !== 0) {
-                id = this._entity_ids_to_reuse.pop();
+            if (this._entityIdsToReuse.length !== 0) {
+                id = this._entityIdsToReuse.pop();
             } else {
-                id = this._greatest_entity_id;
-                this._greatest_entity_id += 1;
+                id = this._greatestEntityId;
+                this._greatestEntityId += 1;
 
                 this._createComponentsIndex(id);
             }
@@ -1769,7 +2478,13 @@ var root = {};
             return id;
         },
         _getNewEntity: function (name) {
-            var entity = this._entitiesPool.pop(name) || new Entity(name, this.game);
+            var entity = this._entitiesPool.pop(name);
+
+            if (!entity) {
+                entity = new Entity(name, this.game);   
+                entity.setPattern(this._getEntityPattern(name));
+            }
+
             entity.setId(this._getIdForNewEntity());
 
             return entity;
@@ -1903,16 +2618,16 @@ var root = {};
         this.game = game;
 
         for (var i = 0; i < 256; i++) {
-                _pressed_keys[i] = false;
-            }
+            _pressed_keys[i] = false;
+        }
 
-            window.addEventListener("keydown", function (e) {
-                _pressed_keys[e.keyCode] = true;
-            });
+        window.addEventListener("keydown", function (e) {
+            _pressed_keys[e.keyCode] = true;
+        });
 
-            window.addEventListener("keyup", function (e) {
-                _pressed_keys[e.keyCode] = false;
-            });
+        window.addEventListener("keyup", function (e) {
+            _pressed_keys[e.keyCode] = false;
+        });
     }
 
     Input.prototype = {

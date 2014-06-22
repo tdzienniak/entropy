@@ -1,6 +1,6 @@
 (function (Entropy) {
     var Entity = Entropy.Entity;
-
+    var Utils = Entropy.Utils;
     /**
      * Internal node constructor.
      * @param {any} data any type of data, in most cases an Entity instance
@@ -110,12 +110,12 @@
          */
         iterate: function (fn, binding) {
             binding = binding || (function () { return this; })();
+            var args = Utils.slice(arguments, 2);
 
             var node = this.head;
 
             while (node) {
-
-                fn.call(binding, node.data, node.data.components, node, this);
+                 fn.call(binding, node.data, node.data.components, node, this);
 
                 if (this.break_iteration) break;
 

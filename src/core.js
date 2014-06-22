@@ -1,5 +1,8 @@
 (function (Entropy) {
 
+    var Utils = Entropy.Utils;
+    var EventEmitter = Entropy.EventEmitter;
+    
     var VERSION = 0.1;
 
     Entropy.getVersion = function () {
@@ -33,5 +36,8 @@
             });
         }
     };
+
+    EventEmitter.call(Entropy);
+    Utils.extend(Entropy, EventEmitter.prototype);
 
 })(root);

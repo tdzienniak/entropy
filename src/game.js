@@ -115,7 +115,7 @@
 
     Utils.extend(Game.prototype, {
         changeState: function (name) {
-            var args = Utils.slice.call(arguments, 1);
+            var args = Utils.slice(arguments, 1);
 
             var next_state = _states[name];
 

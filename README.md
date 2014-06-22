@@ -28,3 +28,5 @@ Getting started with Entropy is rather easy, because its structure is very simpl
     * Radius
 
  Components ar just data, they don't describe any functionality.
+
+ 

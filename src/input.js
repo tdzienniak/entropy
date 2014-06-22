@@ -113,16 +113,16 @@
         this.game = game;
 
         for (var i = 0; i < 256; i++) {
-                _pressed_keys[i] = false;
-            }
+            _pressed_keys[i] = false;
+        }
 
-            window.addEventListener("keydown", function (e) {
-                _pressed_keys[e.keyCode] = true;
-            });
+        window.addEventListener("keydown", function (e) {
+            _pressed_keys[e.keyCode] = true;
+        });
 
-            window.addEventListener("keyup", function (e) {
-                _pressed_keys[e.keyCode] = false;
-            });
+        window.addEventListener("keyup", function (e) {
+            _pressed_keys[e.keyCode] = false;
+        });
     }
 
     Input.prototype = {

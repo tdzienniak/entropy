@@ -5,12 +5,13 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
 
         entropy: [
+            "src/vendor/bitset.js",
             "src/intro.js",
-            "src/core.js",
             "src/utils.js",
+            "src/eventemitter.js",
+            "src/core.js",
             "src/easing.js",
             "src/vector.js",
-            "src/eventemitter.js",
             "src/orderedlinkedlist.js",
             "src/pool.js",
             "src/ticker.js",
