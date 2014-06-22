@@ -5,20 +5,26 @@
     
     var VERSION = 0.1;
 
+    Entropy.DEBUG = true;
+
     Entropy.getVersion = function () {
         return "v" + VERSION;
     };
 
     Entropy.log = function (message) {
-        console.log(["Entropy: ", message].join(" "));
+        if (Entropy.DEBUG) {
+            console.log(["Entropy:", message].join(" "));
+        }
     };
 
-    Entropy.error = function (message) {
-        throw new Error(["Entropy: ", message].join(" "));
+    Entropy.error = function (message) { 
+        throw new Error(["Entropy:", message].join(" "));
     };
 
     Entropy.warning = function (message) {
-        console.warn(["Entropy: ", message].join(" "));
+        if (Entropy.DEBUG) {
+            console.warn(["Entropy:", message].join(" "));
+        }
     };
 
     Entropy.Const = function (name, value) {
