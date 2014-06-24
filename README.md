@@ -21,12 +21,18 @@ Getting started with Entropy is rather easy, because its structure is very simpl
  * Ball
 
   Each Entity is composed of Components.
+
 - Component is an aspect of an Entity. For example, _Asteroid_ entity can be composed of following components:
-    * Position (x, y)
-    * Velocity
-    * Bitmap
-    * Radius
+ * Position (x, y)
+ * Velocity
+ * Bitmap
+ * Radius
 
  Components ar just data, they don't describe any functionality.
 
- 
+So, where the functionality goes? It goes to things called __Systems__. __System__ is a piece of code that takes some data (entities with their components) and do something with it.
+For example, it can take all entities with _Position_ and _Velocity_ components and compute new position for each entity. 
+
+Ok, enough talking, let's see some code.
+
+1. [Basics](sss)
