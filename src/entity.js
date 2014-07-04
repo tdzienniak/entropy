@@ -7,12 +7,15 @@
     function Entity (name, game) {
         this.id = 0;
         this.name = name;
-        this.pattern = {};
+        
         this.engine = game.engine;
         this.game = game;
+        
         this.components = {};
+
         this.recycled = false;
-        this.bitset = new BitSet(100);
+        this.bitset = new BitSet(Entropy.MAX_COMPONENTS_COUNT);
+        this.pattern = {};
 
         this._inFinalState = false;
         this._stateChanges = [];
@@ -47,8 +50,6 @@
 
             this.bitset.set(this.components[lowercase_name].bit);
 
-            //this.engine.setComponentsIndex(this.id, this.components[lowercase_name].id);
-
             return this;
         },
 
@@ -73,10 +74,13 @@
 
                 this.bitset.clear(this.components[lowercase_name].bit);
 
-                //this.engine.unsetComponentsIndex(this.id, this.components[lowercase_name].id);
             }
 
             return this;
+        },
+
+        has: function (name) {
+            return name.toLowerCase() in this.components;
         },
 
         removeAllComponents: function (soft_delete) {
@@ -98,24 +102,12 @@
         setPattern: function (pattern) {
             this.pattern = pattern;
         },
-
         setRecycled: function () {
             this.recycled = true;
         },
-
-        addState: function (name, obj) {
-            if (!this.states.hasOwnProperty(name)) {
-                this.states[name] = obj;
-            } else {
-                app.Game.warning("such state already exists.");
-            }
-
-            return this;
-        },
-
         enter: function (name) {
             if (this._inFinalState) {
-                Entropy.log("entity " + this.name + " is in its final state.");
+                Entropy.log("entity ", this.name, " is in its final state.");
                 return this;
             }
 

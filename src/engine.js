@@ -22,37 +22,87 @@
         this._entities = [];
         this._entitiesCount = 0;
 
-        this._searchingBitSet = new BitSet(100);
-        this._excludingBitSet = new BitSet(100);
+        /**
+         * BitSet object used as bitmask when searching entities (with components).
+         * @type {BitSet}
+         */
+        this._searchingBitSet = new BitSet(Entropy.MAX_COMPONENTS_COUNT);
 
-        this._componentsIndex = [];
+        /**
+         * BitSet object used as bitmask when searching entities (without components).
+         * @type {BitSet}
+         */
+        this._excludingBitSet = new BitSet(Entropy.MAX_COMPONENTS_COUNT);
+
+        /**
+         * Pool with deleted components. For GC friendliness.
+         * @type {Pool}
+         */
         this._componentsPool = new Pool();
 
+        /**
+         * Pool with deleted entities. For GC friendliness.
+         * @type {Pool}
+         */
         this._entitiesPool = new Pool();
 
         this._systems = new OrderedLinkedList();
 
         this._families = {
-            none: new Family("none")
+            NONE: new Family("NONE")
         };
 
-        this._entity_to_family_mapping = [];
+        /**
+         * Pool with functional families - used as generic linked list containers.
+         * @type {Array}
+         */
+        this._functionalFamiliesPool = [];
 
+        /**
+         * Used functional families. This array is cleared after each update. Its members are transfered to
+         * functional families pool.
+         * @type {Array}
+         */
+        this._usedFunctionalFamilies = [];
+
+        /**
+         * Initializing functional families pool.
+         */
+        for (var i = 0; i < 20; i++) {
+            this._functionalFamiliesPool.push(new Family('FUNC_' + i));
+        }
+
+        /**
+         * Entities marked for removal at the end of 'update' loop.
+         * @type {Array}
+         */
         this._entitiesToRemove = [];
 
-        this.BLANK_FAMILY = new Family("empty");
+        /**
+         * Placeholder family, currently not used.
+         * @type {Family}
+         */
+        this.BLANK_FAMILY = new Family("BLANK_FAMILY");
 
+        /**
+         * Flag indicating whether engine is updating (is in its 'update' loop) or not.
+         * @type {Boolean}
+         */
         this._updating = false;
 
+        /*
+         * Setting this flag to 'false' prevent further engine modifications (adding entities, components etc.).
+         */
         _can_modify = false;
 
-        //initializing component pool
-        /*for (var i = 0; i < _next_component_id; i += 1) {
-            this._componentsPool[i] = [];
-        }*/
+
         EventEmitter.call(this);
 
+        /*
+         * Adding standard event listeners.
+         */
         this.on("engine:updateFinished", this._removeMarkedEntities, this);
+        this.on("engine:updateFinished", this._transferFunctionalFamilies, this);
     }
 
     Engine.Component = function (component) {
@@ -137,12 +187,6 @@
         addComponentToPool: function (name, obj) {
             return this._componentsPool.push(_componentPatterns[name].bit, obj);
         },
-        setComponentsIndex: function (entityId, componentId) {
-            this._componentsIndex[entityId][componentId] = true;
-        },
-        unsetComponentsIndex: function (entityId, componentId) {
-            this._componentsIndex[entityId][componentId] = false;
-        },
         create: function (name) {
             var args = Utils.slice(arguments, 1);
             args.unshift(this.game);
@@ -176,7 +220,6 @@
             this._entitiesPool.push(entity.name, entity);
 
             delete this._entities[entity.id];
-            delete this._entity_to_family_mapping[entity.id];
 
             this._entityIdsToReuse.push(entity.id);
 
@@ -247,10 +290,12 @@
         },
         getFamily: function (family) {
             if (!Utils.isString(family)) {
-                Entropy.Game.error("Family name must be a string.");
+                Entropy.error("family name must be a string.");
             }
 
             if (family in this._families) {
+                this._families[family].reset();
+
                 return this._families[family];
             } else {
                 return this.BLANK_FAMILY;
@@ -360,13 +405,6 @@
 
             this._entitiesToRemove.length = 0;
         },
-        _createComponentsIndex: function (entityId) {
-            this._componentsIndex[entityId] = [];
-
-            for (var i = 0; i < _next_component_id; i += 1) {
-                this._componentsIndex[entityId][i] = false;
-            }
-        },
         _addEntityToFamilies: function (entity) {
             var families = this._getFamiliesOfEntity(entity.name);
 
@@ -375,6 +413,7 @@
 
                 if (!(family in this._families)) {
                     this._families[family] = new Family(family);
+                    //this.on('engine:updateFinished', this._families[family].reset, this._families[family]);
                 }
 
                 this._families[family].append(entity);
@@ -433,11 +472,20 @@
             if (name in _entityPatterns) {
                 return _entityPatterns[name].pattern;
             } else {
-                Entropy.Game.error(["pattern for entity", name, "does not exist."].join(" "));
+                Entropy.error(["pattern for entity", name, "does not exist."].join(" "));
             }
+        },
+        _transferFunctionalFamilies: function () {
+            var usedFunctionalFamily;
+
+            while (usedFunctionalFamily = this._usedFunctionalFamilies.pop()) {
+                usedFunctionalFamily.clear();
+                this._functionalFamiliesPool.push(usedFunctionalFamily);
+            }
+
+            return this;
         }
     });
-
 
     Entropy.Engine = Engine;
 

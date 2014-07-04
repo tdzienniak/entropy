@@ -41,6 +41,8 @@
          * @type {Boolean}
          */
         this.break_iteration = false;
+
+        this._current_node = this.head;
     }
 
     Family.prototype = {
@@ -123,6 +125,38 @@
             }
 
             this.break_iteration = false;
+        },
+        reset: function () {
+            this._currentNode = this.head;
+
+            return this;
+        },
+        next: function () {
+            if (this._currentNode === null) {
+                return null;
+            }
+
+            var returnNode = this._currentNode;
+            this._currentNode = this._currentNode.next;
+
+            return returnNode;
+        },
+        components: function (name) {
+            if (this._currentNode === null) {
+                return null;
+            }
+
+            if (typeof name === "string") {
+                if (name in this._currentNode.data.components) {
+                    return this._currentNode.data.components[name];
+                } else {
+                    Entropy.warning(["component", name, "is not present in entity", this._currentNode.data.name, "(", this._currentNode.data.id, ")"].join(" "));
+
+                    return null;
+                }
+            } else {
+                return this._currentNode.data.components;
+            }
         },
         breakIteration: function () {
             this.break_iteration = true;

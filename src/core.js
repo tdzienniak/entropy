@@ -6,24 +6,25 @@
     var VERSION = 0.1;
 
     Entropy.DEBUG = true;
+    Entropy.MAX_COMPONENTS_COUNT = 100;
 
     Entropy.getVersion = function () {
         return "v" + VERSION;
     };
 
-    Entropy.log = function (message) {
+    Entropy.log = function () {
         if (Entropy.DEBUG) {
-            console.log(["Entropy:", message].join(" "));
+            console.log(["Entropy:"].concat(Utils.slice(arguments)).join(" "));
         }
     };
 
-    Entropy.error = function (message) { 
-        throw new Error(["Entropy:", message].join(" "));
+    Entropy.error = function () { 
+        throw new Error(["Entropy:"].concat(Utils.slice(arguments)).join(" "));
     };
 
-    Entropy.warning = function (message) {
+    Entropy.warning = function () {
         if (Entropy.DEBUG) {
-            console.warn(["Entropy:", message].join(" "));
+            console.warn(["Entropy:"].concat(Utils.slice(arguments)).join(" "));
         }
     };
 

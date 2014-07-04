@@ -701,20 +701,26 @@ var root = {};
     
     var VERSION = 0.1;
 
+    Entropy.DEBUG = true;
+
     Entropy.getVersion = function () {
         return "v" + VERSION;
     };
 
     Entropy.log = function (message) {
-        console.log(["Entropy: ", message].join(" "));
+        if (Entropy.DEBUG) {
+            console.log(["Entropy:", message].join(" "));
+        }
     };
 
-    Entropy.error = function (message) {
-        throw new Error(["Entropy: ", message].join(" "));
+    Entropy.error = function (message) { 
+        throw new Error(["Entropy:", message].join(" "));
     };
 
     Entropy.warning = function (message) {
-        console.warn(["Entropy: ", message].join(" "));
+        if (Entropy.DEBUG) {
+            console.warn(["Entropy:", message].join(" "));
+        }
     };
 
     Entropy.Const = function (name, value) {
@@ -1721,7 +1727,6 @@ var root = {};
 
                     change.args.unshift(this._stateObject[change.name]);
 
-                    console.log("enter");
                     pattern[change.action] && pattern[change.action].apply(this, change.args);
 
                     if (change.action === "enter") {
@@ -1786,6 +1791,8 @@ var root = {};
          * @type {Boolean}
          */
         this.break_iteration = false;
+
+        this._current_node = this.head;
     }
 
     Family.prototype = {
@@ -1868,6 +1875,38 @@ var root = {};
             }
 
             this.break_iteration = false;
+        },
+        reset: function () {
+            this._currentNode = this.head;
+
+            return this;
+        },
+        next: function () {
+            if (this._currentNode === null) {
+                return null;
+            }
+
+            var returnNode = this._currentNode;
+            this._currentNode = this._currentNode.next;
+
+            return returnNode;
+        },
+        components: function (name) {
+            if (this._currentNode === null) {
+                return null;
+            }
+
+            if (typeof name === "string") {
+                if (name in this._currentNode.data.components) {
+                    return this._currentNode.data.components[name];
+                } else {
+                    Entropy.warning(["component", name, "is not present in entity", this._currentNode.data.name, "(", this._currentNode.data.id, ")"].join(" "));
+
+                    return null;
+                }
+            } else {
+                return this._currentNode.data.components;
+            }
         },
         breakIteration: function () {
             this.break_iteration = true;
@@ -2093,26 +2132,60 @@ var root = {};
         this._systems = new OrderedLinkedList();
 
         this._families = {
-            none: new Family("none")
+            NONE: new Family("NONE")
         };
 
-        this._entity_to_family_mapping = [];
+        /**
+         * Pool with functional families - used as generic linked list containers.
+         * @type {Array}
+         */
+        this._functionalFamiliesPool = [];
 
+        /**
+         * Used functional families. This array is cleared after each update. Its members are transfered to
+         * functional families pool.
+         * @type {Array}
+         */
+        this._usedFunctionalFamilies = [];
+
+        /**
+         * Initializing functional families pool.
+         */
+        for (var i = 0; i < 20; i++) {
+            this._functionalFamiliesPool.push(new Family('FUNC_' + i));
+        }
+
+        /**
+         * Entities marked for removal at the end of 'update' loop.
+         * @type {Array}
+         */
         this._entitiesToRemove = [];
 
-        this.BLANK_FAMILY = new Family("empty");
+        /**
+         * Placeholder family, currently not used.
+         * @type {Family}
+         */
+        this.BLANK_FAMILY = new Family("BLANK_FAMILY");
 
+        /**
+         * Flag indicating whether engine is updating (is in its 'update' loop) or not.
+         * @type {Boolean}
+         */
         this._updating = false;
 
+        /*
+         * Setting this flag to 'false' prevent further engine modifications (adding entities, components etc.).
+         */
         _can_modify = false;
 
-        //initializing component pool
-        /*for (var i = 0; i < _next_component_id; i += 1) {
-            this._componentsPool[i] = [];
-        }*/
+
         EventEmitter.call(this);
 
+        /*
+         * Adding standard event listeners.
+         */
         this.on("engine:updateFinished", this._removeMarkedEntities, this);
+        this.on("engine:updateFinished", this._transferFunctionalFamilies, this);
     }
 
     Engine.Component = function (component) {
@@ -2236,7 +2309,6 @@ var root = {};
             this._entitiesPool.push(entity.name, entity);
 
             delete this._entities[entity.id];
-            delete this._entity_to_family_mapping[entity.id];
 
             this._entityIdsToReuse.push(entity.id);
 
@@ -2307,10 +2379,12 @@ var root = {};
         },
         getFamily: function (family) {
             if (!Utils.isString(family)) {
-                Entropy.Game.error("Family name must be a string.");
+                Entropy.error("family name must be a string.");
             }
 
             if (family in this._families) {
+                this._families[family].reset();
+
                 return this._families[family];
             } else {
                 return this.BLANK_FAMILY;
@@ -2435,6 +2509,7 @@ var root = {};
 
                 if (!(family in this._families)) {
                     this._families[family] = new Family(family);
+                    //this.on('engine:updateFinished', this._families[family].reset, this._families[family]);
                 }
 
                 this._families[family].append(entity);
@@ -2495,9 +2570,18 @@ var root = {};
             } else {
                 Entropy.Game.error(["pattern for entity", name, "does not exist."].join(" "));
             }
+        },
+        _transferFunctionalFamilies: function () {
+            var usedFunctionalFamily;
+
+            while (usedFunctionalFamily = this._usedFunctionalFamilies.pop()) {
+                usedFunctionalFamily.clear();
+                this._functionalFamiliesPool.push(usedFunctionalFamily);
+            }
+
+            return this;
         }
     });
-
 
     Entropy.Engine = Engine;
 
