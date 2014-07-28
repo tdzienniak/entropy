@@ -4,49 +4,24 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
 
-        entropy: [
-            "src/vendor/bitset.js",
-            "src/intro.js",
-            "src/utils.js",
-            "src/eventemitter.js",
-            "src/core.js",
-            "src/easing.js",
-            "src/vector.js",
-            "src/orderedlinkedlist.js",
-            "src/pool.js",
-            "src/ticker.js",
-            "src/entity.js",
-            "src/family.js",
-            "src/game.js",
-            "src/engine.js",
-            "src/input.js",
-            "src/outro.js"
-        ],
-
         clean: {
             build: ['build']
         },
 
-        concat: {
-            options: {
-                separator: '\n\n'
-            },
-            build: {
-                // the files to concatenate
-                src: ['<%= entropy %>'],
-                // the location of the resulting JS file
-                dest: 'build/entropy.js'
-          }
-        },
-
-        wrap: {
-            basic: {
-                src: ['build/entropy.js'],
-                dest: 'build/entropy.js',
+        browserify: {
+            standalone: {
+                src: [ './src/entropy.coffee' ],
+                dest: './build/entropy.js',
                 options: {
-                    wrapper: ['(function (global) {\n', '\n})(this);']
+                    transform: ['coffeeify'],
+                    browserifyOptions: {
+                        extensions: [".coffee"]
+                    },
+                    bundleOptions: {
+                        standalone: '<%= pkg.name %>'
+                    }
                 }
-            }
+            },
         },
         
         uglify: {
@@ -59,10 +34,11 @@ module.exports = function(grunt) {
             },
             build: {
                 files: {
-                  'build/entropy.min.js': ['<%= concat.build.dest %>']
+                  'build/entropy.min.js': ['./build/entropy.js']
                 }
             }
         },
+
         qunit: {
             all: ['tests/*.html']
         }
@@ -74,8 +50,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-wrap');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-qunit');
+    grunt.loadNpmTasks('grunt-browserify');
 
     // Default task(s).
-    grunt.registerTask('default', ['clean', 'concat', /*'wrap', */'uglify'/*, /*'qunit'*/]);
+    grunt.registerTask('default', ['clean', 'browserify', /*'wrap', */'uglify'/*, /*'qunit'*/]);
 
 };
