@@ -8,6 +8,7 @@ class Node
 class DoublyLinkedList
     constructor: ->
         @head = @tail = null
+        @_current = @head
 
     append: (data) ->
         if not data?
@@ -62,16 +63,37 @@ class DoublyLinkedList
             return @
 
         if prepend
-            list.tail?.next = @head
+            list.tail.next = @head
             @head.prev = list.tail
             @head = list.head
             list.tail = @tail
         else
-            list.head?.prev = @tail
+            list.head.prev = @tail
             @tail.next = list.head
             @tail = list.tail
             list.head = @head
 
         return @
+
+    remove: (thing) ->
+
+    next: () ->
+        next = @_current?.next
+
+        return @
+
+    current: () -> @_current
+
+    reset: (end=false) ->
+        @_current = if not end then @head else @tail
+
+        return @
+
+    clear: ->
+        @head = @tail = null
+
+        return @
+
+
 
 module.exports = DoublyLinkedList
