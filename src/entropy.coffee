@@ -1,5 +1,6 @@
 Engine = require './core/engine'
 LinkedList = require './collection/doublylinkedlist'
+OrderedLinkedList = require './collection/orderedlinkedlist'
 ###*
  * Welcome message.
 ###
@@ -19,6 +20,7 @@ class Entropy
     @Const: require './utils/const'
     @Engine: Engine
     @LinkedList: LinkedList
+    @OrderedLinkedList: OrderedLinkedList
 
     ###*
      * [constructor description]

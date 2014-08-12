@@ -75,14 +75,60 @@ class DoublyLinkedList
 
         return @
 
-    remove: (thing) ->
+    remove: (thing, byData=false) ->
+        do @reset
 
-    next: () ->
-        next = @_current?.next
+        while node = @next()
+            if byData and thing is node.data or not byData and thing is node
+                nodeToRemove = node
+                break
+
+        if nodeToRemove?
+            if not nodeToRemove.next? and not nodeToRemove.prev?
+                @head = @tail = null
+            else if nodeToRemove is @head
+                nodeToRemove.next?.prev = null
+                @head = nodeToRemove.next
+            else if nodeToRemove is @tail
+                nodeToRemove.prev?.next = null
+                @tail = nodeToRemove.prev
+            else
+                nodeToRemove.next?.prev = nodeToRemove.prev
+                nodeToRemove.prev?.next = nodeToRemove.next
 
         return @
 
+    begin: () ->
+        @_current = @head
+
+        return @
+
+    end: () ->
+        @_current = @tail
+
+        return @
+
+    next: () ->
+        temp = @_current
+        @_current = @_current?.next
+
+        return temp
+
+    prev: () ->
+        temp = @_current
+        @_current = @_current?.prev
+
+        return temp
+
     current: () -> @_current
+
+    iterate: (fn, binding, args...) ->
+        do @reset
+
+        while node = @next()
+            fn.apply(binding, [node, node.data].concat(args))
+
+        return @
 
     reset: (end=false) ->
         @_current = if not end then @head else @tail
