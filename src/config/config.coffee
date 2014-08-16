@@ -3,6 +3,9 @@ type = require '../utils/type'
 DEFAULT_CONFIG =
     debug: false
     max_components_count: 100
+    max_frame_time: 20
+    default_time_factor: 1
+    default_fps: 60
 
 USER_CONFIG = {}
 

@@ -1,8 +1,9 @@
 type = require '../utils/type'
 debug = require '../debug/debug'
+EventEmitter = require './event'
 #config = require '../config/config'
 
-class Engine
+class Engine extends EventEmitter
 	@Component: (obj) ->
 		if type.of obj isnt 'object'
 			debug.error 'Component pattern must be an object'

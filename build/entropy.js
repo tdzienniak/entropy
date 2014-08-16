@@ -258,7 +258,10 @@ type = _dereq_('../utils/type');
 
 DEFAULT_CONFIG = {
   debug: false,
-  max_components_count: 100
+  max_components_count: 100,
+  max_frame_time: 20,
+  default_time_factor: 0.5,
+  default_fps: 60
 };
 
 USER_CONFIG = {};
@@ -282,14 +285,20 @@ module.exports = function(key, value) {
 
 
 
-},{"../utils/type":9}],4:[function(_dereq_,module,exports){
-var Engine, debug, type;
+},{"../utils/type":11}],4:[function(_dereq_,module,exports){
+var Engine, EventEmitter, debug, type,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 type = _dereq_('../utils/type');
 
 debug = _dereq_('../debug/debug');
 
-Engine = (function() {
+EventEmitter = _dereq_('./event');
+
+Engine = (function(_super) {
+  __extends(Engine, _super);
+
   Engine.Component = function(obj) {
     if (type.of(obj !== 'object')) {
       debug.error('Component pattern must be an object');
@@ -306,13 +315,228 @@ Engine = (function() {
 
   return Engine;
 
-})();
+})(EventEmitter);
 
 module.exports = Engine;
 
 
 
-},{"../debug/debug":5,"../utils/type":9}],5:[function(_dereq_,module,exports){
+},{"../debug/debug":7,"../utils/type":11,"./event":5}],5:[function(_dereq_,module,exports){
+var EventEmitter, type,
+  __slice = [].slice;
+
+type = _dereq_('../utils/type');
+
+EventEmitter = (function() {
+  function EventEmitter() {
+    this.events = {};
+  }
+
+  EventEmitter.prototype.on = function(event, fn, binding, once) {
+    var _base;
+    if (!type.of.string(event || !type.of["function"](fn))) {
+      return void 0;
+    }
+    if ((_base = this.events)[event] == null) {
+      _base[event] = [];
+    }
+    this.events[event].push({
+      fn: fn,
+      binding: binding != null ? binding : null,
+      once: once != null ? once : false
+    });
+    return void 0;
+  };
+
+  EventEmitter.prototype.once = function(event, fn, binding) {
+    return this.on(event, fn, binding);
+  };
+
+  EventEmitter.prototype.emit = function() {
+    var args, event;
+    event = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if (!(event in this.events)) {
+      return void 0;
+    }
+    this.events[event] = this.events[event].filter(function(listener) {
+      return (!listener.fn.apply(listener.binding, args)) || (!listener.once);
+    });
+    return void 0;
+  };
+
+  EventEmitter.prototype.trigger = function() {
+    var args;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return this.emit.apply(this, args);
+  };
+
+  EventEmitter.prototype.off = function(event, fn) {
+    if (!type.of.string(event || !event in this.events)) {
+      return void 0;
+    }
+    this.events[event] = this.events[event].filter(function(listener) {
+      return (fn != null) && listener.fn !== fn;
+    });
+    return void 0;
+  };
+
+  return EventEmitter;
+
+})();
+
+module.exports = EventEmitter;
+
+
+
+},{"../utils/type":11}],6:[function(_dereq_,module,exports){
+(function (global){
+var EventEmitter, Ticker, config, raf,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+config = _dereq_('../config/config');
+
+raf = global.requestAnimationFrame;
+
+EventEmitter = _dereq_('./event');
+
+Ticker = (function(_super) {
+  __extends(Ticker, _super);
+
+  function Ticker() {
+    Ticker.__super__.constructor.call(this);
+    this.FPS = config('default_fps');
+    this.MAX_FRAME_TIME = config('max_frame_time');
+    this.TIME_FACTOR = config('default_time_factor');
+    this._paused = false;
+    this._running = false;
+    this._ticks = 0;
+    this._lastTime = 0;
+    this._currentFPS = this.FPS;
+    this._rafId = -1;
+  }
+
+  Ticker.prototype.setFPS = function(fps) {
+    return this.FPS = fps || this.FPS;
+  };
+
+  Ticker.prototype.getCurrentFPS = function() {
+    return Math.round(this._currentFPS);
+  };
+
+  Ticker.prototype.setTimeFactor = function(factor) {
+    return this.TIME_FACTOR = factor || this.TIME_FACTOR;
+  };
+
+  Ticker.prototype.getTicks = function() {
+    return this._ticks;
+  };
+
+
+  /**
+   * Pauses ticker.
+   * 
+   * @return {Boolean} true if paused succesfuly
+   */
+
+  Ticker.prototype.pause = function() {
+    if (!this._running) {
+      return false;
+    }
+    this._paused = true;
+    return true;
+  };
+
+
+  /**
+   * Resumes ticker.
+   * 
+   * @return {Boolean} true if resumed succesfuly
+   */
+
+  Ticker.prototype.resume = function() {
+    if (!this._running) {
+      return false;
+    }
+    this._paused = false;
+    return true;
+  };
+
+  Ticker.prototype.start = function() {
+    if (this._paused) {
+      this.resume();
+    }
+    if (this._running) {
+      return false;
+    }
+    this._rafId = raf(this._tick.bind(this));
+    this.emit('ticker:start');
+    return true;
+  };
+
+  Ticker.prototype.stop = function() {
+    if (this._rafId !== -1) {
+      global.cancelAnimationFrame(this._rafId);
+      this._running = this._paused = false;
+      this.emit('ticker:stop');
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  Ticker.prototype.toggle = function() {
+    if (!this._running) {
+      return false;
+    }
+    this._paused = !this._paused;
+    return true;
+  };
+
+  Ticker.prototype.isPaused = function() {
+    return this._paused;
+  };
+
+  Ticker.prototype.isRunning = function() {
+    return this._running && !this._paused;
+  };
+
+  Ticker.prototype._tick = function(time) {
+    var delta, event;
+    if (time == null) {
+      time = performance.now();
+    }
+    this._rafId = raf(this._tick.bind(this));
+    if (this._paused) {
+      return void 0;
+    }
+    delta = time - this._lastTime;
+    if (delta >= this.MAX_FRAME_TIME) {
+      delta = 1000 / this.FPS;
+    }
+    if (this._ticks % this.FPS === 0) {
+      this._currentFPS = 1000 / delta;
+    }
+    event = {
+      delta: delta * this.TIME_FACTOR,
+      tick: this._ticks,
+      time: time,
+      paused: this._paused
+    };
+    this.emit('ticker:tick', event);
+    return this._ticks += 1;
+  };
+
+  return Ticker;
+
+})(EventEmitter);
+
+module.exports = Ticker;
+
+
+
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"../config/config":3,"./event":5}],7:[function(_dereq_,module,exports){
 var config;
 
 config = _dereq_('../config/config');
@@ -337,8 +561,8 @@ module.exports = {
 
 
 
-},{"../config/config":3}],6:[function(_dereq_,module,exports){
-var Const, Engine, Entropy, LinkedList, OrderedLinkedList;
+},{"../config/config":3}],8:[function(_dereq_,module,exports){
+var Const, Engine, Entropy, LinkedList, OrderedLinkedList, Ticker;
 
 _dereq_('./utils/polyfill');
 
@@ -349,6 +573,8 @@ Engine = _dereq_('./core/engine');
 LinkedList = _dereq_('./collection/doublylinkedlist');
 
 OrderedLinkedList = _dereq_('./collection/orderedlinkedlist');
+
+Ticker = _dereq_('./core/ticker');
 
 
 /**
@@ -368,6 +594,8 @@ Entropy = (function() {
   };
 
   Entropy.Engine = Engine;
+
+  Entropy.Ticker = Ticker;
 
   Entropy.LinkedList = LinkedList;
 
@@ -392,7 +620,7 @@ module.exports = Entropy;
 
 
 
-},{"./collection/doublylinkedlist":1,"./collection/orderedlinkedlist":2,"./core/engine":4,"./utils/const":7,"./utils/polyfill":8}],7:[function(_dereq_,module,exports){
+},{"./collection/doublylinkedlist":1,"./collection/orderedlinkedlist":2,"./core/engine":4,"./core/ticker":6,"./utils/const":9,"./utils/polyfill":10}],9:[function(_dereq_,module,exports){
 var debug, type;
 
 type = _dereq_('./type');
@@ -417,7 +645,7 @@ module.exports = function(key, value) {
 
 
 
-},{"../debug/debug":5,"./type":9}],8:[function(_dereq_,module,exports){
+},{"../debug/debug":7,"./type":11}],10:[function(_dereq_,module,exports){
 (function (global){
 (function() {
   var lastTime, vendor, vendors, _i, _len;
@@ -470,48 +698,48 @@ module.exports = function(key, value) {
 
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],9:[function(_dereq_,module,exports){
+},{}],11:[function(_dereq_,module,exports){
 var toString;
 
-toString = Object.prototype.toString.call;
+toString = Object.prototype.toString;
 
 module.exports = {
   of: {
     undefined: function(thing) {
-      return toString(thing) === '[object Undefined]';
+      return toString.call(thing) === '[object Undefined]';
     },
     "null": function(thing) {
-      return toString(thing) === '[object Null]';
+      return toString.call(thing) === '[object Null]';
     },
     string: function(thing) {
-      return toString(thing) === '[object String]';
+      return toString.call(thing) === '[object String]';
     },
     number: function(thing) {
-      return toString(thing) === '[object Number]';
+      return toString.call(thing) === '[object Number]';
     },
     boolean: function(thing) {
-      return toString(thing) === '[object Boolean]';
+      return toString.call(thing) === '[object Boolean]';
     },
     "function": function(thing) {
-      return toString(thing) === '[object Function]';
+      return toString.call(thing) === '[object Function]';
     },
     array: function(thing) {
-      return toString(thing) === '[object Array]';
+      return toString.call(thing) === '[object Array]';
     },
     date: function(thing) {
-      return toString(thing) === '[object Date]';
+      return toString.call(thing) === '[object Date]';
     },
     regexp: function(thing) {
-      return toString(thing) === '[object RegExp]';
+      return toString.call(thing) === '[object RegExp]';
     },
     object: function(thing) {
-      return toString(thing) === '[object Object]';
+      return toString.call(thing) === '[object Object]';
     }
   }
 };
 
 
 
-},{}]},{},[6])
-(6)
+},{}]},{},[8])
+(8)
 });

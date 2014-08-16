@@ -4,6 +4,7 @@ Const = require './utils/const'
 Engine = require './core/engine'
 LinkedList = require './collection/doublylinkedlist'
 OrderedLinkedList = require './collection/orderedlinkedlist'
+Ticker = require './core/ticker'
 ###*
  * Welcome message.
 ###
@@ -24,6 +25,8 @@ class Entropy
         Const.call(@, key, value)
 
     @Engine: Engine
+
+    @Ticker: Ticker
     
     @LinkedList: LinkedList
     

@@ -21,7 +21,7 @@ class EventEmitter
         @on event, fn, binding
 
     emit: (event, args...) ->
-        if not event of @events
+        if not (event of @events)
             return undefined
 
         @events[event] = @events[event].filter (listener) ->

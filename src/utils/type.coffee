@@ -1,41 +1,24 @@
-toString = Object.prototype.toString.call
-
-# module.exports = (obj) ->
-#     if obj == undefined or obj == null
-#         return String obj
-
-#     classToType =
-#         '[object Boolean]': 'boolean',
-#         '[object Number]': 'number',
-#         '[object String]': 'string',
-#         '[object Function]': 'function',
-#         '[object Array]': 'array',
-#         '[object Date]': 'date',
-#         '[object RegExp]': 'regexp',
-#         '[object Object]': 'object'
-    
-
-#     return classToType[Object.prototype.toString.call(obj)]
+toString = Object.prototype.toString
 
 module.exports =
     of: 
         undefined: (thing) ->
-            return toString(thing) is '[object Undefined]'
+            return toString.call(thing) is '[object Undefined]'
         null: (thing) ->
-            return toString(thing) is '[object Null]'
+            return toString.call(thing) is '[object Null]'
         string: (thing) ->
-            return toString(thing) is '[object String]'
+            return toString.call(thing) is '[object String]'
         number: (thing) ->
-            return toString(thing) is '[object Number]'
+            return toString.call(thing) is '[object Number]'
         boolean: (thing) ->
-            return toString(thing) is '[object Boolean]'
+            return toString.call(thing) is '[object Boolean]'
         function: (thing) ->
-            return toString(thing) is '[object Function]'
+            return toString.call(thing) is '[object Function]'
         array: (thing) ->
-            return toString(thing) is '[object Array]'
+            return toString.call(thing) is '[object Array]'
         date: (thing) ->
-            return toString(thing) is '[object Date]'
+            return toString.call(thing) is '[object Date]'
         regexp: (thing) ->
-            return toString(thing) is '[object RegExp]'
+            return toString.call(thing) is '[object RegExp]'
         object: (thing) ->
-            return toString(thing) is '[object Object]'
+            return toString.call(thing) is '[object Object]'
