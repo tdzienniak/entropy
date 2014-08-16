@@ -1,3 +1,6 @@
+require './utils/polyfill'
+
+Const = require './utils/const'
 Engine = require './core/engine'
 LinkedList = require './collection/doublylinkedlist'
 OrderedLinkedList = require './collection/orderedlinkedlist'
@@ -17,9 +20,13 @@ console.log [
  * 
 ###
 class Entropy
-    @Const: require './utils/const'
+    @Const: (key, value) ->
+        Const.call(@, key, value)
+
     @Engine: Engine
+    
     @LinkedList: LinkedList
+    
     @OrderedLinkedList: OrderedLinkedList
 
     ###*

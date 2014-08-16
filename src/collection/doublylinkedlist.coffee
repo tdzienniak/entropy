@@ -98,6 +98,10 @@ class DoublyLinkedList
 
         return @
 
+    pop: () ->
+
+    shift: () ->
+
     begin: () ->
         @_current = @head
 

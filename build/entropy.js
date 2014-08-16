@@ -118,6 +118,10 @@ DoublyLinkedList = (function() {
     return this;
   };
 
+  DoublyLinkedList.prototype.pop = function() {};
+
+  DoublyLinkedList.prototype.shift = function() {};
+
   DoublyLinkedList.prototype.begin = function() {
     this._current = this.head;
     return this;
@@ -248,6 +252,37 @@ module.exports = OrderedLinkedList;
 
 
 },{}],3:[function(_dereq_,module,exports){
+var DEFAULT_CONFIG, USER_CONFIG, type;
+
+type = _dereq_('../utils/type');
+
+DEFAULT_CONFIG = {
+  debug: false,
+  max_components_count: 100
+};
+
+USER_CONFIG = {};
+
+module.exports = function(key, value) {
+  if (!type.of.string(key)) {
+    return null;
+  }
+  if (value == null) {
+    if (key in USER_CONFIG) {
+      return USER_CONFIG[key];
+    }
+    if (key in DEFAULT_CONFIG) {
+      return DEFAULT_CONFIG[key];
+    }
+    return null;
+  } else {
+    return USER_CONFIG[key] = value;
+  }
+};
+
+
+
+},{"../utils/type":9}],4:[function(_dereq_,module,exports){
 var Engine, debug, type;
 
 type = _dereq_('../utils/type');
@@ -277,17 +312,37 @@ module.exports = Engine;
 
 
 
-},{"../debug/debug":4,"../utils/type":7}],4:[function(_dereq_,module,exports){
+},{"../debug/debug":5,"../utils/type":9}],5:[function(_dereq_,module,exports){
+var config;
+
+config = _dereq_('../config/config');
+
 module.exports = {
+  log: function(message) {
+    if (config('debug')) {
+      return console.log(message);
+    }
+  },
+  warning: function(message) {
+    if (config('debug')) {
+      return console.log(message);
+    }
+  },
   error: function(message) {
-    return console.log(message);
+    if (config('debug')) {
+      return console.log(message);
+    }
   }
 };
 
 
 
-},{}],5:[function(_dereq_,module,exports){
-var Engine, Entropy, LinkedList, OrderedLinkedList;
+},{"../config/config":3}],6:[function(_dereq_,module,exports){
+var Const, Engine, Entropy, LinkedList, OrderedLinkedList;
+
+_dereq_('./utils/polyfill');
+
+Const = _dereq_('./utils/const');
 
 Engine = _dereq_('./core/engine');
 
@@ -308,7 +363,9 @@ console.log.apply(console, ["%c %c %c Entropy 0.1 - Entity System Framework for 
  */
 
 Entropy = (function() {
-  Entropy.Const = _dereq_('./utils/const');
+  Entropy.Const = function(key, value) {
+    return Const.call(this, key, value);
+  };
 
   Entropy.Engine = Engine;
 
@@ -335,23 +392,23 @@ module.exports = Entropy;
 
 
 
-},{"./collection/doublylinkedlist":1,"./collection/orderedlinkedlist":2,"./core/engine":3,"./utils/const":6}],6:[function(_dereq_,module,exports){
+},{"./collection/doublylinkedlist":1,"./collection/orderedlinkedlist":2,"./core/engine":4,"./utils/const":7,"./utils/polyfill":8}],7:[function(_dereq_,module,exports){
 var debug, type;
 
 type = _dereq_('./type');
 
 debug = _dereq_('../debug/debug');
 
-module.exports = function(name, value) {
-  if ((name == null) || type(name) !== 'string') {
-    debug.error('constans name should be non-empty string');
+module.exports = function(key, value) {
+  if ((key == null) || type(key) !== 'string') {
+    debug.error('constans key should be non-empty string');
     return;
   }
-  name = name.toUpperCase();
-  if (name in this) {
-    return debug.error('cannot define same constans twice: %s', name);
+  key = key.toUpperCase();
+  if (key in this) {
+    return debug.error('cannot define same constans twice: %s', key);
   } else {
-    Object.defineProperty(this, name, {
+    Object.defineProperty(this, key, {
       value: value
     });
     return value;
@@ -360,27 +417,101 @@ module.exports = function(name, value) {
 
 
 
-},{"../debug/debug":4,"./type":7}],7:[function(_dereq_,module,exports){
-module.exports = function(obj) {
-  var classToType;
-  if (obj === void 0 || obj === null) {
-    return String(obj);
+},{"../debug/debug":5,"./type":9}],8:[function(_dereq_,module,exports){
+(function (global){
+(function() {
+  var lastTime, vendor, vendors, _i, _len;
+  lastTime = 0;
+  vendors = ['ms', 'moz', 'webkit', 'o'];
+  if (!global.requestAnimationFrame) {
+    for (_i = 0, _len = vendors.length; _i < _len; _i++) {
+      vendor = vendors[_i];
+      global.requestAnimationFrame = global[vendor + 'RequestAnimationFrame'];
+      global.cancelAnimationFrame = global[vendor + 'CancelAnimationFrame'] || global[vendor + 'CancelRequestAnimationFrame'];
+    }
   }
-  classToType = {
-    '[object Boolean]': 'boolean',
-    '[object Number]': 'number',
-    '[object String]': 'string',
-    '[object Function]': 'function',
-    '[object Array]': 'array',
-    '[object Date]': 'date',
-    '[object RegExp]': 'regexp',
-    '[object Object]': 'object'
-  };
-  return classToType[Object.prototype.toString.call(obj)];
+  if (!global.requestAnimationFrame) {
+    global.requestAnimationFrame = function(callback, element) {
+      var currTime, id, timeToCall;
+      currTime = new Date().getTime();
+      timeToCall = Math.max(0, 16 - (currTime - lastTime));
+      id = global.setTimeout((function() {
+        return callback(currTime + timeToCall);
+      }), timeToCall);
+      lastTime = currTime + timeToCall;
+      return id;
+    };
+  }
+  if (!global.cancelAnimationFrame) {
+    global.cancelAnimationFrame = function(id) {
+      return clearTimeout(id);
+    };
+  }
+  return void 0;
+})();
+
+(function() {
+  var nowOffset, _ref;
+  if (global.performance == null) {
+    global.performance = {};
+  }
+  if (global.performance.now == null) {
+    nowOffset = Date.now();
+    if (((_ref = global.performance.timing) != null ? _ref.navigationStart : void 0) != null) {
+      nowOffset = performance.timing.navigationStart;
+    }
+    global.performance.now = function() {
+      return Date.now() - nowOffset;
+    };
+  }
+  return void 0;
+})();
+
+
+
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],9:[function(_dereq_,module,exports){
+var toString;
+
+toString = Object.prototype.toString.call;
+
+module.exports = {
+  of: {
+    undefined: function(thing) {
+      return toString(thing) === '[object Undefined]';
+    },
+    "null": function(thing) {
+      return toString(thing) === '[object Null]';
+    },
+    string: function(thing) {
+      return toString(thing) === '[object String]';
+    },
+    number: function(thing) {
+      return toString(thing) === '[object Number]';
+    },
+    boolean: function(thing) {
+      return toString(thing) === '[object Boolean]';
+    },
+    "function": function(thing) {
+      return toString(thing) === '[object Function]';
+    },
+    array: function(thing) {
+      return toString(thing) === '[object Array]';
+    },
+    date: function(thing) {
+      return toString(thing) === '[object Date]';
+    },
+    regexp: function(thing) {
+      return toString(thing) === '[object RegExp]';
+    },
+    object: function(thing) {
+      return toString(thing) === '[object Object]';
+    }
+  }
 };
 
 
 
-},{}]},{},[5])
-(5)
+},{}]},{},[6])
+(6)
 });

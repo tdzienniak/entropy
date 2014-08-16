@@ -1,15 +1,15 @@
 type = require './type'
 debug = require '../debug/debug'
 
-module.exports = (name, value) ->
-    if not name? or type(name) isnt 'string'
-        debug.error 'constans name should be non-empty string'
+module.exports = (key, value) ->
+    if not key? or type(key) isnt 'string'
+        debug.error 'constans key should be non-empty string'
         return
 
-    name = do name.toUpperCase;
+    key = do key.toUpperCase;
 
-    if name of @
-        debug.error 'cannot define same constans twice: %s', name
+    if key of @
+        debug.error 'cannot define same constans twice: %s', key
     else
-        Object.defineProperty @, name, value: value
+        Object.defineProperty @, key, value: value
         return value
