@@ -35,4 +35,4 @@ For example, it can take all entities with _Position_ and _Velocity_ components 
 
 Ok, enough talking, let's see some code.
 
-1. [Basics](tutorials/basic.md)
+1. [Basics](tutorials/basics.md)
