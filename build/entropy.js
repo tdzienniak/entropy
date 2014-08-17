@@ -537,9 +537,30 @@ module.exports = Ticker;
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../config/config":3,"./event":5}],7:[function(_dereq_,module,exports){
+(function (global){
 var config;
 
 config = _dereq_('../config/config');
+
+
+Object.defineProperty(global, '__stack', {
+  get: function(){
+    var orig = Error.prepareStackTrace;
+    Error.prepareStackTrace = function(_, stack){ return stack; };
+    var err = new Error;
+    Error.captureStackTrace(err, arguments.callee.caller);
+    var stack = err.stack;
+    Error.prepareStackTrace = orig;
+    return stack;
+  }
+});
+
+Object.defineProperty(global, '__line', {
+  get: function(){
+    return __stack[1];
+  }
+})
+;
 
 module.exports = {
   log: function(message) {
@@ -561,6 +582,7 @@ module.exports = {
 
 
 
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../config/config":3}],8:[function(_dereq_,module,exports){
 var Const, Engine, Entropy, LinkedList, OrderedLinkedList, Ticker;
 

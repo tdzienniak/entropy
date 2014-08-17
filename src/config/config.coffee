@@ -1,7 +1,7 @@
 type = require '../utils/type'
 
 DEFAULT_CONFIG =
-    debug: false
+    debug: 3
     max_components_count: 100
     max_frame_time: 20
     default_time_factor: 1
