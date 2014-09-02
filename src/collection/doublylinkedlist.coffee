@@ -76,14 +76,18 @@ class DoublyLinkedList
         return @
 
     remove: (thing, byData=false) ->
-        do @reset
+        if byData
+            do @reset
 
-        while node = @next()
-            if byData and thing is node.data or not byData and thing is node
-                nodeToRemove = node
-                break
+            while node = @next()
+                if thing is node.data
+                    nodeToRemove = node
+                    break
+        else
+            nodeToRemove = thing
 
         if nodeToRemove?
+            #node is the only one in the list
             if not nodeToRemove.next? and not nodeToRemove.prev?
                 @head = @tail = null
             else if nodeToRemove is @head
@@ -98,33 +102,33 @@ class DoublyLinkedList
 
         return @
 
-    pop: () ->
+    pop: ->
 
-    shift: () ->
+    shift: ->
 
-    begin: () ->
+    begin: ->
         @_current = @head
 
         return @
 
-    end: () ->
+    end: ->
         @_current = @tail
 
         return @
 
-    next: () ->
+    next: ->
         temp = @_current
         @_current = @_current?.next
 
         return temp
 
-    prev: () ->
+    prev: ->
         temp = @_current
         @_current = @_current?.prev
 
         return temp
 
-    current: () -> @_current
+    current: -> @_current
 
     iterate: (fn, binding, args...) ->
         do @reset

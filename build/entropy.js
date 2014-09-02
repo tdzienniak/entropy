@@ -1,4 +1,4 @@
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Entropy=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var DoublyLinkedList, Node,
   __slice = [].slice;
 
@@ -181,7 +181,7 @@ module.exports = DoublyLinkedList;
 
 
 
-},{}],2:[function(_dereq_,module,exports){
+},{}],2:[function(require,module,exports){
 var Node, OrderedLinkedList;
 
 Node = (function() {
@@ -251,10 +251,10 @@ module.exports = OrderedLinkedList;
 
 
 
-},{}],3:[function(_dereq_,module,exports){
+},{}],3:[function(require,module,exports){
 var DEFAULT_CONFIG, USER_CONFIG, type;
 
-type = _dereq_('../utils/type');
+type = require('../utils/type');
 
 DEFAULT_CONFIG = {
   debug: 3,
@@ -285,16 +285,16 @@ module.exports = function(key, value) {
 
 
 
-},{"../utils/type":11}],4:[function(_dereq_,module,exports){
+},{"../utils/type":11}],4:[function(require,module,exports){
 var Engine, EventEmitter, debug, type,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-type = _dereq_('../utils/type');
+type = require('../utils/type');
 
-debug = _dereq_('../debug/debug');
+debug = require('../debug/debug');
 
-EventEmitter = _dereq_('./event');
+EventEmitter = require('./event');
 
 Engine = (function(_super) {
   __extends(Engine, _super);
@@ -321,11 +321,11 @@ module.exports = Engine;
 
 
 
-},{"../debug/debug":7,"../utils/type":11,"./event":5}],5:[function(_dereq_,module,exports){
+},{"../debug/debug":7,"../utils/type":11,"./event":5}],5:[function(require,module,exports){
 var EventEmitter, type,
   __slice = [].slice;
 
-type = _dereq_('../utils/type');
+type = require('../utils/type');
 
 EventEmitter = (function() {
   function EventEmitter() {
@@ -388,17 +388,17 @@ module.exports = EventEmitter;
 
 
 
-},{"../utils/type":11}],6:[function(_dereq_,module,exports){
+},{"../utils/type":11}],6:[function(require,module,exports){
 (function (global){
 var EventEmitter, Ticker, config, raf,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-config = _dereq_('../config/config');
+config = require('../config/config');
 
 raf = global.requestAnimationFrame;
 
-EventEmitter = _dereq_('./event');
+EventEmitter = require('./event');
 
 Ticker = (function(_super) {
   __extends(Ticker, _super);
@@ -536,11 +536,11 @@ module.exports = Ticker;
 
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../config/config":3,"./event":5}],7:[function(_dereq_,module,exports){
+},{"../config/config":3,"./event":5}],7:[function(require,module,exports){
 var config,
   __slice = [].slice;
 
-config = _dereq_('../config/config');
+config = require('../config/config');
 
 module.exports = {
   log: function() {
@@ -568,20 +568,20 @@ module.exports = {
 
 
 
-},{"../config/config":3}],8:[function(_dereq_,module,exports){
+},{"../config/config":3}],8:[function(require,module,exports){
 var Const, Engine, Entropy, LinkedList, OrderedLinkedList, Ticker;
 
-_dereq_('./utils/polyfill');
+require('./utils/polyfill');
 
-Const = _dereq_('./utils/const');
+Const = require('./utils/const');
 
-Engine = _dereq_('./core/engine');
+Engine = require('./core/engine');
 
-LinkedList = _dereq_('./collection/doublylinkedlist');
+LinkedList = require('./collection/doublylinkedlist');
 
-OrderedLinkedList = _dereq_('./collection/orderedlinkedlist');
+OrderedLinkedList = require('./collection/orderedlinkedlist');
 
-Ticker = _dereq_('./core/ticker');
+Ticker = require('./core/ticker');
 
 
 /**
@@ -627,12 +627,12 @@ module.exports = Entropy;
 
 
 
-},{"./collection/doublylinkedlist":1,"./collection/orderedlinkedlist":2,"./core/engine":4,"./core/ticker":6,"./utils/const":9,"./utils/polyfill":10}],9:[function(_dereq_,module,exports){
+},{"./collection/doublylinkedlist":1,"./collection/orderedlinkedlist":2,"./core/engine":4,"./core/ticker":6,"./utils/const":9,"./utils/polyfill":10}],9:[function(require,module,exports){
 var debug, type;
 
-type = _dereq_('./type');
+type = require('./type');
 
-debug = _dereq_('../debug/debug');
+debug = require('../debug/debug');
 
 module.exports = function(key, value) {
   if ((key == null) || type(key) !== 'string') {
@@ -652,7 +652,7 @@ module.exports = function(key, value) {
 
 
 
-},{"../debug/debug":7,"./type":11}],10:[function(_dereq_,module,exports){
+},{"../debug/debug":7,"./type":11}],10:[function(require,module,exports){
 (function (global){
 (function() {
   var lastTime, vendor, vendors, _i, _len;
@@ -705,7 +705,7 @@ module.exports = function(key, value) {
 
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],11:[function(_dereq_,module,exports){
+},{}],11:[function(require,module,exports){
 var toString;
 
 toString = Object.prototype.toString;
@@ -747,6 +747,4 @@ module.exports = {
 
 
 
-},{}]},{},[8])
-(8)
-});
+},{}]},{},[8]);

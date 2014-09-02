@@ -59,5 +59,29 @@ class OrderedLinkedList
 
         return @
 
+    remove: (thing, byData=false) ->
+        if not @head?
+            return @
+
+        if not byData and thing is @head or byData and thing is @head.data
+            if @head is @tail
+                @head = @tail = null
+            else
+                @head = @head.next
+            return @
+
+        do @reset
+
+        while node = @next()
+            if not byData and this is node.next or byData and thing is node.next.data
+                if node.next is @tail
+                    node.next = null
+                    @tail = node
+                else
+                    node.next = node.next.next
+
+                return @
+
+        return @
 
 module.exports = OrderedLinkedList

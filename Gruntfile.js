@@ -15,21 +15,20 @@ module.exports = function(grunt) {
                 options: {
                     transform: ['coffeeify'],
                     browserifyOptions: {
-                        extensions: [".coffee"]
-                    },
-                    bundleOptions: {
+                        extensions: [".coffee"],
                         standalone: '<%= pkg.name %>'
                     }
                 }
             },
         },
-        
+
         uglify: {
             options: {
                 banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
                 //       + '"use strict";',
                 mangle: true,
-                sourceMap: 'build/entropy.map.js'
+                sourceMap: true,
+                sourceMapName: 'build/entropy.map.js'
                 //wrap: true
             },
             build: {
