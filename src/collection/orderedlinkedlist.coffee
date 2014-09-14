@@ -8,7 +8,7 @@ class Node
 class OrderedLinkedList
     constructor: ->
         @head = @tail = null
-        #@_current = @head
+        @_current = @head
 
     insert: (data, priority) ->
         node = new Node(data, priority)
@@ -65,7 +65,7 @@ class OrderedLinkedList
 
         if not byData and thing is @head or byData and thing is @head.data
             if @head is @tail
-                @head = @tail = null
+                do @clear
             else
                 @head = @head.next
             return @
@@ -81,6 +81,43 @@ class OrderedLinkedList
                     node.next = node.next.next
 
                 return @
+
+        return @
+
+    begin: ->
+        @_current = @head
+
+        return @
+
+    end: ->
+        @_current = @tail
+
+        return @
+
+    next: ->
+        temp = @_current
+        @_current = @_current?.next
+
+        return temp
+
+    current: -> @_current
+
+    iterate: (fn, binding, args...) ->
+        do @reset
+
+        while node = @next()
+            fn.apply(binding, [node, node.data].concat(args))
+
+        return @
+
+    reset: (end=false) ->
+        @_current = if not end then @head else @tail
+
+        return @
+
+    clear: ->
+        @head = @tail = null
+        @_current = null
 
         return @
 

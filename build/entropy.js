@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Entropy=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var DoublyLinkedList, Node,
   __slice = [].slice;
 
@@ -86,12 +86,16 @@ DoublyLinkedList = (function() {
     if (byData == null) {
       byData = false;
     }
-    this.reset();
-    while (node = this.next()) {
-      if (byData && thing === node.data || !byData && thing === node) {
-        nodeToRemove = node;
-        break;
+    if (byData) {
+      this.reset();
+      while (node = this.next()) {
+        if (thing === node.data) {
+          nodeToRemove = node;
+          break;
+        }
       }
+    } else {
+      nodeToRemove = thing;
     }
     if (nodeToRemove != null) {
       if ((nodeToRemove.next == null) && (nodeToRemove.prev == null)) {
@@ -170,6 +174,7 @@ DoublyLinkedList = (function() {
 
   DoublyLinkedList.prototype.clear = function() {
     this.head = this.tail = null;
+    this._current = null;
     return this;
   };
 
@@ -182,7 +187,8 @@ module.exports = DoublyLinkedList;
 
 
 },{}],2:[function(require,module,exports){
-var Node, OrderedLinkedList;
+var Node, OrderedLinkedList,
+  __slice = [].slice;
 
 Node = (function() {
   function Node(data, priority) {
@@ -198,6 +204,7 @@ Node = (function() {
 OrderedLinkedList = (function() {
   function OrderedLinkedList() {
     this.head = this.tail = null;
+    this._current = this.head;
   }
 
   OrderedLinkedList.prototype.insert = function(data, priority) {
@@ -243,6 +250,82 @@ OrderedLinkedList = (function() {
     return this;
   };
 
+  OrderedLinkedList.prototype.remove = function(thing, byData) {
+    var node;
+    if (byData == null) {
+      byData = false;
+    }
+    if (this.head == null) {
+      return this;
+    }
+    if (!byData && thing === this.head || byData && thing === this.head.data) {
+      if (this.head === this.tail) {
+        this.clear();
+      } else {
+        this.head = this.head.next;
+      }
+      return this;
+    }
+    this.reset();
+    while (node = this.next()) {
+      if (!byData && this === node.next || byData && thing === node.next.data) {
+        if (node.next === this.tail) {
+          node.next = null;
+          this.tail = node;
+        } else {
+          node.next = node.next.next;
+        }
+        return this;
+      }
+    }
+    return this;
+  };
+
+  OrderedLinkedList.prototype.begin = function() {
+    this._current = this.head;
+    return this;
+  };
+
+  OrderedLinkedList.prototype.end = function() {
+    this._current = this.tail;
+    return this;
+  };
+
+  OrderedLinkedList.prototype.next = function() {
+    var temp, _ref;
+    temp = this._current;
+    this._current = (_ref = this._current) != null ? _ref.next : void 0;
+    return temp;
+  };
+
+  OrderedLinkedList.prototype.current = function() {
+    return this._current;
+  };
+
+  OrderedLinkedList.prototype.iterate = function() {
+    var args, binding, fn, node;
+    fn = arguments[0], binding = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+    this.reset();
+    while (node = this.next()) {
+      fn.apply(binding, [node, node.data].concat(args));
+    }
+    return this;
+  };
+
+  OrderedLinkedList.prototype.reset = function(end) {
+    if (end == null) {
+      end = false;
+    }
+    this._current = !end ? this.head : this.tail;
+    return this;
+  };
+
+  OrderedLinkedList.prototype.clear = function() {
+    this.head = this.tail = null;
+    this._current = null;
+    return this;
+  };
+
   return OrderedLinkedList;
 
 })();
@@ -285,7 +368,7 @@ module.exports = function(key, value) {
 
 
 
-},{"../utils/type":11}],4:[function(require,module,exports){
+},{"../utils/type":13}],4:[function(require,module,exports){
 var Engine, EventEmitter, debug, type,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -321,7 +404,7 @@ module.exports = Engine;
 
 
 
-},{"../debug/debug":7,"../utils/type":11,"./event":5}],5:[function(require,module,exports){
+},{"../debug/debug":9,"../utils/type":13,"./event":5}],5:[function(require,module,exports){
 var EventEmitter, type,
   __slice = [].slice;
 
@@ -388,7 +471,209 @@ module.exports = EventEmitter;
 
 
 
-},{"../utils/type":11}],6:[function(require,module,exports){
+},{"../utils/type":13}],6:[function(require,module,exports){
+var ARGS, BINDING, EventEmitter, FN, Game, State, Ticker, type,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+type = require('../utils/type');
+
+Ticker = require('./ticker');
+
+State = require('./state');
+
+EventEmitter = require('./event');
+
+FN = 0;
+
+BINDING = 1;
+
+ARGS = 2;
+
+Game = (function(_super) {
+  __extends(Game, _super);
+
+  Game.State = State.register;
+
+  function Game(initialState) {
+    Game.__super__.constructor.call(this);
+    this.ticker = new Ticker(this);
+    this.state = State.State(this);
+    this.state.change(initialState);
+    return this;
+  }
+
+  Game.prototype.start = function() {
+    return this.emit('game:start', this.ticker.start());
+  };
+
+  Game.prototype.pause = function() {
+    return this.emit('game:pause', this.ticker.pause());
+  };
+
+  Game.prototype.resume = function() {
+    return this.emit('game:resume', this.ticker.resume());
+  };
+
+  Game.prototype.stop = function(clear) {
+    if (clear) {
+      this.engine.once('engine:clear', (function(_this) {
+        return function() {
+          return _this.emit('game:stop', _this.ticker.stop());
+        };
+      })(this));
+      return this.engine.clear();
+    } else {
+      return this.emit('game:stop', this.ticker.stop());
+    }
+  };
+
+  return Game;
+
+})(EventEmitter);
+
+module.exports = Game;
+
+
+
+},{"../utils/type":13,"./event":5,"./state":7,"./ticker":8}],7:[function(require,module,exports){
+var debug, states, type,
+  __slice = [].slice;
+
+type = require('../utils/type');
+
+debug = require('../debug/debug');
+
+states = {};
+
+exports.State = function(game) {
+  var currentState, doTransition, enterState, exitState, initializeState, next, queue, setCurrentState, setInitialized, shift, shifting;
+  queue = [];
+  currentState = {
+    transitions: {}
+  };
+  shifting = false;
+  shift = function() {
+    var args, binding, fn, queueHead;
+    queueHead = queue.shift();
+    if (queueHead == null) {
+      shifting = false;
+      return;
+    } else {
+      shifting = true;
+    }
+    fn = queueHead.fn;
+    binding = queueHead.binding || null;
+    args = queueHead.args || [];
+    args.push(next);
+    return fn.apply(binding, args);
+  };
+  next = function() {
+    return shift();
+  };
+  setCurrentState = function(state, done) {
+    currentState = state;
+    return done();
+  };
+  setInitialized = function(state, done) {
+    state._initialized = true;
+    return done();
+  };
+  initializeState = function(state, done) {
+    if (type.of["function"](state.initialize)) {
+      return state.initialize.apply(state, [game, done]);
+    } else {
+      return done();
+    }
+  };
+  enterState = function(state, done) {
+    if (type.of["function"](state.onEnter)) {
+      return state.onEnter.apply(state, [game, done]);
+    } else {
+      return done();
+    }
+  };
+  exitState = function(done) {
+    if (type.of["function"](currentState.onExit)) {
+      return currentState.onExit.apply(currentState, [game, done]);
+    } else {
+      return done();
+    }
+  };
+  doTransition = function() {
+    var args, done, nextState, to, transitionFnName;
+    to = arguments[0], nextState = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+    if (to in currentState.transitions) {
+      transitionFnName = currentState.transitions[to];
+      return currentState[transitionFnName].apply(currentState, [game, nextState].concat(args));
+    } else {
+      done = args.pop();
+      return done();
+    }
+  };
+  return {
+    change: function() {
+      var args, name, nextState;
+      name = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      if (!type.of.string(name) || !(name in states)) {
+        debug.error('state "' + name + '" does not exist - change will not occur');
+        return;
+      }
+      nextState = states[name];
+      queue.push({
+        fn: exitState
+      });
+      if (!nextState._initialized) {
+        queue.push({
+          fn: initializeState,
+          args: [nextState]
+        });
+        queue.push({
+          fn: setInitialized,
+          args: [nextState]
+        });
+      }
+      queue.push({
+        fn: doTransition,
+        args: [name, nextState].concat(args)
+      });
+      queue.push({
+        fn: enterState,
+        args: [nextState]
+      });
+      queue.push({
+        fn: setCurrentState,
+        args: [nextState]
+      });
+      if (!shifting) {
+        return shift();
+      }
+    },
+    current: function() {
+      return currentState.name;
+    },
+    isIn: function(state) {
+      return state === currentState.name;
+    }
+  };
+};
+
+exports.register = function(state) {
+  if (!type.of.object(state)) {
+    debug.error('registered state must be an object');
+    return this;
+  }
+  if (!('transitions' in state)) {
+    state.transitions = {};
+  }
+  state._initialized = false;
+  states[state.name] = state;
+  return this;
+};
+
+
+
+},{"../debug/debug":9,"../utils/type":13}],8:[function(require,module,exports){
 (function (global){
 var EventEmitter, Ticker, config, raf,
   __hasProp = {}.hasOwnProperty,
@@ -535,8 +820,8 @@ module.exports = Ticker;
 
 
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../config/config":3,"./event":5}],7:[function(require,module,exports){
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"../config/config":3,"./event":5}],9:[function(require,module,exports){
 var config,
   __slice = [].slice;
 
@@ -568,10 +853,12 @@ module.exports = {
 
 
 
-},{"../config/config":3}],8:[function(require,module,exports){
-var Const, Engine, Entropy, LinkedList, OrderedLinkedList, Ticker;
+},{"../config/config":3}],10:[function(require,module,exports){
+var Const, Engine, Entropy, Game, LinkedList, OrderedLinkedList, Ticker, debug;
 
 require('./utils/polyfill');
+
+debug = require('./debug/debug');
 
 Const = require('./utils/const');
 
@@ -583,12 +870,14 @@ OrderedLinkedList = require('./collection/orderedlinkedlist');
 
 Ticker = require('./core/ticker');
 
+Game = require('./core/game');
+
 
 /**
  * Welcome message.
  */
 
-console.log.apply(console, ["%c %c %c Entropy 0.1 - Entity System Framework for JavaScript %c %c ", "background: rgb(200, 200,200);", "background: rgb(80, 80, 80);", "color: white; background: black;", "background: rgb(80, 80, 80);", "background: rgb(200, 200, 200);"]);
+console.log.apply(console, ["%c %c %c Entropy 0.2.0 - Entity System Framework for JavaScript %c %c ", "background: rgb(200, 200,200);", "background: rgb(80, 80, 80);", "color: white; background: black;", "background: rgb(80, 80, 80);", "background: rgb(200, 200, 200);"]);
 
 
 /**
@@ -600,6 +889,8 @@ Entropy = (function() {
     return Const.call(this, key, value);
   };
 
+  Entropy.Game = Game;
+
   Entropy.Engine = Engine;
 
   Entropy.Ticker = Ticker;
@@ -608,15 +899,9 @@ Entropy = (function() {
 
   Entropy.OrderedLinkedList = OrderedLinkedList;
 
-
-  /**
-   * [constructor description]
-   * 
-   * @return {[type]} [description]
-   */
-
   function Entropy() {
-    return 5;
+    debug.warning('this function should not be used as a constructor');
+    return;
   }
 
   return Entropy;
@@ -627,7 +912,7 @@ module.exports = Entropy;
 
 
 
-},{"./collection/doublylinkedlist":1,"./collection/orderedlinkedlist":2,"./core/engine":4,"./core/ticker":6,"./utils/const":9,"./utils/polyfill":10}],9:[function(require,module,exports){
+},{"./collection/doublylinkedlist":1,"./collection/orderedlinkedlist":2,"./core/engine":4,"./core/game":6,"./core/ticker":8,"./debug/debug":9,"./utils/const":11,"./utils/polyfill":12}],11:[function(require,module,exports){
 var debug, type;
 
 type = require('./type');
@@ -652,7 +937,7 @@ module.exports = function(key, value) {
 
 
 
-},{"../debug/debug":7,"./type":11}],10:[function(require,module,exports){
+},{"../debug/debug":9,"./type":13}],12:[function(require,module,exports){
 (function (global){
 (function() {
   var lastTime, vendor, vendors, _i, _len;
@@ -704,8 +989,8 @@ module.exports = function(key, value) {
 
 
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],11:[function(require,module,exports){
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],13:[function(require,module,exports){
 var toString;
 
 toString = Object.prototype.toString;
@@ -747,4 +1032,5 @@ module.exports = {
 
 
 
-},{}]},{},[8]);
+},{}]},{},[10])(10)
+});

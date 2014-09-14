@@ -24,7 +24,7 @@ module.exports = function(grunt) {
 
         uglify: {
             options: {
-                banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+                banner: '/**\n* <%= pkg.name %> <%= pkg.version %> - framework for making games and not only games in entity system manner - build: <%= grunt.template.today("yyyy-mm-dd") %>\n*\n* @author       Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>\n* @license      {@link https://github.com/RainPhilosopher/Entropy/blob/master/LICENSE|MIT License}\n*/\n',
                 //       + '"use strict";',
                 mangle: true,
                 sourceMap: true,

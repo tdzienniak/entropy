@@ -145,6 +145,7 @@ class DoublyLinkedList
 
     clear: ->
         @head = @tail = null
+        @_current = null
 
         return @
 
