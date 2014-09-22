@@ -9,12 +9,27 @@ class DoublyLinkedList
     constructor: ->
         @head = @tail = null
         @_current = @head
+        @_pool = null
 
+    _getNewNode: (data) ->
+        if @_pool?
+            node = @_pool
+
+            @_pool = node.next
+            node.next = node.prev = null
+            node.data = data
+
+            if @_pool?
+                @_pool.prev = null
+
+            return node
+        else 
+            return new Node data
     append: (data) ->
         if not data?
             return
 
-        node = new Node data
+        node = @_getNewNode data
 
         # first node case
         if not @head?
@@ -33,7 +48,7 @@ class DoublyLinkedList
         if not data?
             return
 
-        node = new Node data
+        node = @_getNewNode data
 
         # first node case
         if not @head?
@@ -144,6 +159,10 @@ class DoublyLinkedList
         return @
 
     clear: ->
+        if @tail?
+            @tail.next = @_pool
+            @_pool = @head
+
         @head = @tail = null
         @_current = null
 

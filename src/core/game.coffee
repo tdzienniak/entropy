@@ -24,7 +24,8 @@ class Game extends EventEmitter
 
         #@ticker.on "ticker:tick", @engine.update, @engine
 
-        @state.change(initialState)
+        if type.of.string initialState
+            @state.change(initialState)
 
         return @
 
