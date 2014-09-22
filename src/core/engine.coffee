@@ -1,6 +1,7 @@
 type = require '../utils/type'
 debug = require '../debug/debug'
 config = require '../config/config'
+extend = require '../utils/extend'
 
 register = require './register'
 
@@ -28,6 +29,8 @@ class Engine extends EventEmitter
 
         @_entities = []
         @_systems = new OrderedLinkedList()
+
+        @_singletonSystemsPresentInEngine = {}
 
         @_searchingBitSet = new BitSet config 'max_components_count'
         @_excludingBitSet = new BitSet config 'max_components_count'
@@ -88,8 +91,6 @@ class Engine extends EventEmitter
     addComponentToPool: (name, component) ->
         @_componetsPool.push name, component
 
-    
-
     create: (name, args...) ->
         args.unshift @game
 
@@ -101,6 +102,15 @@ class Engine extends EventEmitter
         @_addEntityToEngine entity
 
         return @
+
+    _getNewEntity: (name) ->
+        if @_entitiesPool.has name
+            entity = @_entitiesPool.pop name
+            entity.renovate()
+        else
+            entity = new Entity(name, @)
+
+        return entity
 
     _addEntityToFamilies: (entity) ->
         families = entity.getPattern()._families
@@ -170,13 +180,39 @@ class Engine extends EventEmitter
     getEntity: (id) ->
         return @_entities[id] ? null
 
-    _getNewEntity: (name) ->
-        if @_entitiesPool.has name
-            entity = @_entitiesPool.pop name
-            entity.renovate()
-        else
-            entity = new Entity(name, @)
+    getFamily: (name) ->
+        return (@_families[name] ? @_BLANK_FAMILY).reset()
+    
+    addSystem: (name, priority, args...) ->
+        if name of @_singletonSystemsPresentInEngine
+            debug.warning 'system % is defined as singleton and is already present in engine'
 
-        return entity
+            return @
+
+        pattern = register.getSystemPattern name
+
+        system =
+            game: @game
+            engine: @
+            priority: priority
+
+        extend system, pattern
+        
+        system.initialize and system.initialize.apply system, args
+
+        @_systems.insert system, priority
+        
+        if system.singleton
+            @_singletonSystemsPresentInEngine[name] = true
+
+        return @
+    
+    addSystems: (args...) ->
+        @addSystem arg... for arg in args
+        return @
+
+    removeSystem: (system, args) ->
+        if not @_updating
+            
 
 module.exports = Engine
