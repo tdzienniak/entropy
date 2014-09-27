@@ -1,6 +1,6 @@
 type = require '../utils/type'
 
-#Engine = require './engine'
+Engine = require './engine'
 #Input = require './input'
 Ticker = require './ticker'
 State = require './state'
@@ -18,11 +18,11 @@ class Game extends EventEmitter
         super()
 
         #@input = new Input(@)
-        #@engine = new Engine(@)
+        @engine = new Engine(@)
         @ticker = new Ticker(@)
         @state = State.State(@)
 
-        #@ticker.on "ticker:tick", @engine.update, @engine
+        @ticker.on "ticker:tick", @engine.update, @engine
 
         if type.of.string initialState
             @state.change(initialState)

@@ -180,9 +180,36 @@ class Engine extends EventEmitter
     getEntity: (id) ->
         return @_entities[id] ? null
 
-    getFamily: (name) ->
-        return (@_families[name] ? @_BLANK_FAMILY).reset()
+    getFamily: (family) ->
+        return (@_families[family] ? @_BLANK_FAMILY).reset()
     
+    getEntitiesByFamily: (family) ->
+        @getFamily family
+
+    getEntitiesWith: (components) ->
+        @_searchingBitSet.clear()
+        @_excludingBitSet.clear()
+
+        if type.of.object components
+            if type.of.array components.without
+                for component in components.without
+                    @_excludingBitSet.set register.getComponentPattern(component)._bit
+
+            components = components.with ? []
+
+        for component in components
+            @_excludingBitSet.set register.getComponentPattern(component)._bit
+
+
+
+
+
+
+
+    getEntitiesByName: (name) ->
+
+    _transferFunctionalFamilies: ->
+
     addSystem: (name, priority, args...) ->
         if name of @_singletonSystemsPresentInEngine
             debug.warning 'system % is defined as singleton and is already present in engine'
@@ -211,8 +238,53 @@ class Engine extends EventEmitter
         @addSystem arg... for arg in args
         return @
 
-    removeSystem: (system, args) ->
+    removeSystem: (system, args...) ->
         if not @_updating
-            
+            system.remove and system.remove.apply system, args
+            @_systems.remove system, true
+
+        return @
+
+    removeAllSystems: (args...) ->
+        @_systems.reset()
+
+        while node = @_systems.next()
+            system = node.data
+            system.remove and system.remove.apply system, args
+
+        @_systems.clear()
+
+        return @
+
+    isSystemActive: (name) ->
+
+    update: (event) ->
+        delta = event.delta
+
+        @emit 'engine:beforeUpdate', event
+
+        @_updating = true
+
+        @_systems.reset()
+        while node = @_systems.next()
+            system = node.data
+
+            system.update delta, event
+
+        @_updating = false
+
+        @emit 'engine:afterUpdate', event
+        @emit 'engine:updateFinished'
+
+    clear: (immediately) ->
+        if immediately
+            @removeAllSystems()
+            @removeAllEntities()
+        else
+            @once 'engine:updateFinished', (e) =>
+                @removeAllSystems()
+                @removeAllEntities()
+
+        return @
 
 module.exports = Engine

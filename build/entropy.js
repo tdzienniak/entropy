@@ -17,14 +17,31 @@ DoublyLinkedList = (function() {
   function DoublyLinkedList() {
     this.head = this.tail = null;
     this._current = this.head;
+    this._pool = null;
   }
+
+  DoublyLinkedList.prototype._getNewNode = function(data) {
+    var node;
+    if (this._pool != null) {
+      node = this._pool;
+      this._pool = node.next;
+      node.next = node.prev = null;
+      node.data = data;
+      if (this._pool != null) {
+        this._pool.prev = null;
+      }
+      return node;
+    } else {
+      return new Node(data);
+    }
+  };
 
   DoublyLinkedList.prototype.append = function(data) {
     var node;
     if (data == null) {
       return;
     }
-    node = new Node(data);
+    node = this._getNewNode(data);
     if (this.head == null) {
       this.tail = this.head = node;
       return this;
@@ -40,7 +57,7 @@ DoublyLinkedList = (function() {
     if (data == null) {
       return;
     }
-    node = new Node(data);
+    node = this._getNewNode(data);
     if (this.head == null) {
       this.tail = this.head = node;
       return this;
@@ -173,6 +190,10 @@ DoublyLinkedList = (function() {
   };
 
   DoublyLinkedList.prototype.clear = function() {
+    if (this.tail != null) {
+      this.tail.next = this._pool;
+      this._pool = this.head;
+    }
     this.head = this.tail = null;
     this._current = null;
     return this;
