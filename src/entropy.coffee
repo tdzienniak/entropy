@@ -1,13 +1,12 @@
 require './utils/polyfill'
 
 debug = require './debug/debug'
+config = require './config/config'
 
 Const = require './utils/const'
 Engine = require './core/engine'
 LinkedList = require './collection/doublylinkedlist'
 OrderedLinkedList = require './collection/orderedlinkedlist'
-Ticker = require './core/ticker'
-Game = require './core/game'
 ###*
  * Welcome message.
 ###
@@ -24,13 +23,13 @@ console.log [
  * 
 ###
 class Entropy
+    @Easing: require './utils/easing'
     @Const: (key, value) ->
         Const.call(@, key, value)
-
-    @Game: Game
+    @Config: config
+    @Game: require './core/game'
     @Engine: Engine
-
-    @Ticker: Ticker
+    @Ticker: require './core/ticker'
     @LinkedList: LinkedList
     @OrderedLinkedList: OrderedLinkedList
 

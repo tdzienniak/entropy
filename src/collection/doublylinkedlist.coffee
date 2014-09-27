@@ -121,6 +121,15 @@ class DoublyLinkedList
 
     shift: ->
 
+    push: (data) ->
+        @append data
+
+    unshift: (data) ->
+        @prepend data
+
+    one: ->
+        return @head?.data
+
     begin: ->
         @_current = @head
 
@@ -149,7 +158,7 @@ class DoublyLinkedList
         do @reset
 
         while node = @next()
-            fn.apply(binding, [node, node.data].concat(args))
+            fn.apply(binding, [node, node.data, node.data?.components].concat(args))
 
         return @
 

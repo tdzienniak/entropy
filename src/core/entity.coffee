@@ -7,7 +7,7 @@ config = require '../config/config'
 
 register = require './register'
 
-BitSet = require 'bitset'
+BitSet = require('bitset.js').BitSet
 
 class Entity extends EventEmitter
     constructor: (name, @engine) ->
@@ -41,7 +41,9 @@ class Entity extends EventEmitter
         component = @components[lowercaseName] ? @engine.getNewComponent lowercaseName
         component._pattern.initialize.apply component, args
 
-        @bitset.set component._pattern._bit
+        @components[lowercaseName] = component
+
+        @_bitset.set component._pattern._bit
 
         return @
 

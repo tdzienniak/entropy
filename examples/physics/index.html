@@ -227,8 +227,8 @@
             initialize: function () {
                 this.stepInterval = 1/60;
             },
-            update: function () {
-                this.game.world.step(this.stepInterval);
+            update: function (delta) {
+                this.game.world.step(delta / 1000);
             }
         });
 
@@ -236,8 +236,10 @@
             name: "PlatformsMovement",
             update: function (delta, event) {
                 var platforms = this.engine.getFamily("Platforms");
-                platforms.iterate(function (p, pc) {
-                     pc.body.body.velocity[0] = Math.sin(event.time*0.001);
+                platforms.iterate(function (p, pe, pc) {
+                   // debugger;
+
+                    pc.body.body.velocity[0] = Math.sin(event.time*0.001);
                 });
             }
         });
@@ -259,7 +261,7 @@
 
                 this.graphics.clear();
 
-                bodies.iterate(function (b, bc) {
+                bodies.iterate(function (b, be, bc) {
                     var x = bc.body.body.position[0],
                         y = bc.body.body.position[1],
                         width = bc.body.body.shapes[0].width,
@@ -292,7 +294,7 @@
             update: function (delta) {
                 var player = this.engine.getFamily("Player").one().components;
                 var pressedKeys = this.game.input.getPressedKeys();
-
+                //debugger;
                 if (pressedKeys.UP_ARROW || pressedKeys.SPACE) {
                     if (this.canJump(player.body.body)) {
                         player.body.body.velocity[1] = this.jumpSpeed;
@@ -335,8 +337,9 @@
 
     </script>
     <script>
+    var game
         window.addEventListener("load", function () {
-            var game = new Entropy.Game("initialize");
+            game = new Entropy.Game("initialize");
         }, false);
     </script>
 </head>

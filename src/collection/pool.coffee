@@ -21,7 +21,7 @@ class Pool
             return undefined
 
     has: (key) ->
-        return key of pool and @pool[key].length > 0
+        return key of @pool and @pool[key].length > 0
 
     size: ->
         return @size

@@ -11,18 +11,15 @@ OrderedLinkedList = require '../collection/orderedlinkedlist'
 DoublyLinkedList = require '../collection/doublylinkedlist'
 Entity = require './entity'
 
+BitSet = require('bitset.js').BitSet
+
 class Engine extends EventEmitter
-
     @Component: register.registerComponent
-
     @System: register.registerSystem
-
     @Entity: register.registerEntity
 
     constructor: (@game) ->
         super()
-
-        Entity = require './entity'
 
         @_greatestEntityId = 0
         @_entityIdsToReuse = []
@@ -60,7 +57,7 @@ class Engine extends EventEmitter
         register.setCannotModify()
 
     canModify: ->
-        return refister.canModify()
+        return register.canModify()
 
     isUpdating: ->
         return @_updating
@@ -186,7 +183,12 @@ class Engine extends EventEmitter
     getEntitiesByFamily: (family) ->
         @getFamily family
 
-    getEntitiesWith: (components) ->
+    getEntitiesWith: (components, legacy=false) ->
+        if legacy
+            matchedEntities = []
+        else
+            matchedEntities = @_getNewFunctionalFamily()
+
         @_searchingBitSet.clear()
         @_excludingBitSet.clear()
 
@@ -200,15 +202,28 @@ class Engine extends EventEmitter
         for component in components
             @_excludingBitSet.set register.getComponentPattern(component)._bit
 
+        for entity in @_entities
+            if not type.of.undefined entity and @_searchingBitSet.subsetOf entity._bitset and @_excludingBitSet.and(entity._bitset).isEmpty()
+                matchedEntities.push entity
 
-
-
-
-
+        return matchedEntities
 
     getEntitiesByName: (name) ->
 
+    _getNewFunctionalFamily: ->
+        newFamily = @_functionalFamiliesPool.pop()
+
+        if not newFamily?
+            newFamily = new DoublyLinkedList()
+            @_usedFunctionalFamilies.push newFamily
+
+        return newFamily
+
     _transferFunctionalFamilies: ->
+        while used = @_usedFunctionalFamilies.pop()
+            @_functionalFamiliesPool.push used.clear()
+        
+        return @
 
     addSystem: (name, priority, args...) ->
         if name of @_singletonSystemsPresentInEngine

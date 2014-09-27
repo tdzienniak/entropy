@@ -2,7 +2,7 @@ config = require '../config/config'
 
 module.exports = 
     log: (message...) ->
-        if config('debug') is 3
+        if config('debug') >= 3
             console.log message...
     warning: (message...) ->
         if config('debug') >= 2

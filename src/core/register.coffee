@@ -10,7 +10,7 @@ nextComponentId = 0
 
 module.exports =
     registerComponent: (component) ->
-        if not _canModify
+        if not canModify
             debug.error 'you can\'t define new component during system work'
             return
 
@@ -30,7 +30,7 @@ module.exports =
         componentPatterns[component.name.toLowerCase()] = component
 
     registerSystem: (system) ->
-        if not _canModify
+        if not canModify
             debug.error 'you can\'t define new system during system work'
             return
             
@@ -49,7 +49,7 @@ module.exports =
         systemPatterns[system.name] = system
 
     registerEntity: (entity) ->
-        if not _canModify
+        if not canModify
             debug.error 'you can\'t define new system during system work'
             return
             

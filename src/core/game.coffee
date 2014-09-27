@@ -1,7 +1,7 @@
 type = require '../utils/type'
 
 Engine = require './engine'
-#Input = require './input'
+Input = require './input'
 Ticker = require './ticker'
 State = require './state'
 
@@ -17,12 +17,13 @@ class Game extends EventEmitter
     constructor: (initialState) ->
         super()
 
-        #@input = new Input(@)
+        @input = new Input(@)
         @engine = new Engine(@)
         @ticker = new Ticker(@)
         @state = State.State(@)
 
         @ticker.on "ticker:tick", @engine.update, @engine
+        @engine.on "engine:updateFinished", @input.clearKeyTimes, @input
 
         if type.of.string initialState
             @state.change(initialState)
@@ -44,5 +45,8 @@ class Game extends EventEmitter
             @engine.clear()
         else
             @emit 'game:stop', @ticker.stop()
+
+    setRenderer: (@renderer) ->
+    setStage: (@stage) ->
 
 module.exports = Game

@@ -66,6 +66,8 @@ class Ticker extends EventEmitter
         @_rafId = raf @_tick.bind @
         @emit 'ticker:start'
 
+        @_running = true
+
         return true
 
     stop: ->
@@ -95,13 +97,13 @@ class Ticker extends EventEmitter
     _tick: (time) ->
         #time ?= 0
         time ?= performance.now()
+        delta = time - @_lastTime
+        @_lastTime = time
 
         @_rafId = raf @_tick.bind @
 
         if @_paused
-            return undefined
-
-        delta = time - @_lastTime
+            return
 
         if delta >= @MAX_FRAME_TIME
             delta = 1000 / @FPS

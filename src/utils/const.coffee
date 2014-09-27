@@ -2,7 +2,7 @@ type = require './type'
 debug = require '../debug/debug'
 
 module.exports = (key, value) ->
-    if not key? or type(key) isnt 'string'
+    if not key? or not type.of.string(key)
         debug.error 'constans key should be non-empty string'
         return
 
