@@ -1259,12 +1259,12 @@ Engine = (function(_super) {
     }
     for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
       component = components[_j];
-      this._excludingBitSet.set(register.getComponentPattern(component)._bit);
+      this._searchingBitSet.set(register.getComponentPattern(component)._bit);
     }
     _ref2 = this._entities;
     for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
       entity = _ref2[_k];
-      if (!type.of.undefined(entity && this._searchingBitSet.subsetOf(entity._bitset && this._excludingBitSet.and(entity._bitset).isEmpty()))) {
+      if (!type.of.undefined(entity) && this._searchingBitSet.subsetOf(entity._bitset) && this._excludingBitSet.and(entity._bitset).isEmpty()) {
         matchedEntities.push(entity);
       }
     }
@@ -1599,7 +1599,8 @@ module.exports = EventEmitter;
 },{"../utils/type":20}],9:[function(require,module,exports){
 var ARGS, BINDING, Engine, EventEmitter, FN, Game, Input, State, Ticker, type,
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __slice = [].slice;
 
 type = require('../utils/type');
 
@@ -1669,6 +1670,12 @@ Game = (function(_super) {
 
   Game.prototype.setStage = function(stage) {
     this.stage = stage;
+  };
+
+  Game.prototype.changeState = function() {
+    var args, _ref;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return (_ref = this.state).change.apply(_ref, args);
   };
 
   return Game;
@@ -1965,7 +1972,7 @@ module.exports = {
     return entityPatterns[entity.name] = entity;
   },
   getComponentPattern: function(name) {
-    return componentPatterns[name];
+    return componentPatterns[name.toLowerCase()];
   },
   getSystemPattern: function(name) {
     return systemPatterns[name];

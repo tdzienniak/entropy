@@ -200,10 +200,10 @@ class Engine extends EventEmitter
             components = components.with ? []
 
         for component in components
-            @_excludingBitSet.set register.getComponentPattern(component)._bit
+            @_searchingBitSet.set register.getComponentPattern(component)._bit
 
         for entity in @_entities
-            if not type.of.undefined entity and @_searchingBitSet.subsetOf entity._bitset and @_excludingBitSet.and(entity._bitset).isEmpty()
+            if not type.of.undefined(entity) and @_searchingBitSet.subsetOf(entity._bitset) and @_excludingBitSet.and(entity._bitset).isEmpty()
                 matchedEntities.push entity
 
         return matchedEntities

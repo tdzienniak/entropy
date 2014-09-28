@@ -72,7 +72,7 @@ module.exports =
         entityPatterns[entity.name] = entity
 
     getComponentPattern: (name) ->
-        return componentPatterns[name]
+        return componentPatterns[name.toLowerCase()]
 
     getSystemPattern: (name) ->
         return systemPatterns[name]
