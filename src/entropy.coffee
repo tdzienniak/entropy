@@ -30,8 +30,6 @@ class Entropy
     @Game: require './core/game'
     @Engine: Engine
     @Ticker: require './core/ticker'
-    @LinkedList: LinkedList
-    @OrderedLinkedList: OrderedLinkedList
 
     constructor: ->
         debug.warning 'this function should not be used as a constructor'

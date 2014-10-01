@@ -50,5 +50,5 @@ class Game extends EventEmitter
     setStage: (@stage) ->
     changeState: (args...) ->
         @state.change args...
-        
+
 module.exports = Game

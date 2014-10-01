@@ -1389,7 +1389,8 @@ module.exports = Engine;
 var BitSet, Entity, EventEmitter, config, debug, register, type,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  __slice = [].slice;
+  __slice = [].slice,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 config = require('../config/config');
 
@@ -1398,8 +1399,6 @@ type = require('../utils/type');
 debug = require('../debug/debug');
 
 EventEmitter = require('./event');
-
-config = require('../config/config');
 
 register = require('./register');
 
@@ -1487,7 +1486,7 @@ Entity = (function(_super) {
   Entity.prototype.has = function(name) {
     var _ref;
     if (type.of.string(name)) {
-      return this.bitset.get((_ref = this.components[name.toLowerCase()]) != null ? _ref._pattern._bit : void 0) === 1;
+      return this._bitset.get((_ref = this.components[name.toLowerCase()]) != null ? _ref._pattern._bit : void 0) === 1;
     } else {
       return false;
     }
@@ -1503,23 +1502,114 @@ Entity = (function(_super) {
     this._inFinalState = false;
     this._remainingStateChanges = [];
     this._stateObject = {};
-    return this._currentStates = [];
+    this._currentStates = [];
+    return this._stateChanges = [];
   };
 
-  Entity.prototype.enter = function(stateName) {};
+  Entity.prototype.enter = function() {
+    var args, stateName, statePattern;
+    stateName = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if (this._inFinalState) {
+      debug.log("entity %s is in its final state", this.name);
+      return this;
+    }
+    if ((this._pattern.states != null) && !(__indexOf.call(this._pattern.states, stateName) >= 0)) {
+      debug.warning("there is no state %s for entity %s", stateName, this.name);
+      return this;
+    }
+    statePattern = this._pattern.states[stateName];
+    if (statePattern.excluding) {
+      this._exitAllStates();
+    }
+    this._stateChanges.push({
+      name: stateName,
+      action: "enter",
+      fn: statePattern.enter,
+      args: args
+    });
+    return this;
+  };
 
-  Entity.prototype.exit = function(stateName) {};
+  Entity.prototype.exit = function() {
+    var args, stateName, statePattern;
+    stateName = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if (this._inFinalState) {
+      debug.log("entity %s is in its final state", this.name);
+      return this;
+    }
+    if (!this["in"](stateName)) {
+      debug.warning("entity %s is not ins state %s - no exiting required", this.name, stateName);
+      return this;
+    }
+    if ((this._pattern.states != null) && !(__indexOf.call(this._pattern.states, stateName) >= 0)) {
+      debug.warning("there is no state %s for entity %s", stateName, this.name);
+      return this;
+    }
+    statePattern = this._pattern.states[stateName];
+    this._stateChanges({
+      name: stateName,
+      action: "exit",
+      fn: statePattern.exit,
+      args: args
+    });
+    return this;
+  };
 
   Entity.prototype["in"] = function() {
-    var states;
+    var state, states, _i, _len;
     states = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    if (states.length === 0) {
+      return false;
+    }
+    for (_i = 0, _len = states.length; _i < _len; _i++) {
+      state = states[_i];
+      if (this._currentStates.indexOf(state) === -1) {
+        return false;
+      }
+    }
+    return true;
   };
 
-  Entity.prototype._getStatePattern = function(stateName) {};
+  Entity.prototype._exitAllStates = function() {
+    var state, _i, _len, _ref, _results;
+    _ref = this._currentStates;
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      state = _ref[_i];
+      _results.push(this.exit(state));
+    }
+    return _results;
+  };
 
-  Entity.prototype._exitAllStates = function() {};
-
-  Entity.prototype._applyStateChanges = function() {};
+  Entity.prototype._applyStateChanges = function() {
+    var change, stateName, stateObject, statePattern, _base, _results;
+    if (this._inFinalState) {
+      return;
+    }
+    _results = [];
+    while (change = this._stateChanges.shift()) {
+      if (change.action === "enter" && this["in"](change.name) || change.action === "exit" && !this["in"](change.name)) {
+        continue;
+      }
+      stateName = change.name;
+      statePattern = this._pattern.states[stateName];
+      stateObject = (_base = this._stateObject)[stateName] != null ? _base[stateName] : _base[stateName] = {};
+      change.args.unshift(stateObject);
+      change.fn && change.fn.apply(this, change.args);
+      if (change.action === "enter") {
+        this._currentStates.push(stateName);
+      } else if (change.action === "exit") {
+        this._currentStates.splice(this._currentStates.indexOf(stateName), 1);
+        delete this._stateObject[stateName];
+      }
+      if (statePattern.final) {
+        _results.push(this._inFinalState = true);
+      } else {
+        _results.push(void 0);
+      }
+    }
+    return _results;
+  };
 
   return Entity;
 
@@ -2153,10 +2243,13 @@ Ticker = (function(_super) {
     this._lastTime = 0;
     this._currentFPS = this.FPS;
     this._rafId = -1;
+    this._desiredDelta = 1000 / FPS;
+    this._deltaSum = 0;
   }
 
   Ticker.prototype.setFPS = function(fps) {
-    return this.FPS = fps || this.FPS;
+    this.FPS = fps || this.FPS;
+    return this._desiredDelta = 1000 / FPS;
   };
 
   Ticker.prototype.getCurrentFPS = function() {
@@ -2249,8 +2342,18 @@ Ticker = (function(_super) {
     delta = time - this._lastTime;
     this._lastTime = time;
     this._rafId = raf(this._tick.bind(this));
+    this.emit('ticker:raf', delta);
     if (this._paused) {
       return;
+    }
+    if (this.FPS !== 60) {
+      this._deltaSum += delta;
+      if (this._deltaSum < this._desiredDelta) {
+        return;
+      } else {
+        delta = this._deltaSum;
+        this._deltaSum = 0;
+      }
     }
     if (delta >= this.MAX_FRAME_TIME) {
       delta = 1000 / this.FPS;
@@ -2352,10 +2455,6 @@ Entropy = (function() {
   Entropy.Engine = Engine;
 
   Entropy.Ticker = require('./core/ticker');
-
-  Entropy.LinkedList = LinkedList;
-
-  Entropy.OrderedLinkedList = OrderedLinkedList;
 
   function Entropy() {
     debug.warning('this function should not be used as a constructor');

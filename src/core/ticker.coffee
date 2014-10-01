@@ -17,9 +17,12 @@ class Ticker extends EventEmitter
         @_lastTime = 0
         @_currentFPS = @FPS
         @_rafId = -1
+        @_desiredDelta = 1000 / FPS
+        @_deltaSum = 0
 
     setFPS: (fps) ->
         @FPS = fps or @FPS
+        @_desiredDelta = 1000 / FPS
 
     getCurrentFPS: ->
         return Math.round @_currentFPS
@@ -102,8 +105,19 @@ class Ticker extends EventEmitter
 
         @_rafId = raf @_tick.bind @
 
+        @emit 'ticker:raf', delta
+
         if @_paused
             return
+
+        if @FPS isnt 60
+            @_deltaSum += delta
+
+            if @_deltaSum < @_desiredDelta
+                return
+            else
+                delta = @_deltaSum
+                @_deltaSum = 0
 
         if delta >= @MAX_FRAME_TIME
             delta = 1000 / @FPS
