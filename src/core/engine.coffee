@@ -257,6 +257,7 @@ class Engine extends EventEmitter
         if not @_updating
             system.remove and system.remove.apply system, args
             @_systems.remove system, true
+            delete @_singletonSystemsPresentInEngine[system.name]
 
         return @
 

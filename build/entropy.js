@@ -1329,6 +1329,7 @@ Engine = (function(_super) {
     if (!this._updating) {
       system.remove && system.remove.apply(system, args);
       this._systems.remove(system, true);
+      delete this._singletonSystemsPresentInEngine[system.name];
     }
     return this;
   };
@@ -2243,13 +2244,13 @@ Ticker = (function(_super) {
     this._lastTime = 0;
     this._currentFPS = this.FPS;
     this._rafId = -1;
-    this._desiredDelta = 1000 / FPS;
+    this._desiredDelta = 1000 / this.FPS;
     this._deltaSum = 0;
   }
 
   Ticker.prototype.setFPS = function(fps) {
     this.FPS = fps || this.FPS;
-    return this._desiredDelta = 1000 / FPS;
+    return this._desiredDelta = 1000 / this.FPS;
   };
 
   Ticker.prototype.getCurrentFPS = function() {
@@ -2355,11 +2356,11 @@ Ticker = (function(_super) {
         this._deltaSum = 0;
       }
     }
+    if (this._ticks % 10 === 0) {
+      this._currentFPS = 1000 / delta;
+    }
     if (delta >= this.MAX_FRAME_TIME) {
       delta = 1000 / this.FPS;
-    }
-    if (this._ticks % this.FPS === 0) {
-      this._currentFPS = 1000 / delta;
     }
     event = {
       delta: delta * this.TIME_FACTOR,

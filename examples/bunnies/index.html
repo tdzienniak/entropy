@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Entropy and pixi.js Bunnymark</title>
+    <style>
+        body {
+            background: black;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+    </div>
+    <p style="color: white;">
+        Bunnies count: <span id="bunnies-count">0</span><br />
+        FPS: <span id="fps"></span>
+    </p>
+    <script src="../lib/pixi.min.js"></script>
+    <script src="../../build/entropy.js"></script>
+    <script>
+        /*
+         * STATES
+         */
+        var stage, renderer, game;
+
+        Entropy.Game.State({
+            name: "initialize",
+            initialize: function (game, done) {
+                Entropy.Const("WIDTH", 600);
+                Entropy.Const("HEIGHT", 400);
+                Entropy.Const("GRAVITY", 200);
+
+                var interactive = false;
+                stage = new PIXI.Stage(0xffffff, interactive);
+                renderer = new PIXI.autoDetectRenderer(Entropy.WIDTH, Entropy.HEIGHT, null, false, true);
+
+                var canvasContainer = document.getElementById("canvas-container");
+                canvasContainer.appendChild(renderer.view);
+                var bunniesCount = document.getElementById("bunnies-count");
+                var bunnyTexture = new PIXI.Texture.fromImage("img/bunny.png");
+                var bunnyAdder;
+
+                canvasContainer.addEventListener("mousedown", function () {
+                    clearInterval(bunnyAdder);
+                    bunnyAdder = setInterval(function () {
+                        for (var i = 0; i < 10; i++) {
+                            game.engine.create("Bunny", bunnyTexture);
+                        }
+
+                        bunniesCount.innerText = game.engine._entitiesCount;
+
+                    }, 1);
+                });
+
+                canvasContainer.addEventListener("mouseup", function () {
+                    clearInterval(bunnyAdder);
+                });
+
+                done();
+            },
+            onEnter: function (game, done) {
+                game.engine.addSystems(
+                    ["BunnyMovement", 0, document.getElementById("fps")],
+                    ["SpritePositionUpdater", 1],
+                    ["Render", 2]
+                );
+
+                game.start();
+                done();
+            }
+        });
+
+
+        Entropy.Engine.Component({
+            name: "Position",
+            initialize: function (x, y) {
+                this.x = x;
+                this.y = y;
+            }
+        });
+
+        Entropy.Engine.Component({
+            name: "Velocity",
+            initialize: function (vx, vy) {
+                this.vx = vx;
+                this.vy = vy;
+            }
+        });
+
+        Entropy.Engine.Component({
+            name: "Sprite",
+            initialize: function (sprite) {
+                this.sprite = sprite;
+            }
+        });
+
+        Entropy.Engine.Entity({
+            name: "Bunny",
+            family: "Bunnies",
+            create: function (game, bunnyTexture) {
+                var sprite = new PIXI.Sprite(bunnyTexture);
+                
+                sprite.position.x = 50;
+                sprite.position.y = 50;
+                sprite.anchor.x = 0.5;
+                sprite.anchor.y = 1;
+                
+                stage.addChild(sprite);
+
+                this.add("Position", 50, 50)
+                    .add("Velocity", Math.round(Math.random() * 150), Math.round(Math.random() * 150))
+                    .add("Sprite", sprite);
+            }
+        });
+
+
+        Entropy.Engine.System({
+            name: "BunnyMovement",
+            initialize: function (fps) {
+                this.fpsContainer = fps;
+            },
+            update: function (delta) {
+                this.fpsContainer.innerText = this.game.ticker.getCurrentFPS();
+                var bunnies = this.engine.getFamily("Bunnies");
+                var node;
+                while (node = bunnies.next()) {
+                    var bunny = node.data.components;
+
+                    //update position
+                    bunny.position.x += delta / 1000 * bunny.velocity.vx;
+                    bunny.position.y += delta / 1000 * bunny.velocity.vy;
+
+                    //add gravity
+                    bunny.velocity.vy += delta / 1000 * Entropy.GRAVITY;
+
+                    //bounce!
+                    if (bunny.position.x < 0) {
+                        bunny.position.x = 0;
+                        bunny.velocity.vx *= -1;
+                    }
+
+                    if (bunny.position.x > Entropy.WIDTH) {
+                        bunny.position.x = Entropy.WIDTH;
+                        bunny.velocity.vx *= -1;
+                    }
+
+                    if (bunny.position.y > Entropy.HEIGHT) {
+                        bunny.position.y = Entropy.HEIGHT;
+
+                        bunny.velocity.vy*= -1;
+                    }
+                }
+
+            }
+        });
+        
+        Entropy.Engine.System({
+            name: "SpritePositionUpdater",
+            update: function (delta, event) {
+                ///var sprites = this.engine.getEntitiesWith(["Sprite", "Position"]);
+                var sprites = this.engine.getFamily("Bunnies");
+                sprites.reset()
+                var node, sprite, position;
+
+                while (node = sprites.next()) {
+                    sprite = node.data.components.sprite;
+                    position = node.data.components.position;
+
+                    sprite.sprite.position.x = position.x;
+                    sprite.sprite.position.y = position.y;
+                }
+            }
+        });
+
+        Entropy.Engine.System({
+            name: "Render",
+            initialize: function () {
+                this.stage = stage;
+                this.renderer = renderer;
+            },
+            update: function (delta, event) {
+                this.renderer.render(this.stage);
+            }
+        });
+
+        window.addEventListener("load", function () {
+            game = new Entropy.Game("initialize");
+        }, false);
+
+    </script>
+</body>
+</html>
