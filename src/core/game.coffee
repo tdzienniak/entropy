@@ -4,6 +4,7 @@ Engine = require './engine'
 Input = require './input'
 Ticker = require './ticker'
 State = require './state'
+Inverse = require 'inverse'
 
 EventEmitter = require './event'
 
@@ -21,6 +22,7 @@ class Game extends EventEmitter
         @engine = new Engine(@)
         @ticker = new Ticker(@)
         @state = State.State(@)
+        @container = new Inverse()
 
         @ticker.on "ticker:tick", @engine.update, @engine
         @engine.on "engine:updateFinished", @input.clearKeyTimes, @input

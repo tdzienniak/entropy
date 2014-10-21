@@ -568,6 +568,58 @@ if (typeof module !== 'undefined' && module['exports']) {
 }
 
 },{}],2:[function(require,module,exports){
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) define([], factory);
+    else if (typeof exports === 'object') module.exports = factory();
+    else root.Inverse = factory();
+})(this, function () {
+    'use strict';
+    
+    var Inverse = function() {
+        this._boundCallbacks = {};
+        this._singletonCallbacks = {};
+        this._instantiatedSingletons = {};
+        this._registeredObjects = {};
+    };
+    
+    Inverse.prototype.make = function(name) {
+        if (this._registeredObjects.hasOwnProperty(name)) {
+            return this._registeredObjects[name];
+        }
+        
+        var args = Array.prototype.slice.call(arguments, 1);
+        
+        if (this._singletonCallbacks.hasOwnProperty(name)) {
+            if (!this._instantiatedSingletons.hasOwnProperty(name)) {
+                this._instantiatedSingletons[name] = this._singletonCallbacks[name].apply(this, args);
+            }
+            
+            return this._instantiatedSingletons[name];
+        }
+        
+        if (this._boundCallbacks.hasOwnProperty(name)) {
+            return this._boundCallbacks[name].apply(this, args);
+        }
+        
+        return null;
+    };
+    
+    Inverse.prototype.bind = function(name, callback) {
+        this._boundCallbacks[name] = callback;
+    };
+    
+    Inverse.prototype.singleton = function(name, callback) {
+        this._singletonCallbacks[name] = callback;
+    };
+    
+    Inverse.prototype.register = function(name, object) {
+        this._registeredObjects[name] = object;
+    };
+    
+    return Inverse;
+});
+
+},{}],3:[function(require,module,exports){
 var DoublyLinkedList, Node,
   __slice = [].slice;
 
@@ -789,7 +841,7 @@ module.exports = DoublyLinkedList;
 
 
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 var Node, OrderedLinkedList,
   __slice = [].slice;
 
@@ -937,7 +989,7 @@ module.exports = OrderedLinkedList;
 
 
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var Pool;
 
 Pool = (function() {
@@ -979,7 +1031,7 @@ module.exports = Pool;
 
 
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var DEFAULT_CONFIG, USER_CONFIG, type;
 
 type = require('../utils/type');
@@ -1013,7 +1065,7 @@ module.exports = function(key, value) {
 
 
 
-},{"../utils/type":20}],6:[function(require,module,exports){
+},{"../utils/type":21}],7:[function(require,module,exports){
 var BitSet, DoublyLinkedList, Engine, Entity, EventEmitter, OrderedLinkedList, Pool, config, debug, extend, register, type,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1386,7 +1438,7 @@ module.exports = Engine;
 
 
 
-},{"../collection/doublylinkedlist":2,"../collection/orderedlinkedlist":3,"../collection/pool":4,"../config/config":5,"../debug/debug":14,"../utils/extend":18,"../utils/type":20,"./entity":7,"./event":8,"./register":11,"bitset.js":1}],7:[function(require,module,exports){
+},{"../collection/doublylinkedlist":3,"../collection/orderedlinkedlist":4,"../collection/pool":5,"../config/config":6,"../debug/debug":15,"../utils/extend":19,"../utils/type":21,"./entity":8,"./event":9,"./register":12,"bitset.js":1}],8:[function(require,module,exports){
 var BitSet, Entity, EventEmitter, config, debug, register, type,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1620,7 +1672,7 @@ module.exports = Entity;
 
 
 
-},{"../config/config":5,"../debug/debug":14,"../utils/type":20,"./event":8,"./register":11,"bitset.js":1}],8:[function(require,module,exports){
+},{"../config/config":6,"../debug/debug":15,"../utils/type":21,"./event":9,"./register":12,"bitset.js":1}],9:[function(require,module,exports){
 var EventEmitter, type,
   __slice = [].slice;
 
@@ -1687,8 +1739,8 @@ module.exports = EventEmitter;
 
 
 
-},{"../utils/type":20}],9:[function(require,module,exports){
-var ARGS, BINDING, Engine, EventEmitter, FN, Game, Input, State, Ticker, type,
+},{"../utils/type":21}],10:[function(require,module,exports){
+var ARGS, BINDING, Engine, EventEmitter, FN, Game, Input, Inverse, State, Ticker, type,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   __slice = [].slice;
@@ -1702,6 +1754,8 @@ Input = require('./input');
 Ticker = require('./ticker');
 
 State = require('./state');
+
+Inverse = require('inverse');
 
 EventEmitter = require('./event');
 
@@ -1722,6 +1776,7 @@ Game = (function(_super) {
     this.engine = new Engine(this);
     this.ticker = new Ticker(this);
     this.state = State.State(this);
+    this.container = new Inverse();
     this.ticker.on("ticker:tick", this.engine.update, this.engine);
     this.engine.on("engine:updateFinished", this.input.clearKeyTimes, this.input);
     if (type.of.string(initialState)) {
@@ -1777,7 +1832,7 @@ module.exports = Game;
 
 
 
-},{"../utils/type":20,"./engine":6,"./event":8,"./input":10,"./state":12,"./ticker":13}],10:[function(require,module,exports){
+},{"../utils/type":21,"./engine":7,"./event":9,"./input":11,"./state":13,"./ticker":14,"inverse":2}],11:[function(require,module,exports){
 (function (global){
 var Input, _keys;
 
@@ -1980,7 +2035,7 @@ module.exports = Input;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var canModify, componentPatterns, config, debug, entityPatterns, nextComponentId, systemPatterns, type;
 
 type = require('../utils/type');
@@ -2081,7 +2136,7 @@ module.exports = {
 
 
 
-},{"../config/config":5,"../debug/debug":14,"../utils/type":20}],12:[function(require,module,exports){
+},{"../config/config":6,"../debug/debug":15,"../utils/type":21}],13:[function(require,module,exports){
 var debug, states, type,
   __slice = [].slice;
 
@@ -2218,7 +2273,7 @@ exports.register = function(state) {
 
 
 
-},{"../debug/debug":14,"../utils/type":20}],13:[function(require,module,exports){
+},{"../debug/debug":15,"../utils/type":21}],14:[function(require,module,exports){
 (function (global){
 var EventEmitter, Ticker, config, raf,
   __hasProp = {}.hasOwnProperty,
@@ -2381,7 +2436,7 @@ module.exports = Ticker;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../config/config":5,"./event":8}],14:[function(require,module,exports){
+},{"../config/config":6,"./event":9}],15:[function(require,module,exports){
 var config,
   __slice = [].slice;
 
@@ -2413,7 +2468,7 @@ module.exports = {
 
 
 
-},{"../config/config":5}],15:[function(require,module,exports){
+},{"../config/config":6}],16:[function(require,module,exports){
 var Const, Engine, Entropy, LinkedList, OrderedLinkedList, config, debug;
 
 require('./utils/polyfill');
@@ -2470,7 +2525,7 @@ module.exports = Entropy;
 
 
 
-},{"./collection/doublylinkedlist":2,"./collection/orderedlinkedlist":3,"./config/config":5,"./core/engine":6,"./core/game":9,"./core/ticker":13,"./debug/debug":14,"./utils/const":16,"./utils/easing":17,"./utils/polyfill":19}],16:[function(require,module,exports){
+},{"./collection/doublylinkedlist":3,"./collection/orderedlinkedlist":4,"./config/config":6,"./core/engine":7,"./core/game":10,"./core/ticker":14,"./debug/debug":15,"./utils/const":17,"./utils/easing":18,"./utils/polyfill":20}],17:[function(require,module,exports){
 var debug, type;
 
 type = require('./type');
@@ -2495,7 +2550,7 @@ module.exports = function(key, value) {
 
 
 
-},{"../debug/debug":14,"./type":20}],17:[function(require,module,exports){
+},{"../debug/debug":15,"./type":21}],18:[function(require,module,exports){
 module.exports = {
   Linear: {
     In: function(t, b, c, d) {
@@ -2627,7 +2682,7 @@ module.exports = {
 
 
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
 
@@ -2647,7 +2702,7 @@ module.exports = function() {
 
 
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function (global){
 (function() {
   var lastTime, vendor, vendors, _i, _len;
@@ -2700,7 +2755,7 @@ module.exports = function() {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var toString;
 
 toString = Object.prototype.toString;
@@ -2742,5 +2797,5 @@ module.exports = {
 
 
 
-},{}]},{},[15])(15)
+},{}]},{},[16])(16)
 });
