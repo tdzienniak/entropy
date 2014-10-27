@@ -100,7 +100,7 @@ class Entity extends EventEmitter
             debug.log "entity %s is in its final state", @name
             return @
 
-        if @_pattern.states? and not (stateName in @_pattern.states)
+        if @_pattern.states? and not (stateName of @_pattern.states)
             debug.warning "there is no state %s for entity %s", stateName, @name
             return @
 
@@ -126,13 +126,13 @@ class Entity extends EventEmitter
             debug.warning "entity %s is not ins state %s - no exiting required", @name, stateName
             return @
 
-        if @_pattern.states? and not (stateName in @_pattern.states)
+        if @_pattern.states? and not (stateName of @_pattern.states)
             debug.warning "there is no state %s for entity %s", stateName, @name
             return @
 
         statePattern = @_pattern.states[stateName]
 
-        @_stateChanges
+        @_stateChanges.push
             name: stateName
             action: "exit"
             fn: statePattern.exit

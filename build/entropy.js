@@ -1179,7 +1179,7 @@ Engine = (function(_super) {
     entity.getPattern().create.apply(entity, args);
     this._addEntityToFamilies(entity);
     this._addEntityToEngine(entity);
-    return this;
+    return entity;
   };
 
   Engine.prototype._getNewEntity = function(name) {
@@ -1320,6 +1320,7 @@ Engine = (function(_super) {
         matchedEntities.push(entity);
       }
     }
+    matchedEntities.reset && matchedEntities.reset();
     return matchedEntities;
   };
 
@@ -1442,8 +1443,7 @@ module.exports = Engine;
 var BitSet, Entity, EventEmitter, config, debug, register, type,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  __slice = [].slice,
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  __slice = [].slice;
 
 config = require('../config/config');
 
@@ -1566,7 +1566,7 @@ Entity = (function(_super) {
       debug.log("entity %s is in its final state", this.name);
       return this;
     }
-    if ((this._pattern.states != null) && !(__indexOf.call(this._pattern.states, stateName) >= 0)) {
+    if ((this._pattern.states != null) && !(stateName in this._pattern.states)) {
       debug.warning("there is no state %s for entity %s", stateName, this.name);
       return this;
     }
@@ -1594,12 +1594,12 @@ Entity = (function(_super) {
       debug.warning("entity %s is not ins state %s - no exiting required", this.name, stateName);
       return this;
     }
-    if ((this._pattern.states != null) && !(__indexOf.call(this._pattern.states, stateName) >= 0)) {
+    if ((this._pattern.states != null) && !(stateName in this._pattern.states)) {
       debug.warning("there is no state %s for entity %s", stateName, this.name);
       return this;
     }
     statePattern = this._pattern.states[stateName];
-    this._stateChanges({
+    this._stateChanges.push({
       name: stateName,
       action: "exit",
       fn: statePattern.exit,

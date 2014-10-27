@@ -98,7 +98,7 @@ class Engine extends EventEmitter
         @_addEntityToFamilies entity
         @_addEntityToEngine entity
 
-        return @
+        return entity
 
     _getNewEntity: (name) ->
         if @_entitiesPool.has name
@@ -205,6 +205,8 @@ class Engine extends EventEmitter
         for entity in @_entities
             if not type.of.undefined(entity) and @_searchingBitSet.subsetOf(entity._bitset) and @_excludingBitSet.and(entity._bitset).isEmpty()
                 matchedEntities.push entity
+
+        matchedEntities.reset and matchedEntities.reset()
 
         return matchedEntities
 
