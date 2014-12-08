@@ -177,6 +177,4 @@ class DoublyLinkedList
 
         return @
 
-
-
 module.exports = DoublyLinkedList

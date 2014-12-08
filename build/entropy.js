@@ -1126,6 +1126,8 @@ Engine = (function(_super) {
     this._entitiesToRemove = [];
     this._BLANK_FAMILY = new DoublyLinkedList();
     this._updating = false;
+    this._benchmarkSystem = false;
+    this._benchmarkOnce = true;
     this.on('engine:updateFinished', this._removeMarkedEntities, this);
     this.on('engine:updateFinished', this._transferFunctionalFamilies, this);
     this._entitiesCount = 0;
@@ -1267,7 +1269,7 @@ Engine = (function(_super) {
     for (_i = 0, _len = families.length; _i < _len; _i++) {
       family = families[_i];
       if ((_ref = this._families[family]) != null) {
-        _ref.remove(entity);
+        _ref.remove(entity, true);
       }
     }
     return this;
@@ -1376,6 +1378,12 @@ Engine = (function(_super) {
     return this;
   };
 
+  Engine.prototype.plug = function() {
+    var args;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return this.addSystem.apply(this, args);
+  };
+
   Engine.prototype.removeSystem = function() {
     var args, system;
     system = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
@@ -1402,14 +1410,23 @@ Engine = (function(_super) {
   Engine.prototype.isSystemActive = function(name) {};
 
   Engine.prototype.update = function(event) {
-    var delta, node, system;
+    var delta, node, start, system;
     delta = event.delta;
     this.emit('engine:beforeUpdate', event);
     this._updating = true;
     this._systems.reset();
     while (node = this._systems.next()) {
       system = node.data;
+      if (this._benchmarkSystem) {
+        start = performance.now();
+      }
       system.update(delta, event);
+      if (this._benchmarkSystem) {
+        debug.log('%s took %f ms to update', system.name, performance.now() - start);
+      }
+    }
+    if (this._benchmarkOnce) {
+      this._benchmarkSystem = false;
     }
     this._updating = false;
     this.emit('engine:afterUpdate', event);
@@ -1429,6 +1446,14 @@ Engine = (function(_super) {
       })(this));
     }
     return this;
+  };
+
+  Engine.prototype.benchmarkSystems = function(once) {
+    if (once == null) {
+      once = true;
+    }
+    this._benchmarkSystem = true;
+    return this._benchmarkOnce = once;
   };
 
   return Engine;
