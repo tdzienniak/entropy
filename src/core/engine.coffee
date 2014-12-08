@@ -49,6 +49,9 @@ class Engine extends EventEmitter
 
         @_updating = false
 
+        @_benchmarkSystem = off
+        @_benchmarkOnce = true
+
         @on 'engine:updateFinished', @_removeMarkedEntities, @
         @on 'engine:updateFinished', @_transferFunctionalFamilies, @
 
@@ -170,7 +173,7 @@ class Engine extends EventEmitter
         families = entity.getPattern()._families
 
         for family in families
-            @_families[family]?.remove entity
+            @_families[family]?.remove entity, true
 
         return @
 
@@ -255,6 +258,9 @@ class Engine extends EventEmitter
         @addSystem arg... for arg in args
         return @
 
+    plug: (args...) ->
+        return @addSystem(args...)
+
     removeSystem: (system, args...) ->
         if not @_updating
             system.remove and system.remove.apply system, args
@@ -286,8 +292,16 @@ class Engine extends EventEmitter
         @_systems.reset()
         while node = @_systems.next()
             system = node.data
-
+            
+            if (@_benchmarkSystem)
+                start = performance.now()
+            
             system.update delta, event
+
+            if (@_benchmarkSystem)
+                debug.log('%s took %f ms to update', system.name, performance.now() - start)
+        
+        @_benchmarkSystem = false if @_benchmarkOnce
 
         @_updating = false
 
@@ -304,5 +318,9 @@ class Engine extends EventEmitter
                 @removeAllEntities()
 
         return @
+
+    benchmarkSystems: (once=true) ->
+        @_benchmarkSystem = true
+        @_benchmarkOnce = once
 
 module.exports = Engine
