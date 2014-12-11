@@ -766,11 +766,13 @@ Engine = (function(_super) {
   Engine.prototype.removeSystem = function() {
     var args, system;
     system = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-    if (!this._updating) {
-      system.remove && system.remove.apply(system, args);
-      this._systems.remove(system, true);
-      delete this._singletonSystemsPresentInEngine[system.name];
-    }
+    this.once('engine:updateFinished', (function(_this) {
+      return function() {
+        system.remove && system.remove.apply(system, args);
+        _this._systems.remove(system, true);
+        return delete _this._singletonSystemsPresentInEngine[system.name];
+      };
+    })(this));
     return this;
   };
 

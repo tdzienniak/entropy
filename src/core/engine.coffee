@@ -262,7 +262,7 @@ class Engine extends EventEmitter
         return @addSystem(args...)
 
     removeSystem: (system, args...) ->
-        if not @_updating
+        @once 'engine:updateFinished', =>
             system.remove and system.remove.apply system, args
             @_systems.remove system, true
             delete @_singletonSystemsPresentInEngine[system.name]
