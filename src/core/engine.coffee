@@ -85,7 +85,7 @@ class Engine extends EventEmitter
                     _pattern: componentPattern
                 }
             else
-                debug.warning 'component "%" does not exist', name
+                debug.warning 'component "%s" does not exist', name
                 return {}
 
     addComponentToPool: (name, component) ->
@@ -232,7 +232,7 @@ class Engine extends EventEmitter
 
     addSystem: (name, priority, args...) ->
         if name of @_singletonSystemsPresentInEngine
-            debug.warning 'system % is defined as singleton and is already present in engine'
+            debug.warning 'system %s is defined as singleton and is already present in engine'
 
             return @
 
