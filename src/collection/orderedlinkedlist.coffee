@@ -73,7 +73,7 @@ class OrderedLinkedList
         do @reset
 
         while node = @next()
-            if not byData and this is node.next or byData and thing is node.next.data
+            if not byData and thing is node.next or byData and thing is node.next?.data
                 if node.next is @tail
                     node.next = null
                     @tail = node

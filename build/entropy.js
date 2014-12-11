@@ -285,7 +285,7 @@ OrderedLinkedList = (function() {
   };
 
   OrderedLinkedList.prototype.remove = function(thing, byData) {
-    var node;
+    var node, _ref;
     if (byData == null) {
       byData = false;
     }
@@ -302,7 +302,7 @@ OrderedLinkedList = (function() {
     }
     this.reset();
     while (node = this.next()) {
-      if (!byData && this === node.next || byData && thing === node.next.data) {
+      if (!byData && thing === node.next || byData && thing === ((_ref = node.next) != null ? _ref.data : void 0)) {
         if (node.next === this.tail) {
           node.next = null;
           this.tail = node;
