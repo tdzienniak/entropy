@@ -1,0 +1,339 @@
+{
+    "project": {
+        "name": "Entropy",
+        "description": "JavaScript entity system for writing games.",
+        "version": "0.3.0"
+    },
+    "files": {
+        "src\\core\\engine.js": {
+            "name": "src\\core\\engine.js",
+            "modules": {
+                "Engine": 1
+            },
+            "classes": {
+                "Engine": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\core\\pool.js": {
+            "name": "src\\core\\pool.js",
+            "modules": {},
+            "classes": {
+                "Pool": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\entropy.js": {
+            "name": "src\\entropy.js",
+            "modules": {
+                "Entropy": 1
+            },
+            "classes": {
+                "Entropy": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        }
+    },
+    "modules": {
+        "Engine": {
+            "name": "Engine",
+            "submodules": {},
+            "classes": {
+                "Engine": 1,
+                "Pool": 1
+            },
+            "fors": {},
+            "namespaces": {},
+            "tag": "module",
+            "file": "src\\core\\pool.js",
+            "line": 3,
+            "description": "Engine module"
+        },
+        "Entropy": {
+            "name": "Entropy",
+            "submodules": {},
+            "classes": {
+                "Entropy": 1
+            },
+            "fors": {},
+            "namespaces": {},
+            "tag": "module",
+            "file": "src\\entropy.js",
+            "line": 27,
+            "description": "Main Entropy module and top namespace."
+        }
+    },
+    "classes": {
+        "Engine": {
+            "name": "Engine",
+            "shortname": "Engine",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Engine",
+            "namespace": "",
+            "file": "src\\core\\engine.js",
+            "line": 13,
+            "extends": "EventEmitter",
+            "is_constructor": 1
+        },
+        "Pool": {
+            "name": "Pool",
+            "shortname": "Pool",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Engine",
+            "namespace": "",
+            "file": "src\\core\\pool.js",
+            "line": 3,
+            "description": "Simple implemenation of stack.",
+            "params": [
+                {
+                    "name": "initialSize",
+                    "description": "initial pool size",
+                    "type": "Number"
+                }
+            ]
+        },
+        "Entropy": {
+            "name": "Entropy",
+            "shortname": "Entropy",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Entropy",
+            "namespace": "",
+            "file": "src\\entropy.js",
+            "line": 27,
+            "description": "Main static framework. Used as top namespace.",
+            "static": 1
+        }
+    },
+    "classitems": [
+        {
+            "file": "src\\core\\engine.js",
+            "line": 21,
+            "description": "Indicates the greatest entity ID present in the system.\nUsed to generate new IDs.",
+            "itemtype": "property",
+            "name": "_gratestEntityID",
+            "access": "private",
+            "tagname": "",
+            "type": "Number",
+            "class": "Engine",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 31,
+            "description": "Pool of currently not used entity IDs. Will be reused.",
+            "itemtype": "property",
+            "name": "_idsToReuse",
+            "access": "private",
+            "tagname": "",
+            "type": "Pool",
+            "class": "Engine",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 50,
+            "itemtype": "method",
+            "name": "Component",
+            "static": 1,
+            "class": "Engine",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 58,
+            "itemtype": "method",
+            "name": "Entity",
+            "static": 1,
+            "class": "Engine",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 66,
+            "itemtype": "method",
+            "name": "System",
+            "static": 1,
+            "class": "Engine",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 74,
+            "description": "Used to perform matchin of entities.\nOnly parameter is an array of component names to include or object with `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
+            "itemtype": "method",
+            "name": "Query",
+            "static": 1,
+            "params": [
+                {
+                    "name": "criterions",
+                    "description": "query criterions",
+                    "type": "Array|Object"
+                }
+            ],
+            "return": {
+                "description": "query object",
+                "type": "Object"
+            },
+            "class": "Engine",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 88,
+            "description": "Creates new entity using pattern identified by 'name' parameter.\nEvery additional parameter will be applied to patterns 'create' method.",
+            "itemtype": "method",
+            "name": "create",
+            "params": [
+                {
+                    "name": "name",
+                    "description": "name of entity pattern",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "engine instance",
+                "type": "Engine"
+            },
+            "class": "Engine",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 105,
+            "description": "Returns array of entities satisfying given query conditions.",
+            "params": [
+                {
+                    "name": "query",
+                    "description": "query object",
+                    "type": "Query"
+                }
+            ],
+            "return": {
+                "description": "array of matched entities",
+                "type": "Array"
+            },
+            "class": "Engine",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 134,
+            "description": "1. update systems (rendering systems first)\n2. perform add/remove operations\n3. update queries",
+            "class": "Engine",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 140,
+            "description": "Returns ID for an entity. Reuses old IDs or creates new.",
+            "access": "private",
+            "tagname": "",
+            "return": {
+                "description": "new ID",
+                "type": "Number"
+            },
+            "class": "Engine",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 155,
+            "description": "Initializes new query. Performs initial entity search.",
+            "params": [
+                {
+                    "name": "query",
+                    "description": "query object",
+                    "type": "Object"
+                }
+            ],
+            "class": "Engine",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\pool.js",
+            "line": 20,
+            "description": "Puts value in the pool. Named pool, because it is used to implement pooling of various object in engine.",
+            "itemtype": "method",
+            "name": "put",
+            "params": [
+                {
+                    "name": "thing",
+                    "description": "value to put in pool",
+                    "type": "Any"
+                }
+            ],
+            "class": "Pool",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\pool.js",
+            "line": 38,
+            "description": "Gets value from the pool. Returns last put value.",
+            "itemtype": "method",
+            "name": "get",
+            "return": {
+                "description": "value from the pool",
+                "type": "Any"
+            },
+            "class": "Pool",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\core\\pool.js",
+            "line": 51,
+            "description": "Returns current size of the pool (not maximum size).",
+            "itemtype": "method",
+            "name": "size",
+            "return": {
+                "description": "pool size",
+                "type": "Number"
+            },
+            "class": "Pool",
+            "module": "Engine"
+        },
+        {
+            "file": "src\\entropy.js",
+            "line": 15,
+            "description": "Welcome message.",
+            "class": "Entropy",
+            "module": "Entropy"
+        }
+    ],
+    "warnings": [
+        {
+            "message": "Missing item type\nReturns array of entities satisfying given query conditions.",
+            "line": " src\\core\\engine.js:105"
+        },
+        {
+            "message": "Missing item type\n1. update systems (rendering systems first)\n2. perform add/remove operations\n3. update queries",
+            "line": " src\\core\\engine.js:134"
+        },
+        {
+            "message": "Missing item type\nReturns ID for an entity. Reuses old IDs or creates new.",
+            "line": " src\\core\\engine.js:140"
+        },
+        {
+            "message": "Missing item type\nInitializes new query. Performs initial entity search.",
+            "line": " src\\core\\engine.js:155"
+        },
+        {
+            "message": "Missing item type\nWelcome message.",
+            "line": " src\\entropy.js:15"
+        }
+    ]
+}

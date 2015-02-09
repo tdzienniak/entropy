@@ -1,6 +1,7 @@
 #Exclude folders
 test/
 node_modules/
+oldSrc/
 
 #Exclude project config files
 *.sublime-project
