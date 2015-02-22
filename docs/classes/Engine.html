@@ -307,7 +307,7 @@ reference to newly created component object.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l190"><code>src\core\engine.js:190</code></a>
+        <a href="../files/src_core_engine.js.html#l220"><code>src\core\engine.js:220</code></a>
         </p>
 
 
@@ -315,8 +315,9 @@ reference to newly created component object.</p>
     </div>
 
     <div class="description">
-        <p>Creates new entity using pattern identified by &#39;name&#39; parameter.
-Every additional parameter will be applied to patterns &#39;create&#39; method.</p>
+        <p>Creates new entity using pattern identified by <code>name</code> parameter.
+Every additional parameter will be applied to patterns <code>create</code> method.
+Patterns <code>create</code> method is called imediatelly after calling this method.</p>
 
     </div>
 
@@ -328,9 +329,10 @@ Every additional parameter will be applied to patterns &#39;create&#39; method.<
                         <code class="param-name">name</code>
                         <span class="type">String</span>
 
+                        <span class="flag multiple" title="This argument may occur one or more times.">multiple</span>
 
                     <div class="param-description">
-                        <p>name of entity pattern</p>
+                        <p>first argument is a name of entity (entity pattern). Every additional argument will be applied to patterns <code>create</code> method.</p>
 
                     </div>
 
@@ -349,6 +351,14 @@ Every additional parameter will be applied to patterns &#39;create&#39; method.<
         </div>
 
 
+        <div class="example">
+            <h4>Example:</h4>
+
+            <div class="example-content">
+                <pre class="code prettyprint"><code>game.engine.create(&quot;Ball&quot;, 5, 5, 5); //x, y, radius
+</code></pre>
+            </div>
+        </div>
 </div>
 <div id="method_Entity" class="method item">
     <h3 class="name"><code>Entity</code></h3>
@@ -386,7 +396,7 @@ Every additional parameter will be applied to patterns &#39;create&#39; method.<
 <li><strong>name</strong> (required) - name of an entity</li>
 <li><strong>create</strong> (required) - method called when creating new entity. Here you should add initial components to an entity.
 <code>this</code> inside function references newly created entity object (instance of <a href="../classes/Entity.html" class="crosslink">Entity</a> class).
-Function is called with first argument being <code>game</code> object and every other is a parameter with witch <a href="../classes/Engine.html#method_create" class="crosslink">create</a> method is called.</li>
+Function is called with first argument being <code>game</code> object and every others are parameters with witch <a href="../classes/Engine.html#method_create" class="crosslink">create</a> method is called.</li>
 <li><strong>remove</strong> (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).
 First and only argument is a <code>game</code> object.</li>
 </ul>
@@ -463,7 +473,7 @@ First and only argument is a <code>game</code> object.</li>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l169"><code>src\core\engine.js:169</code></a>
+        <a href="../files/src_core_engine.js.html#l199"><code>src\core\engine.js:199</code></a>
         </p>
 
 
@@ -543,12 +553,46 @@ var q2 = new Entropy.Engine.Query({
     </div>
 
     <div class="description">
-        
+        <p>Registers new system pattern.</p>
+
     </div>
 
 
 
 
+        <div class="example">
+            <h4>Example:</h4>
+
+            <div class="example-content">
+                <pre class="code prettyprint"><code>Entropy.Engine.System({
+    name: &quot;MovementSystem&quot;,
+    priority: 1, //not obligatory
+    initialize: function () {
+        this.query = new Entropy.Engine.Query([&quot;Position&quot;, &quot;Velocity&quot;]);
+    },
+    update: function (delta) {
+        var entities = this.engine.getEntities(this.query);
+        var e;
+
+        var i = 0;
+        while (e = entities[i]) {
+            var position = e.components.position;
+            var velocity = e.components.velocity;
+
+            position.x += delta / 1000 * velocity.vx;
+            position.y += delta / 1000 * velocity.vy;
+
+            i++;
+        }     
+    },
+    //not obligatory
+    remove: function () {
+
+    }
+});
+</code></pre>
+            </div>
+        </div>
 </div>
             </div>
 

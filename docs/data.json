@@ -255,7 +255,7 @@
         {
             "file": "src\\core\\engine.js",
             "line": 123,
-            "description": "Registers new entity pattern.\n\nPattern is an object with following properties:\n - __name__ (required) - name of an entity\n - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.\n  `this` inside function references newly created entity object (instance of {{#crossLink \"Entity\"}}Entity{{/crossLink}} class).\n  Function is called with first argument being `game` object and every other is a parameter with witch {{#crossLink \"Engine/create:method\"}}create{{/crossLink}} method is called.\n - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).\n  First and only argument is a `game` object.",
+            "description": "Registers new entity pattern.\n\nPattern is an object with following properties:\n - __name__ (required) - name of an entity\n - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.\n  `this` inside function references newly created entity object (instance of {{#crossLink \"Entity\"}}Entity{{/crossLink}} class).\n  Function is called with first argument being `game` object and every others are parameters with witch {{#crossLink \"Engine/create:method\"}}create{{/crossLink}} method is called.\n - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).\n  First and only argument is a `game` object.",
             "example": [
                 "\n    Entropy.Engine.Entity({\n        name: \"Ball\",\n        create: function (game, x, y, radius) {\n            var sprite = new Sprite(\"Ball\");\n\n            game.container.make(\"renderer\").addSprite(sprite);\n\n            this.add(\"Position\", x, y)\n                .add(\"Radius\", radius)\n                .add(\"Velocity\", 5, 5)\n                .add(\"Sprite\", sprite);\n        },\n        //not oblgatory\n        remove: function (game) {\n            game.container.make(\"renderer\").removeSprite(this.components.sprite.sprite);\n        }\n    });"
             ],
@@ -274,6 +274,10 @@
         {
             "file": "src\\core\\engine.js",
             "line": 161,
+            "description": "Registers new system pattern.",
+            "example": [
+                "\n    Entropy.Engine.System({\n        name: \"MovementSystem\",\n        priority: 1, //not obligatory\n        initialize: function () {\n            this.query = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n        },\n        update: function (delta) {\n            var entities = this.engine.getEntities(this.query);\n            var e;\n\n            var i = 0;\n            while (e = entities[i]) {\n                var position = e.components.position;\n                var velocity = e.components.velocity;\n\n                position.x += delta / 1000 * velocity.vx;\n                position.y += delta / 1000 * velocity.vy;\n\n                i++;\n            }     \n        },\n        //not obligatory\n        remove: function () {\n        \n        }\n    });"
+            ],
             "itemtype": "method",
             "name": "System",
             "static": 1,
@@ -281,7 +285,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 169,
+            "line": 199,
             "description": "Used to perform matching of entities.\nOnly parameter is an array of component names to include or object with `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
             "example": [
                 "\n    var q1 = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n    var q2 = new Entropy.Engine.Query({\n        include: [\"Position\", \"Velocity\"],\n        exclude: [\"Sprite\"]\n    });"
@@ -304,15 +308,19 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 190,
-            "description": "Creates new entity using pattern identified by 'name' parameter.\nEvery additional parameter will be applied to patterns 'create' method.",
+            "line": 220,
+            "description": "Creates new entity using pattern identified by `name` parameter.\nEvery additional parameter will be applied to patterns `create` method.\nPatterns `create` method is called imediatelly after calling this method.",
+            "example": [
+                "\n    game.engine.create(\"Ball\", 5, 5, 5); //x, y, radius"
+            ],
             "itemtype": "method",
             "name": "create",
             "params": [
                 {
                     "name": "name",
-                    "description": "name of entity pattern",
-                    "type": "String"
+                    "description": "first argument is a name of entity (entity pattern). Every additional argument will be applied to patterns `create` method.",
+                    "type": "String",
+                    "multiple": true
                 }
             ],
             "return": {
@@ -323,8 +331,31 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 235,
-            "description": "Returns array of entities satisfying given query conditions.",
+            "line": 257,
+            "description": "Removes entity from engine.\nEntity removal does not happen imediatelly, but after current update cycle.",
+            "example": [
+                "\n    //somwhere in the system 'update' method\n    if (entity.components.hp.quantity <= 0) { //entity is dead, remove\n        game.engine.remove(entity);\n    }"
+            ],
+            "params": [
+                {
+                    "name": "entity",
+                    "description": "Entity instance",
+                    "type": "Entity"
+                }
+            ],
+            "return": {
+                "description": "Engine instance",
+                "type": "Engine"
+            },
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 282,
+            "description": "Returns array of entities satisfying given {{#crossLink \"Query\"}}query{{/crossLink}} conditions.\nReturned arrays length does not correspond with matched entities quantity.\nTo loop over entities start from 0 index, and then check if element is different than 0.\nThis method guaranties, that entities will be arranged as subsequent array slice, starting from 0 index and ending on element equal to 0.\nThe array is in this form for performance reasons.",
+            "example": [
+                "\n    //in systems 'initialize' method...\n    this.query = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n\n    //in systems 'update' method\n    var movingEntities = this.engine.getEntities(this.query);\n\n    //here do something with entities in loop\n    ..."
+            ],
             "params": [
                 {
                     "name": "query",
@@ -340,43 +371,43 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 361,
+            "line": 423,
             "description": "Removing entities.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 395,
+            "line": 457,
             "description": "Adding entities.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 424,
+            "line": 486,
             "description": "Modifying entities.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 456,
+            "line": 518,
             "description": "Removing systems.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 475,
+            "line": 537,
             "description": "Adding systems.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 491,
+            "line": 553,
             "description": "Fetching query indexes.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 537,
+            "line": 599,
             "description": "Returns ID for an entity. Reuses old IDs or creates new.",
             "access": "private",
             "tagname": "",
@@ -388,7 +419,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 552,
+            "line": 614,
             "description": "Initializes new query. Performs initial entity search.",
             "params": [
                 {
@@ -485,40 +516,44 @@
             "line": " src\\core\\engine.js:83"
         },
         {
-            "message": "Missing item type\nReturns array of entities satisfying given query conditions.",
-            "line": " src\\core\\engine.js:235"
+            "message": "Missing item type\nRemoves entity from engine.\nEntity removal does not happen imediatelly, but after current update cycle.",
+            "line": " src\\core\\engine.js:257"
+        },
+        {
+            "message": "Missing item type\nReturns array of entities satisfying given {{#crossLink \"Query\"}}query{{/crossLink}} conditions.\nReturned arrays length does not correspond with matched entities quantity.\nTo loop over entities start from 0 index, and then check if element is different than 0.\nThis method guaranties, that entities will be arranged as subsequent array slice, starting from 0 index and ending on element equal to 0.\nThe array is in this form for performance reasons.",
+            "line": " src\\core\\engine.js:282"
         },
         {
             "message": "Missing item type\nRemoving entities.",
-            "line": " src\\core\\engine.js:361"
+            "line": " src\\core\\engine.js:423"
         },
         {
             "message": "Missing item type\nAdding entities.",
-            "line": " src\\core\\engine.js:395"
+            "line": " src\\core\\engine.js:457"
         },
         {
             "message": "Missing item type\nModifying entities.",
-            "line": " src\\core\\engine.js:424"
+            "line": " src\\core\\engine.js:486"
         },
         {
             "message": "Missing item type\nRemoving systems.",
-            "line": " src\\core\\engine.js:456"
+            "line": " src\\core\\engine.js:518"
         },
         {
             "message": "Missing item type\nAdding systems.",
-            "line": " src\\core\\engine.js:475"
-        },
-        {
-            "message": "Missing item type\nFetching query indexes.",
-            "line": " src\\core\\engine.js:491"
-        },
-        {
-            "message": "Missing item type\nReturns ID for an entity. Reuses old IDs or creates new.",
             "line": " src\\core\\engine.js:537"
         },
         {
+            "message": "Missing item type\nFetching query indexes.",
+            "line": " src\\core\\engine.js:553"
+        },
+        {
+            "message": "Missing item type\nReturns ID for an entity. Reuses old IDs or creates new.",
+            "line": " src\\core\\engine.js:599"
+        },
+        {
             "message": "Missing item type\nInitializes new query. Performs initial entity search.",
-            "line": " src\\core\\engine.js:552"
+            "line": " src\\core\\engine.js:614"
         },
         {
             "message": "Missing item type\nRequiring polyfills for requestAnimationFrame and performance.now.",

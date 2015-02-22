@@ -127,7 +127,7 @@ Engine.Component = function (component) {
  *  - __name__ (required) - name of an entity
  *  - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.
  *   `this` inside function references newly created entity object (instance of {{#crossLink "Entity"}}Entity{{/crossLink}} class).
- *   Function is called with first argument being `game` object and every other is a parameter with witch {{#crossLink "Engine/create:method"}}create{{/crossLink}} method is called.
+ *   Function is called with first argument being `game` object and every others are parameters with witch {{#crossLink "Engine/create:method"}}create{{/crossLink}} method is called.
  *  - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).
  *   First and only argument is a `game` object.
  *
@@ -159,6 +159,36 @@ Engine.Entity = function (entity) {
 }
 
 /**
+ * Registers new system pattern.
+ *
+ * @example
+ *     Entropy.Engine.System({
+ *         name: "MovementSystem",
+ *         priority: 1, //not obligatory
+ *         initialize: function () {
+ *             this.query = new Entropy.Engine.Query(["Position", "Velocity"]);
+ *         },
+ *         update: function (delta) {
+ *             var entities = this.engine.getEntities(this.query);
+ *             var e;
+ *
+ *             var i = 0;
+ *             while (e = entities[i]) {
+ *                 var position = e.components.position;
+ *                 var velocity = e.components.velocity;
+ *
+ *                 position.x += delta / 1000 * velocity.vx;
+ *                 position.y += delta / 1000 * velocity.vy;
+ * 
+ *                 i++;
+ *             }     
+ *         },
+ *         //not obligatory
+ *         remove: function () {
+ *         
+ *         }
+ *     });
+ * 
  * @method System
  * @static
  */
@@ -188,11 +218,15 @@ Engine.Query = Query;
 extend(Engine.prototype, EventEmitter.prototype);
 extend(Engine.prototype, {
     /**
-     * Creates new entity using pattern identified by 'name' parameter.
-     * Every additional parameter will be applied to patterns 'create' method.
+     * Creates new entity using pattern identified by `name` parameter.
+     * Every additional parameter will be applied to patterns `create` method.
+     * Patterns `create` method is called imediatelly after calling this method.
+     *
+     * @example
+     *     game.engine.create("Ball", 5, 5, 5); //x, y, radius
      *
      * @method create
-     * @param  {String} name    name of entity pattern
+     * @param  {String} ...name first argument is a name of entity (entity pattern). Every additional argument will be applied to patterns `create` method.
      * @return {Engine}         engine instance
      */
     create: function (name) {
@@ -220,6 +254,19 @@ extend(Engine.prototype, {
 
         return this;
     },
+    /**
+     * Removes entity from engine.
+     * Entity removal does not happen imediatelly, but after current update cycle.
+     *
+     * @example
+     *     //somwhere in the system 'update' method
+     *     if (entity.components.hp.quantity <= 0) { //entity is dead, remove
+     *         game.engine.remove(entity);
+     *     }
+     * 
+     * @param  {Entity} entity Entity instance
+     * @return {Engine}        Engine instance
+     */
     remove: function (entity) {
         if (entity == null) {
             return this;
@@ -233,8 +280,22 @@ extend(Engine.prototype, {
 
     },
     /**
-     * Returns array of entities satisfying given query conditions.
-     * 
+     * Returns array of entities satisfying given {{#crossLink "Query"}}query{{/crossLink}} conditions.
+     * Returned arrays length does not correspond with matched entities quantity.
+     * To loop over entities start from 0 index, and then check if element is different than 0.
+     * This method guaranties, that entities will be arranged as subsequent array slice, starting from 0 index and ending on element equal to 0.
+     * The array is in this form for performance reasons.
+     *
+     * @example
+     *     //in systems 'initialize' method...
+     *     this.query = new Entropy.Engine.Query(["Position", "Velocity"]);
+     *
+     *     //in systems 'update' method
+     *     var movingEntities = this.engine.getEntities(this.query);
+     *
+     *     //here do something with entities in loop
+     *     ...
+     *     
      * @param  {Query}  query query object
      * @return {Array}  array of matched entities
      */
@@ -245,6 +306,7 @@ extend(Engine.prototype, {
 
         return query.entities;
     },
+    
     addSystem: function (name) {
         var systemName, priority;
 
@@ -552,7 +614,7 @@ extend(Engine.prototype, {
     /**
      * Initializes new query. Performs initial entity search.
      * 
-     * @param  {Object} query query object
+     * @param {Object} query query object
      */
     _initializeQuery: function (query) {
         //TODO: add check for existing query
