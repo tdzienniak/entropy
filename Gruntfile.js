@@ -10,16 +10,17 @@ module.exports = function(grunt) {
 
         browserify: {
             standalone: {
-                src: [ './src/entropy.coffee' ],
                 dest: './build/entropy.js',
+                src: [ './src/entropy.js' ],
                 options: {
-                    transform: ['coffeeify'],
                     browserifyOptions: {
-                        extensions: [".coffee"],
-                        standalone: '<%= pkg.name %>'
+                        standalone: 'Entropy'
                     }
                 }
-            },
+            }
+
+            
+            
         },
 
         uglify: {
@@ -45,11 +46,9 @@ module.exports = function(grunt) {
 
     // Load the plugin that provides the "uglify" task.
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-wrap');
+    grunt.loadNpmTasks('grunt-browserify');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-qunit');
-    grunt.loadNpmTasks('grunt-browserify');
 
     // Default task(s).
     grunt.registerTask('default', ['clean', 'browserify', /*'wrap', */'uglify'/*, /*'qunit'*/]);

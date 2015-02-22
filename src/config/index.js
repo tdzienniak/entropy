@@ -4,8 +4,11 @@ var DEFAULT_CONFIG = {
     debug: 3,
     max_components_count: 100,
     max_frame_time: 20,
-    default_time_factor: 1,
-    default_fps: 60
+    time_factor: 1,
+    default_fps: 60,
+    ids_to_reuse_pool_size: 1000,
+    initial_components_pool_size: 1000,
+    initial_entities_pool_size: 1000
 };
 
 var USER_CONFIG = {};

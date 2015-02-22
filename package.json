@@ -1,7 +1,7 @@
 {
-  "name": "Entropy",
+  "name": "entropy.js",
   "version": "0.2.0",
-  "author": "Tymoteusz Dzienniak",
+  "author": "Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>",
   "description": "Framework for making games and not only games in entity system manner.",
   "license": "MIT",
   "repository": "https://github.com/RainPhilosopher/entropy",
@@ -9,14 +9,16 @@
     "grunt": "~0.4.5",
     "grunt-browserify": "~3.3.0",
     "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-jshint": "~0.11.0",
     "grunt-contrib-nodeunit": "~0.2.0",
     "grunt-contrib-qunit": "^0.4.0",
     "grunt-contrib-uglify": "^0.5.1"
   },
   "dependencies": {
-    "bitset.js": "^1.0.2",
-    "inverse": "^0.10.0",
-    "node.extend": "^1.1.3",
-    "underscore": "^1.7.0"
-  }
+    "bitset.js": "~1.0.2",
+    "inverse": "~0.10.0",
+    "node.extend": "~1.1.3",
+    "check-types": "~2.2.0"
+  },
+  "main": "./src/entropy.js"
 }

@@ -58,3 +58,5 @@ extend(Pool.prototype, {
         return this._currentSize;
     }
 });
+
+module.exports = Pool;

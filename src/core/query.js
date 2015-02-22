@@ -1,10 +1,23 @@
-var BitSet = require('BitSet');
+'use strict';
+
 var is = require('check-types');
 var debug = require('../debug');
 var config = require('../config');
 var register = require('./register');
+var extend = require('node.extend');
 
-module.exports = function (query) {
+var BitSet = require('bitset.js').BitSet;
+
+/**
+ * Used to perform matching of entities.
+ * Only parameter is an array of component names to include or object with `include` and/or `exclude` properties,
+ * witch are arrays of component names to respectively include and/or exclude.
+ * 
+ * @class Query
+ * @constructor
+ * @param {Object|Array} query query conditions
+ */
+function Query (query) {
     var include = [], exclude = [];
     var includeBS, excludeBS;
 
@@ -39,22 +52,26 @@ module.exports = function (query) {
         }
     }
 
-    return {
-        includes: includeBS,
-        excludes: excludeBS,
-        satisfiedBy: function (entity) {
-            var satisfies = true;
-            var includes = this.includes;
-            var excludes = this.excludes;
-            if (includes != null) {
-                satisfies = includes.subsetOf(entity._bitset);
-            }
+    this.include = includeBS;
+    this.excludes = excludeBS;
+}
 
-            if (excludes != null) {
-                satisfies = satisfies && excludes.and(entity._bitset).isEmpty();
-            }
+extend(Query.prototype, {
+    satisfiedBy: function (entity) {
+        var satisfies = true;
+        var includes = this.includes;
+        var excludes = this.excludes;
 
-            return satisfies;
-        };
+        if (includes != null) {
+            satisfies = includes.subsetOf(entity.bitset);
+        }
+
+        if (excludes != null) {
+            satisfies = satisfies && excludes.and(entity.bitset).isEmpty();
+        }
+
+        return satisfies;
     }
-};
+});
+
+module.exports = Query;

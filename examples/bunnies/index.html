@@ -17,6 +17,7 @@
         FPS: <span id="fps"></span>
     </p>
     <script src="../lib/pixi.min.js"></script>
+    <script src="../lib/memory-stats.js"></script>
     <script src="../../build/entropy.js"></script>
     <script>
         /*
@@ -43,30 +44,32 @@
 
                 canvasContainer.addEventListener("mousedown", function () {
                     clearInterval(bunnyAdder);
-                    bunnyAdder = setInterval(function () {
-                        for (var i = 0; i < 10; i++) {
+                    var bunnyAdderFn = function () {
+                        for (var i = 0; i < 50; i++) {
                             game.engine.create("Bunny", bunnyTexture);
                         }
 
                         bunniesCount.innerText = game.engine._entitiesCount;
 
-                    }, 1);
+                        bunnyAdder = setTimeout(bunnyAdderFn, 1);
+                    }
+
+                    bunnyAdderFn()
                 });
 
                 canvasContainer.addEventListener("mouseup", function () {
-                    clearInterval(bunnyAdder);
+                    clearTimeout(bunnyAdder);
                 });
 
                 done();
             },
-            onEnter: function (game, done) {
-                game.engine.addSystems(
-                    ["BunnyMovement", 0, document.getElementById("fps")],
-                    ["SpritePositionUpdater", 1],
-                    ["Render", 2]
-                );
+            enter: function (game, done) {
+                game.engine.addSystem(["Render", 0]);
+                game.engine.addSystem(["BunnyMovement", 1], document.getElementById("fps"));
+                //game.engine.addSystem(["SpritePositionUpdater", 2]);
 
                 game.start();
+                game.ticker.debug(true)
                 done();
             }
         });
@@ -97,7 +100,6 @@
 
         Entropy.Engine.Entity({
             name: "Bunny",
-            family: "Bunnies",
             create: function (game, bunnyTexture) {
                 var sprite = new PIXI.Sprite(bunnyTexture);
                 
@@ -119,13 +121,16 @@
             name: "BunnyMovement",
             initialize: function (fps) {
                 this.fpsContainer = fps;
+                this.query = new Entropy.Engine.Query(['Position', 'Velocity', 'Sprite']);
             },
             update: function (delta) {
                 this.fpsContainer.innerText = this.game.ticker.getCurrentFPS();
-                var bunnies = this.engine.getFamily("Bunnies");
-                var node;
-                while (node = bunnies.next()) {
-                    var bunny = node.data.components;
+                var bunnies = this.engine.getEntities(this.query);
+                var bunny, e;
+                var i = 0;
+
+                while (e = bunnies[i]) {
+                    var bunny = e.components;
 
                     //update position
                     bunny.position.x += delta / 1000 * bunny.velocity.vx;
@@ -150,6 +155,11 @@
 
                         bunny.velocity.vy*= -1;
                     }
+
+                    bunny.sprite.sprite.position.x = bunny.position.x;
+                    bunny.sprite.sprite.position.y = bunny.position.y;
+
+                    i++;
                 }
 
             }
@@ -157,18 +167,24 @@
         
         Entropy.Engine.System({
             name: "SpritePositionUpdater",
+            initialize: function () {
+                this.query = new Entropy.Engine.Query(['Position', 'Sprite']);
+            },
             update: function (delta, event) {
                 ///var sprites = this.engine.getEntitiesWith(["Sprite", "Position"]);
-                var sprites = this.engine.getFamily("Bunnies");
-                sprites.reset()
-                var node, sprite, position;
+                var sprites = this.engine.getEntities(this.query);
+                var e, sprite, position;
 
-                while (node = sprites.next()) {
-                    sprite = node.data.components.sprite;
-                    position = node.data.components.position;
+                var i = 0;
+
+                while (e = sprites[i]) {
+                    sprite = e.components.sprite;
+                    position = e.components.position;
 
                     sprite.sprite.position.x = position.x;
                     sprite.sprite.position.y = position.y;
+
+                    i++;
                 }
             }
         });
@@ -178,9 +194,19 @@
             initialize: function () {
                 this.stage = stage;
                 this.renderer = renderer;
+                var stats = new MemoryStats();
+
+                stats.domElement.style.position = 'fixed';
+                stats.domElement.style.right        = '0px';
+                stats.domElement.style.bottom       = '0px';
+
+                document.body.appendChild( stats.domElement );
+
+                this.stats = stats;
             },
             update: function (delta, event) {
                 this.renderer.render(this.stage);
+                this.stats.update();
             }
         });
 

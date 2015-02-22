@@ -5,12 +5,17 @@
  */
 'use strict';
 
-require('./utils/polyfill');
+/**
+ * Requiring polyfills for requestAnimationFrame and performance.now.
+ */
+require('./core/polyfill');
 
 var debug = require('./debug');
 var config = require('./config');
 
-var Const = require('./utils/const');
+var Const = require('./core/const');
+var Game = require('./core/game');
+var Engine = require('./core/engine');
 
 /**
  * Welcome message.
@@ -35,13 +40,21 @@ function Entropy () {
     return;
 }
 
-Entropy.Easing = require('./utils/easing');
+/**
+ * Assignes new property to main Entropy namespace identified by key (uppercased).
+ * Once assigned, can't be assigned again.
+ * Can be later accessed by: Entropy.KEY
+ *
+ * @static
+ * @method Const
+ * @param {String}  key      constans key
+ * @param {Any}     value    constans value
+ */
+Entropy.Const = function (key, value) {
+    return Const.call(this, key, value);
+};
 
-
+Entropy.Game = Game;
+Entropy.Engine = Engine;
 
 module.exports = Entropy;
-
-
-
-var entity;
-for (var i = 0; )
