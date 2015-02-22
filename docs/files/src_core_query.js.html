@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\core\pool.js - Entropy</title>
+    <title>src\core\query.js - Entropy</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -80,72 +80,87 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-<h1 class="file-heading">File: src\core\pool.js</h1>
+<h1 class="file-heading">File: src\core\query.js</h1>
 
 <div class="file">
     <pre class="code prettyprint linenums">
+&#x27;use strict&#x27;;
+
+var is = require(&#x27;check-types&#x27;);
+var debug = require(&#x27;../debug&#x27;);
+var config = require(&#x27;../config&#x27;);
+var register = require(&#x27;./register&#x27;);
 var extend = require(&#x27;node.extend&#x27;);
 
-/**
- * Simple implemenation of stack. 
- * 
- * @class Pool
- * @param {Number} initialSize initial pool size
- */
-function Pool(initialSize) {
-    this._maxSize = initialSize;
-    this._currentSize = 0;
-    this._pool = new Array(initialSize);
+var BitSet = require(&#x27;bitset.js&#x27;).BitSet;
 
-    for (var i = 0; i &lt; initialSize; i++) {
-        this._pool[i] = 0;
+/**
+ * Used to perform matching of entities.
+ * Only parameter is an array of component names to include or object with &#x60;include&#x60; and/or &#x60;exclude&#x60; properties,
+ * witch are arrays of component names to respectively include and/or exclude.
+ * 
+ * @class Query
+ * @constructor
+ * @param {Object|Array} query query conditions
+ */
+function Query (query) {
+    var include = [], exclude = [];
+    var includeBS, excludeBS;
+
+    if (is.array(query)) {
+        include = query;
+    } else if (is.object(query)) {
+        if (is.array(query.include)) {
+           include = query.include; 
+        }
+        if (is.array(query.exclude)) {
+            exclude = query.exclude;
+        }
     }
+
+    if (include.lenght === 0 &amp;&amp; exclude.lenght === 0) {
+        debug.warn(&#x27;You want to create empty query. If your intention is to get all entities, use getAllEntities() instead.&#x27;);
+        return;
+    }
+
+
+    if (include.lenght &gt; 0) {
+        includeBS = new BitSet(config(&#x27;max_component_count&#x27;));
+        for (var i = 0; i &lt; include.lenght; i++) {
+            includeBS.set(register.getComponentID(include[i]));
+        }
+    }
+
+    if (exclude) {
+        excludeBS = new BitSet(config(&#x27;max_component_count&#x27;));
+        for (var e = 0; e &lt; exclude.lenght; e++) {
+            excludeBS.set(register.getComponentID(exclude[i]))
+        }
+    }
+
+    this.include = includeBS;
+    this.excludes = excludeBS;
 }
 
-extend(Pool.prototype, {
-    /**
-     * Puts value in the pool. Named pool, because it is used to implement pooling of various object in engine.
-     * 
-     * @method put
-     * @param  {Any} thing value to put in pool
-     */
-    put: function (thing) {
-        if (this._currentSize === this._maxSize) {
-            this._maxSize = Math.round(this._currentSize * 1.5);
-            this._pool.lenght = this._maxSize;
+extend(Query.prototype, {
+    satisfiedBy: function (entity) {
+        var satisfies = true;
+        var includes = this.includes;
+        var excludes = this.excludes;
 
-            for (var i = this._currentSize + 1; i &lt; this._maxSize; i++) {
-                this._pool[i] = 0;
-            }
+        if (includes != null) {
+            satisfies = includes.subsetOf(entity.bitset);
         }
 
-        this._pool[++this._currentSize] = thing;
-    },
-    /**
-     * Gets value from the pool. Returns last put value.
-     *
-     * @method get
-     * @return {Any} value from the pool
-     */
-    get: function () {
-        if (this._currentSize === 0) {
-            return null;
+        if (excludes != null) {
+            satisfies = satisfies &amp;&amp; excludes.and(entity.bitset).isEmpty();
         }
 
-        return this._pool[this._currentSize--];
-    },
-    /**
-     * Returns current size of the pool (not maximum size).
-     *
-     * @method size
-     * @return {Number} pool size
-     */
-    size: function () {
-        return this._currentSize;
+        return satisfies;
     }
 });
 
-module.exports = Pool;
+module.exports = Query;
     </pre>
 </div>
                     </div>

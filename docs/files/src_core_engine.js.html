@@ -39,12 +39,13 @@
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
                                 <li><a href="../classes/Engine.html">Engine</a></li>
+                                <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
                                 <li><a href="../classes/Pool.html">Pool</a></li>
+                                <li><a href="../classes/Query.html">Query</a></li>
                             </ul>
                 
                             <ul id="api-modules" class="apis modules">
-                                <li><a href="../modules/Engine.html">Engine</a></li>
                                 <li><a href="../modules/Entropy.html">Entropy</a></li>
                             </ul>
                         </div>
@@ -83,25 +84,34 @@
 
 <div class="file">
     <pre class="code prettyprint linenums">
-/**
- * Engine module
- *
- * @module Engine
- */
+&#x27;use strict&#x27;;
+
 var extend = require(&#x27;node.extend&#x27;);
 var config = require(&#x27;../config&#x27;);
+var array = require(&#x27;./fastarray&#x27;);
+var is = require(&#x27;check-types&#x27;);
+var debug = require(&#x27;../debug&#x27;);
+var register = require(&#x27;./register&#x27;);
+var slice = Array.prototype.slice;
 
 var Query = require(&#x27;./query&#x27;);
 var EventEmitter = require(&#x27;./event&#x27;);
 var Pool = require(&#x27;./pool&#x27;);
+var Entity = require(&#x27;./entity&#x27;);
 
 /**
  * @class Engine
  * @extends EventEmitter
  * @constructor
  */
-function Engine () {
+function Engine (game) {
     EventEmitter.call(this);
+    
+    /**
+     * [game description]
+     * @type {[type]}
+     */
+    this.game = game;
 
     /**
      * Indicates the greatest entity ID present in the system.
@@ -122,30 +132,116 @@ function Engine () {
      */
     this._idsToReuse = new Pool(config(&#x27;ids_to_reuse_pool_size&#x27;));
 
+    /**
+     * Systems that are processed every tick.
+     *
+     * @property _systems
+     * @private
+     * @type Array
+     */
     this._systems = [];
-    this._entities = [];
 
-    this._entitiesToAdd = new Pool(100);
-    this._entitiesToRemove = new Pool(100);
+    /**
+     * Array with entities. Array index corresponds to ID of an entity.
+     * @property _entities
+     * @private
+     * @type Array
+     */
+    this._entities = array.alloc(10000);
 
+    this._modifiedEntities = array.alloc(10000);
+    this._modifiedEntitiesLength = 0;
+
+    this._entitiesToAdd = new Pool(1000);
+    this._entitiesToRemove = new Pool(1000);
+    this._systemsToAdd = new Pool(1000);
+    this._systemsToRemove = new Pool(1000);
+
+    this._entitiesPool = {};
+    this._componentsPool = {};
+    
     this._queries = [];
 
+    this._entitiesCount = 0;
+
+    register.setCannotModify();
+
+    /**
+     * Initialize components and entities pools.
+     */
+    register.listComponentsNames().forEach(function (name) {
+        this._componentsPool[name] = new Pool(config(&#x27;initial_components_pool_size&#x27;));
+    }, this);
+
+    register.listEntitiesNames().forEach(function (name) {
+        this._entitiesPool[name] = new Pool(config(&#x27;initial_entities_pool_size&#x27;));
+    }, this);
 }
 
 /**
+ * Registers new component pattern.
+ * Only argument should be an object with obligatory &#x60;name&#x60; property and &#x60;initialize&#x60; method.
+ * This method is used to assign some data to component object. &#x60;this&#x60; inside &#x60;initialize&#x60; function is a
+ * reference to newly created component object.
+ *
+ * @example
+ *     Entropy.Engine.Component({
+ *         name: &quot;Position&quot;,
+ *         initialize: function (x, y) {
+ *             this.x = x;
+ *             this.y = y;
+ *         },
+ *         //not obligatory
+ *         reset: function () {
+ *             this.x = 0;
+ *             this.y = 0;
+ *         }
+ *     });
+ * 
  * @method Component
  * @static
+ * @param {Object} component component pattern
  */
 Engine.Component = function (component) {
-
+    register.registerComponent(component);
 }
 
 /**
+ * Registers new entity pattern.
+ *
+ * Pattern is an object with following properties:
+ *  - __name__ (required) - name of an entity
+ *  - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.
+ *   &#x60;this&#x60; inside function references newly created entity object (instance of {{#crossLink &quot;Entity&quot;}}Entity{{/crossLink}} class).
+ *   Function is called with first argument being &#x60;game&#x60; object and every other is a parameter with witch {{#crossLink &quot;Engine/create:method&quot;}}create{{/crossLink}} method is called.
+ *  - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).
+ *   First and only argument is a &#x60;game&#x60; object.
+ *
+ * @example
+ *     Entropy.Engine.Entity({
+ *         name: &quot;Ball&quot;,
+ *         create: function (game, x, y, radius) {
+ *             var sprite = new Sprite(&quot;Ball&quot;);
+ * 
+ *             game.container.make(&quot;renderer&quot;).addSprite(sprite);
+ * 
+ *             this.add(&quot;Position&quot;, x, y)
+ *                 .add(&quot;Radius&quot;, radius)
+ *                 .add(&quot;Velocity&quot;, 5, 5)
+ *                 .add(&quot;Sprite&quot;, sprite);
+ *         },
+ *         //not oblgatory
+ *         remove: function (game) {
+ *             game.container.make(&quot;renderer&quot;).removeSprite(this.components.sprite.sprite);
+ *         }
+ *     });
+ * 
  * @method Entity
  * @static
+ * @param {Object} entity entity pattern
  */
 Engine.Entity = function (entity) {
-
+    register.registerEntity(entity);
 }
 
 /**
@@ -153,17 +249,24 @@ Engine.Entity = function (entity) {
  * @static
  */
 Engine.System = function (system) {
-
+    register.registerSystem(system);
 }
 
 /**
- * Used to perform matchin of entities.
+ * Used to perform matching of entities.
  * Only parameter is an array of component names to include or object with &#x60;include&#x60; and/or &#x60;exclude&#x60; properties,
  * witch are arrays of component names to respectively include and/or exclude.
+ *
+ * @example
+ *     var q1 = new Entropy.Engine.Query([&quot;Position&quot;, &quot;Velocity&quot;]);
+ *     var q2 = new Entropy.Engine.Query({
+ *         include: [&quot;Position&quot;, &quot;Velocity&quot;],
+ *         exclude: [&quot;Sprite&quot;]
+ *     });
  * 
  * @method Query
  * @static
- * @param {Array|Object} criterions query criterions
+ * @param {Array|Object} criterions query matching criterions
  * @return {Object} query object
  */
 Engine.Query = Query;
@@ -179,10 +282,38 @@ extend(Engine.prototype, {
      * @return {Engine}         engine instance
      */
     create: function (name) {
+        if (is.not.unemptyString(name)) {
+            debug.warn(&#x27;entity name must be a string&#x27;);
+            return this;
+        }
 
+        var entityPattern = register.getEntityPattern(name);
+
+        if (is.not.object(entityPattern)) {
+            debug.warn(&#x27;entity pattern for %s does not exist&#x27;, name);
+            return this;
+        }
+
+        var args = slice.call(arguments, 1);
+        args.unshift(this.game);
+
+        var entity = this._entitiesPool[name].get();
+        entity = entity || new Entity(name, entityPattern, this);
+
+        entityPattern.create.apply(entity, args);
+        
+        this._entitiesToAdd.put(entity);
+
+        return this;
     },
     remove: function (entity) {
+        if (entity == null) {
+            return this;
+        }
 
+        this._entitiesToRemove.put(entity);
+
+        return this;
     },
     getAllEntities: function () {
 
@@ -194,33 +325,300 @@ extend(Engine.prototype, {
      * @return {Array}  array of matched entities
      */
     getEntities: function (query) {
+        if (this._queries.indexOf(query) === -1) {
+            this._initializeQuery(query);
+        }
 
+        return query.entities;
     },
-    addSystem: function (name, args) {
+    addSystem: function (name) {
+        var systemName, priority;
 
+        if (is.array(name)) {
+            if (name.length !== 2) {
+                debug.warn(&#x27;To add system with priority you must provide an array with two elements - [systemName, priority] - as a first parameter.&#x27;);
+                return this;
+            }
+
+            systemName = name[0];
+            priority = name[1];
+        } else if (is.unemptyString(name)) {
+            systemName = name;
+        } else {
+            debug.warn(&#x27;First argument for addSystem method must be either system name or array with system name and desired priority.&#x27;);
+            return this;
+        }
+
+        var pattern = register.getSystemPattern(systemName);
+
+        if (is.not.object(pattern)) {
+            debug.warn(&#x27;There is no system %s.&#x27;, name);
+            return this;
+        }
+
+        if (pattern.singleton) {
+            for (var i = 0, len = this._systems.length; i &lt; len; i++) {
+                if (this._systems[i].name === pattern.name) {
+                    debug.info(&#x27;System you want to add is a singleton and there is one already present in the engine. Returning...&#x27;);
+                    return this;
+                }
+            }
+        }
+
+        var args = Array.prototype.slice.call(arguments, 1);
+
+        if (priority == null) {
+            if (is.number(pattern.priority)) {
+                priority = pattern.priority;
+            } else {
+                priority = 0;
+            }
+        }
+
+        var newSystem = extend(true, {}, pattern);
+        newSystem.priority = priority;
+
+        if (is.function(newSystem.initialize)) {
+            newSystem.initialize.apply(newSystem, args);
+        }
+
+        newSystem.engine = this;
+        newSystem.game = this.game;
+
+        this._systemsToAdd.put(newSystem);
+
+        return this;
     },
     removeSystem: function (system) {
+        if (system == null) {
+            debug.warn(&#x27;System to remove has to be an object.&#x27;);
+            return this;
+        }
+
+        this._systemsToRemove.put(system);
+    },
+    enableSystem: function (system) {
+        if (system == null) {
+            return;
+        }
+
+        system._disabled = false;
+    },
+    disableSystem: function (system) {
+        if (system == null) {
+            return;
+        }
+
+        system._disabled = true;
+    },
+    markModifiedEntity: function (entity) {
+        if (entity.id === 0) {
+            return;
+        }
+
+        if (array.indexOf(this._modifiedEntities, this._modifiedEntitiesLength, entity.id) !== -1) {
+            return;
+        }
+
+        array.push(this._modifiedEntities, this._modifiedEntitiesLength++, entity.id);
+    },
+    clear: function () {
+
+
 
     },
-    update: function (delta) {
-        var i, len, system;
+    update: function (event) {
+        var delta = event.delta;
+        var i, j, len, system, id, name, index, indexOfEntity, indexLength;
+        var query, queries = this._queries;
+        var systemEntities = this._entities;
+        var modifiedEntities = this._modifiedEntities;
 
         for (i = 0, len = this._systems.length; i &lt; len; i++) {
             system = this._systems[i];
             
-            if (system.paused) {
+            if (system._disabled) {
                 continue;
             }
 
             system.update(delta);
         }
 
+        /**
+         * Removing entities.
+         */
+        var entityToRemove;
+        while (entityToRemove = this._entitiesToRemove.get()) {
+            for (i = 0, len = this._queries.length; i &lt; len; i++) {
+                query = queries[i];
+
+                if (!query.satisfiedBy(entityToRemove)) {
+                    continue;
+                }
+
+                index = query.index;
+                indexOfEntity = array.indexOf(index, query.indexLength, entityToRemove.id);
+
+                if (indexOfEntity !== -1) {
+                    query.touched = true;
+                    array.removeAtIndexConst(index, query.indexLength--, indexOfEntity);
+                }
+            }
+
+            if (is.function(entityToRemove.pattern.remove)) {
+                entityToRemove.pattern.remove.call(entityToRemove, this.game);
+            }
+
+            systemEntities[entityToRemove.id] = 0;
+            entityToRemove.id = 0;
+
+            name = entityToRemove.name;
+
+            this._entitiesPool[name].put(entityToRemove);
+            this._entitiesCount -= 1;
+        }
 
         /**
-         *  1. update systems (rendering systems first)
-         *  2. perform add/remove operations
-         *  3. update queries
+         * Adding entities.
          */
+        var entityToAdd;
+        while (entityToAdd = this._entitiesToAdd.get()) {
+
+            id = this._generateEntityID();
+
+            if (id &gt; systemEntities.length) {
+                array.extend(systemEntities, Math.round(1.25 * systemEntities.length));
+            }
+
+            entityToAdd.id = id;
+            systemEntities[id] = entityToAdd;
+            
+            for (i = 0, len = this._queries.length; i &lt; len; i++) {
+                query = queries[i];
+
+                if (!query.satisfiedBy(entityToAdd)) {
+                    continue;
+                }
+
+                query.touched = true;
+                array.push(query.index, query.indexLength++, id);
+            }
+
+            this._entitiesCount += 1;
+        }
+
+        /**
+         * Modifying entities.
+         */
+        i = 0;
+        var modifiedEntity;
+        while (modifiedEntity = systemEntities[modifiedEntities[i]]) {
+
+            modifiedEntity.applyModifications();
+
+            for (j = 0, len = this._queries.length; j &lt; len; j++) {
+                query = queries[j];
+
+                index = query.index;
+                indexLength = query.indexLength;
+
+                var satisfied = query.satisfiedBy(modifiedEntity);
+                var indexOfEntity =  array.indexOf(index, indexLength, modifiedEntity.id);
+
+                if (satisfied &amp;&amp; indexOfEntity === -1) {
+                    query.touched = true;
+                    array.push(index, query.indexLength++, modifiedEntity.id);
+                } else if (!satisfied &amp;&amp; indexOfEntity !== -1) {
+                    query.touched = true;
+                    array.removeAtIndexConst(index, query.indexLength--, indexOfEntity);
+                }
+            }
+
+            i++;
+        }
+        array.clear(this._modifiedEntities, this._modifiedEntitiesLength);
+        this._modifiedEntitiesLength = 0;
+
+        /**
+         * Removing systems.
+         */
+        var systemToRemove;
+        while (systemToRemove = this._systemsToRemove.get()) {
+             var indexOfSystem = this._systems.indexOf(systemToRemove);
+
+            if (indexOfSystem === -1) {
+                debug.warn(&#x27;Nothing to remove.&#x27;);
+                continue;
+            }
+
+            if (is.function(systemToRemove.remove)) {
+                systemToRemove.remove();
+            }
+
+            array.removeAtIndex(this._systems, indexOfSystem);
+        }
+
+        /**
+         * Adding systems.
+         */
+        var systemToAdd;
+        while (systemToAdd = this._systemsToAdd.get()) {
+            var insertionIndex = 0;
+            var priority = systemToAdd.priority;
+            for (len = this._systems.length; insertionIndex &lt; len; insertionIndex++) {
+                if (this._systems[insertionIndex].priority &gt; priority) {
+                    break;
+                }
+            }
+
+            this._systems.splice(insertionIndex, 0, systemToAdd);            
+        }
+
+        /**
+         * Fetching query indexes.
+         */
+        for (i = 0, len = this._queries.length; i &lt; len; i++) {
+            query = queries[i];
+            if (!query.touched) {
+                continue;
+            }
+
+            var index = query.index;
+            var entities = query.entities;
+            var entitiesLength = 0;
+            i = 0;
+            while (id = index[i]) {
+                array.push(entities, entitiesLength++, systemEntities[id]);
+                i += 1;
+            }
+
+            array.push(entities, entitiesLength, 0);
+            query.entitiesLength = entitiesLength;
+            query.touched = false;
+        }
+    },
+    _getNewComponent: function (name) {
+        var component;
+        var componentPattern = register.getComponentPattern(name);
+
+        if (is.not.object(componentPattern)) {
+            return null;
+        }
+
+        component = this._componentsPool[name].get();
+
+        if (component == null) {
+            component = {
+                _pattern: componentPattern
+            };
+        } else if (is.function(component._pattern.reset)) {
+            component._pattern.reset.call(component);
+        }
+        
+        return component;
+    },
+    _addComponentToPool: function (component) {
+        this._componentsPool[component._pattern.name].put(component);
     },
     /**
      * Returns ID for an entity. Reuses old IDs or creates new.
@@ -245,17 +643,33 @@ extend(Engine.prototype, {
     _initializeQuery: function (query) {
         //TODO: add check for existing query
 
-        var entities = [];
+        var entities = array.alloc(1000);
+        var entitiesLength = 0;
+        var index = array.alloc(1000);
+        var indexLength = 0;
 
-        for (var i = 0; i &lt; config(&#x27;&#x27;))
+        var entity;
+        for (var i = 0, greatestID = this._greatestEntityID; i &lt; greatestID; i++) {
+            entity = entities[i];
+            if (entity === 0) {
+                return;
+            }
 
-        var queryObject = {
-            query: query,
-            entities: 
-        };
+            if (query.satisfiedBy(entity)) {
+                array.push(index, indexLength++, entity.id);
+                array.push(entities, entitiesLength++, entity);
+            }
+        }
 
+        extend(query, {
+            entities: entities,
+            entitiesLength: entitiesLength,
+            index: index,
+            indexLength: indexLength,
+            touched: false
+        });
 
-        this._queries.push();
+        this._queries.push(query);
     }
 });
 

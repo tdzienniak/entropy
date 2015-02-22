@@ -39,12 +39,13 @@
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
                                 <li><a href="../classes/Engine.html">Engine</a></li>
+                                <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
                                 <li><a href="../classes/Pool.html">Pool</a></li>
+                                <li><a href="../classes/Query.html">Query</a></li>
                             </ul>
                 
                             <ul id="api-modules" class="apis modules">
-                                <li><a href="../modules/Engine.html">Engine</a></li>
                                 <li><a href="../modules/Entropy.html">Entropy</a></li>
                             </ul>
                         </div>
@@ -90,12 +91,17 @@
  */
 &#x27;use strict&#x27;;
 
-require(&#x27;./utils/polyfill&#x27;);
+/**
+ * Requiring polyfills for requestAnimationFrame and performance.now.
+ */
+require(&#x27;./core/polyfill&#x27;);
 
 var debug = require(&#x27;./debug&#x27;);
 var config = require(&#x27;./config&#x27;);
 
-var Const = require(&#x27;./utils/const&#x27;);
+var Const = require(&#x27;./core/const&#x27;);
+var Game = require(&#x27;./core/game&#x27;);
+var Engine = require(&#x27;./core/engine&#x27;);
 
 /**
  * Welcome message.
@@ -120,16 +126,24 @@ function Entropy () {
     return;
 }
 
-Entropy.Easing = require(&#x27;./utils/easing&#x27;);
+/**
+ * Assignes new property to main Entropy namespace identified by key (uppercased).
+ * Once assigned, can&#x27;t be assigned again.
+ * Can be later accessed by: Entropy.KEY
+ *
+ * @static
+ * @method Const
+ * @param {String}  key      constans key
+ * @param {Any}     value    constans value
+ */
+Entropy.Const = function (key, value) {
+    return Const.call(this, key, value);
+};
 
-
+Entropy.Game = Game;
+Entropy.Engine = Engine;
 
 module.exports = Entropy;
-
-
-
-var entity;
-for (var i = 0; )
     </pre>
 </div>
                     </div>

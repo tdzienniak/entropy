@@ -93,16 +93,66 @@ function Engine (game) {
 }
 
 /**
+ * Registers new component pattern.
+ * Only argument should be an object with obligatory `name` property and `initialize` method.
+ * This method is used to assign some data to component object. `this` inside `initialize` function is a
+ * reference to newly created component object.
+ *
+ * @example
+ *     Entropy.Engine.Component({
+ *         name: "Position",
+ *         initialize: function (x, y) {
+ *             this.x = x;
+ *             this.y = y;
+ *         },
+ *         //not obligatory
+ *         reset: function () {
+ *             this.x = 0;
+ *             this.y = 0;
+ *         }
+ *     });
+ * 
  * @method Component
  * @static
+ * @param {Object} component component pattern
  */
 Engine.Component = function (component) {
     register.registerComponent(component);
 }
 
 /**
+ * Registers new entity pattern.
+ *
+ * Pattern is an object with following properties:
+ *  - __name__ (required) - name of an entity
+ *  - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.
+ *   `this` inside function references newly created entity object (instance of {{#crossLink "Entity"}}Entity{{/crossLink}} class).
+ *   Function is called with first argument being `game` object and every other is a parameter with witch {{#crossLink "Engine/create:method"}}create{{/crossLink}} method is called.
+ *  - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).
+ *   First and only argument is a `game` object.
+ *
+ * @example
+ *     Entropy.Engine.Entity({
+ *         name: "Ball",
+ *         create: function (game, x, y, radius) {
+ *             var sprite = new Sprite("Ball");
+ * 
+ *             game.container.make("renderer").addSprite(sprite);
+ * 
+ *             this.add("Position", x, y)
+ *                 .add("Radius", radius)
+ *                 .add("Velocity", 5, 5)
+ *                 .add("Sprite", sprite);
+ *         },
+ *         //not oblgatory
+ *         remove: function (game) {
+ *             game.container.make("renderer").removeSprite(this.components.sprite.sprite);
+ *         }
+ *     });
+ * 
  * @method Entity
  * @static
+ * @param {Object} entity entity pattern
  */
 Engine.Entity = function (entity) {
     register.registerEntity(entity);
@@ -120,6 +170,13 @@ Engine.System = function (system) {
  * Used to perform matching of entities.
  * Only parameter is an array of component names to include or object with `include` and/or `exclude` properties,
  * witch are arrays of component names to respectively include and/or exclude.
+ *
+ * @example
+ *     var q1 = new Entropy.Engine.Query(["Position", "Velocity"]);
+ *     var q2 = new Entropy.Engine.Query({
+ *         include: ["Position", "Velocity"],
+ *         exclude: ["Sprite"]
+ *     });
  * 
  * @method Query
  * @static
@@ -280,7 +337,7 @@ extend(Engine.prototype, {
         array.push(this._modifiedEntities, this._modifiedEntitiesLength++, entity.id);
     },
     clear: function () {
-        
+
 
 
     },

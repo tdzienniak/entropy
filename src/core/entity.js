@@ -10,6 +10,15 @@ var slice = Array.prototype.slice;
 var EventEmitter = require('./event');
 var BitSet = require('bitset.js').BitSet;
 
+/**
+ * Entity class.
+ *
+ * @class Entity
+ * @constructor
+ * @param {String} name    [description]
+ * @param {Object} pattern [description]
+ * @param {Engine} engine  [description]
+ */
 function Entity(name, pattern, engine) {
     EventEmitter.call(this);
 

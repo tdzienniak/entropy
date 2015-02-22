@@ -7,11 +7,18 @@
     "files": {
         "src\\core\\engine.js": {
             "name": "src\\core\\engine.js",
-            "modules": {
-                "Engine": 1
-            },
+            "modules": {},
             "classes": {
                 "Engine": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\core\\entity.js": {
+            "name": "src\\core\\entity.js",
+            "modules": {},
+            "classes": {
+                "Entity": 1
             },
             "fors": {},
             "namespaces": {}
@@ -21,6 +28,15 @@
             "modules": {},
             "classes": {
                 "Pool": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\core\\query.js": {
+            "name": "src\\core\\query.js",
+            "modules": {},
+            "classes": {
+                "Query": 1
             },
             "fors": {},
             "namespaces": {}
@@ -38,31 +54,21 @@
         }
     },
     "modules": {
-        "Engine": {
-            "name": "Engine",
-            "submodules": {},
-            "classes": {
-                "Engine": 1,
-                "Pool": 1
-            },
-            "fors": {},
-            "namespaces": {},
-            "tag": "module",
-            "file": "src\\core\\pool.js",
-            "line": 3,
-            "description": "Engine module"
-        },
         "Entropy": {
             "name": "Entropy",
             "submodules": {},
             "classes": {
+                "Engine": 1,
+                "Entity": 1,
+                "Pool": 1,
+                "Query": 1,
                 "Entropy": 1
             },
             "fors": {},
             "namespaces": {},
             "tag": "module",
             "file": "src\\entropy.js",
-            "line": 27,
+            "line": 32,
             "description": "Main Entropy module and top namespace."
         }
     },
@@ -75,12 +81,42 @@
             "extensions": [],
             "plugin_for": [],
             "extension_for": [],
-            "module": "Engine",
-            "namespace": "",
+            "module": "Entropy",
             "file": "src\\core\\engine.js",
-            "line": 13,
+            "line": 16,
             "extends": "EventEmitter",
             "is_constructor": 1
+        },
+        "Entity": {
+            "name": "Entity",
+            "shortname": "Entity",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Entropy",
+            "file": "src\\core\\entity.js",
+            "line": 13,
+            "description": "Entity class.",
+            "is_constructor": 1,
+            "params": [
+                {
+                    "name": "name",
+                    "description": "[description]",
+                    "type": "String"
+                },
+                {
+                    "name": "pattern",
+                    "description": "[description]",
+                    "type": "Object"
+                },
+                {
+                    "name": "engine",
+                    "description": "[description]",
+                    "type": "Engine"
+                }
+            ]
         },
         "Pool": {
             "name": "Pool",
@@ -90,8 +126,7 @@
             "extensions": [],
             "plugin_for": [],
             "extension_for": [],
-            "module": "Engine",
-            "namespace": "",
+            "module": "Entropy",
             "file": "src\\core\\pool.js",
             "line": 3,
             "description": "Simple implemenation of stack.",
@@ -100,6 +135,27 @@
                     "name": "initialSize",
                     "description": "initial pool size",
                     "type": "Number"
+                }
+            ]
+        },
+        "Query": {
+            "name": "Query",
+            "shortname": "Query",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Entropy",
+            "file": "src\\core\\query.js",
+            "line": 11,
+            "description": "Used to perform matching of entities.\nOnly parameter is an array of component names to include or object with `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
+            "is_constructor": 1,
+            "params": [
+                {
+                    "name": "query",
+                    "description": "query conditions",
+                    "type": "Object|Array"
                 }
             ]
         },
@@ -114,7 +170,7 @@
             "module": "Entropy",
             "namespace": "",
             "file": "src\\entropy.js",
-            "line": 27,
+            "line": 32,
             "description": "Main static framework. Used as top namespace.",
             "static": 1
         }
@@ -122,66 +178,121 @@
     "classitems": [
         {
             "file": "src\\core\\engine.js",
-            "line": 21,
+            "line": 24,
+            "description": "[game description]",
+            "type": "{[type]}",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 30,
             "description": "Indicates the greatest entity ID present in the system.\nUsed to generate new IDs.",
             "itemtype": "property",
             "name": "_gratestEntityID",
             "access": "private",
             "tagname": "",
             "type": "Number",
-            "class": "Engine",
-            "module": "Engine"
+            "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 31,
+            "line": 40,
             "description": "Pool of currently not used entity IDs. Will be reused.",
             "itemtype": "property",
             "name": "_idsToReuse",
             "access": "private",
             "tagname": "",
             "type": "Pool",
-            "class": "Engine",
-            "module": "Engine"
+            "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 50,
-            "itemtype": "method",
-            "name": "Component",
-            "static": 1,
-            "class": "Engine",
-            "module": "Engine"
+            "line": 49,
+            "description": "Systems that are processed every tick.",
+            "itemtype": "property",
+            "name": "_systems",
+            "access": "private",
+            "tagname": "",
+            "type": "Array",
+            "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
             "line": 58,
+            "description": "Array with entities. Array index corresponds to ID of an entity.",
+            "itemtype": "property",
+            "name": "_entities",
+            "access": "private",
+            "tagname": "",
+            "type": "Array",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 83,
+            "description": "Initialize components and entities pools.",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 95,
+            "description": "Registers new component pattern.\nOnly argument should be an object with obligatory `name` property and `initialize` method.\nThis method is used to assign some data to component object. `this` inside `initialize` function is a\nreference to newly created component object.",
+            "example": [
+                "\n    Entropy.Engine.Component({\n        name: \"Position\",\n        initialize: function (x, y) {\n            this.x = x;\n            this.y = y;\n        },\n        //not obligatory\n        reset: function () {\n            this.x = 0;\n            this.y = 0;\n        }\n    });"
+            ],
+            "itemtype": "method",
+            "name": "Component",
+            "static": 1,
+            "params": [
+                {
+                    "name": "component",
+                    "description": "component pattern",
+                    "type": "Object"
+                }
+            ],
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 123,
+            "description": "Registers new entity pattern.\n\nPattern is an object with following properties:\n - __name__ (required) - name of an entity\n - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.\n  `this` inside function references newly created entity object (instance of {{#crossLink \"Entity\"}}Entity{{/crossLink}} class).\n  Function is called with first argument being `game` object and every other is a parameter with witch {{#crossLink \"Engine/create:method\"}}create{{/crossLink}} method is called.\n - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).\n  First and only argument is a `game` object.",
+            "example": [
+                "\n    Entropy.Engine.Entity({\n        name: \"Ball\",\n        create: function (game, x, y, radius) {\n            var sprite = new Sprite(\"Ball\");\n\n            game.container.make(\"renderer\").addSprite(sprite);\n\n            this.add(\"Position\", x, y)\n                .add(\"Radius\", radius)\n                .add(\"Velocity\", 5, 5)\n                .add(\"Sprite\", sprite);\n        },\n        //not oblgatory\n        remove: function (game) {\n            game.container.make(\"renderer\").removeSprite(this.components.sprite.sprite);\n        }\n    });"
+            ],
             "itemtype": "method",
             "name": "Entity",
             "static": 1,
-            "class": "Engine",
-            "module": "Engine"
+            "params": [
+                {
+                    "name": "entity",
+                    "description": "entity pattern",
+                    "type": "Object"
+                }
+            ],
+            "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 66,
+            "line": 161,
             "itemtype": "method",
             "name": "System",
             "static": 1,
-            "class": "Engine",
-            "module": "Engine"
+            "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 74,
-            "description": "Used to perform matchin of entities.\nOnly parameter is an array of component names to include or object with `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
+            "line": 169,
+            "description": "Used to perform matching of entities.\nOnly parameter is an array of component names to include or object with `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
+            "example": [
+                "\n    var q1 = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n    var q2 = new Entropy.Engine.Query({\n        include: [\"Position\", \"Velocity\"],\n        exclude: [\"Sprite\"]\n    });"
+            ],
             "itemtype": "method",
             "name": "Query",
             "static": 1,
             "params": [
                 {
                     "name": "criterions",
-                    "description": "query criterions",
+                    "description": "query matching criterions",
                     "type": "Array|Object"
                 }
             ],
@@ -189,12 +300,11 @@
                 "description": "query object",
                 "type": "Object"
             },
-            "class": "Engine",
-            "module": "Engine"
+            "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 88,
+            "line": 190,
             "description": "Creates new entity using pattern identified by 'name' parameter.\nEvery additional parameter will be applied to patterns 'create' method.",
             "itemtype": "method",
             "name": "create",
@@ -209,12 +319,11 @@
                 "description": "engine instance",
                 "type": "Engine"
             },
-            "class": "Engine",
-            "module": "Engine"
+            "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 105,
+            "line": 235,
             "description": "Returns array of entities satisfying given query conditions.",
             "params": [
                 {
@@ -227,19 +336,47 @@
                 "description": "array of matched entities",
                 "type": "Array"
             },
-            "class": "Engine",
-            "module": "Engine"
+            "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 134,
-            "description": "1. update systems (rendering systems first)\n2. perform add/remove operations\n3. update queries",
-            "class": "Engine",
-            "module": "Engine"
+            "line": 361,
+            "description": "Removing entities.",
+            "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 140,
+            "line": 395,
+            "description": "Adding entities.",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 424,
+            "description": "Modifying entities.",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 456,
+            "description": "Removing systems.",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 475,
+            "description": "Adding systems.",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 491,
+            "description": "Fetching query indexes.",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 537,
             "description": "Returns ID for an entity. Reuses old IDs or creates new.",
             "access": "private",
             "tagname": "",
@@ -247,12 +384,11 @@
                 "description": "new ID",
                 "type": "Number"
             },
-            "class": "Engine",
-            "module": "Engine"
+            "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 155,
+            "line": 552,
             "description": "Initializes new query. Performs initial entity search.",
             "params": [
                 {
@@ -261,8 +397,7 @@
                     "type": "Object"
                 }
             ],
-            "class": "Engine",
-            "module": "Engine"
+            "class": "Engine"
         },
         {
             "file": "src\\core\\pool.js",
@@ -277,8 +412,7 @@
                     "type": "Any"
                 }
             ],
-            "class": "Pool",
-            "module": "Engine"
+            "class": "Pool"
         },
         {
             "file": "src\\core\\pool.js",
@@ -290,8 +424,7 @@
                 "description": "value from the pool",
                 "type": "Any"
             },
-            "class": "Pool",
-            "module": "Engine"
+            "class": "Pool"
         },
         {
             "file": "src\\core\\pool.js",
@@ -303,37 +436,97 @@
                 "description": "pool size",
                 "type": "Number"
             },
-            "class": "Pool",
-            "module": "Engine"
+            "class": "Pool"
         },
         {
             "file": "src\\entropy.js",
-            "line": 15,
+            "line": 8,
+            "description": "Requiring polyfills for requestAnimationFrame and performance.now.",
+            "class": "Entropy",
+            "module": "Entropy"
+        },
+        {
+            "file": "src\\entropy.js",
+            "line": 20,
             "description": "Welcome message.",
+            "class": "Entropy",
+            "module": "Entropy"
+        },
+        {
+            "file": "src\\entropy.js",
+            "line": 43,
+            "description": "Assignes new property to main Entropy namespace identified by key (uppercased).\nOnce assigned, can't be assigned again.\nCan be later accessed by: Entropy.KEY",
+            "static": 1,
+            "itemtype": "method",
+            "name": "Const",
+            "params": [
+                {
+                    "name": "key",
+                    "description": "constans key",
+                    "type": "String"
+                },
+                {
+                    "name": "value",
+                    "description": "constans value",
+                    "type": "Any"
+                }
+            ],
             "class": "Entropy",
             "module": "Entropy"
         }
     ],
     "warnings": [
         {
-            "message": "Missing item type\nReturns array of entities satisfying given query conditions.",
-            "line": " src\\core\\engine.js:105"
+            "message": "Missing item type\n[game description]",
+            "line": " src\\core\\engine.js:24"
         },
         {
-            "message": "Missing item type\n1. update systems (rendering systems first)\n2. perform add/remove operations\n3. update queries",
-            "line": " src\\core\\engine.js:134"
+            "message": "Missing item type\nInitialize components and entities pools.",
+            "line": " src\\core\\engine.js:83"
+        },
+        {
+            "message": "Missing item type\nReturns array of entities satisfying given query conditions.",
+            "line": " src\\core\\engine.js:235"
+        },
+        {
+            "message": "Missing item type\nRemoving entities.",
+            "line": " src\\core\\engine.js:361"
+        },
+        {
+            "message": "Missing item type\nAdding entities.",
+            "line": " src\\core\\engine.js:395"
+        },
+        {
+            "message": "Missing item type\nModifying entities.",
+            "line": " src\\core\\engine.js:424"
+        },
+        {
+            "message": "Missing item type\nRemoving systems.",
+            "line": " src\\core\\engine.js:456"
+        },
+        {
+            "message": "Missing item type\nAdding systems.",
+            "line": " src\\core\\engine.js:475"
+        },
+        {
+            "message": "Missing item type\nFetching query indexes.",
+            "line": " src\\core\\engine.js:491"
         },
         {
             "message": "Missing item type\nReturns ID for an entity. Reuses old IDs or creates new.",
-            "line": " src\\core\\engine.js:140"
+            "line": " src\\core\\engine.js:537"
         },
         {
             "message": "Missing item type\nInitializes new query. Performs initial entity search.",
-            "line": " src\\core\\engine.js:155"
+            "line": " src\\core\\engine.js:552"
+        },
+        {
+            "message": "Missing item type\nRequiring polyfills for requestAnimationFrame and performance.now.",
+            "line": " src\\entropy.js:8"
         },
         {
             "message": "Missing item type\nWelcome message.",
-            "line": " src\\entropy.js:15"
+            "line": " src\\entropy.js:20"
         }
     ]
 }

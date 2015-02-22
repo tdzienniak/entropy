@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\core\pool.js - Entropy</title>
+    <title>src\core\entity.js - Entropy</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -80,72 +80,141 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-<h1 class="file-heading">File: src\core\pool.js</h1>
+<h1 class="file-heading">File: src\core\entity.js</h1>
 
 <div class="file">
     <pre class="code prettyprint linenums">
+&#x27;use strict&#x27;;
+
+var is = require(&#x27;check-types&#x27;);
+var debug = require(&#x27;../debug&#x27;);
 var extend = require(&#x27;node.extend&#x27;);
+var config = require(&#x27;../config&#x27;);
+var register = require(&#x27;./register&#x27;);
+var slice = Array.prototype.slice;
+
+var EventEmitter = require(&#x27;./event&#x27;);
+var BitSet = require(&#x27;bitset.js&#x27;).BitSet;
 
 /**
- * Simple implemenation of stack. 
- * 
- * @class Pool
- * @param {Number} initialSize initial pool size
+ * Entity class.
+ *
+ * @class Entity
+ * @constructor
+ * @param {String} name    [description]
+ * @param {Object} pattern [description]
+ * @param {Engine} engine  [description]
  */
-function Pool(initialSize) {
-    this._maxSize = initialSize;
-    this._currentSize = 0;
-    this._pool = new Array(initialSize);
+function Entity(name, pattern, engine) {
+    EventEmitter.call(this);
 
-    for (var i = 0; i &lt; initialSize; i++) {
-        this._pool[i] = 0;
-    }
+    this.engine = engine;
+    this.pattern = pattern;
+
+    this.bitset = new BitSet(config(&#x27;max_components_count&#x27;));
+    this._modifications = [];
+
+    this.id = 0;
+    this.name = name;
+    this.components = {};
+
+    this._setDefaults();
 }
 
-extend(Pool.prototype, {
-    /**
-     * Puts value in the pool. Named pool, because it is used to implement pooling of various object in engine.
-     * 
-     * @method put
-     * @param  {Any} thing value to put in pool
-     */
-    put: function (thing) {
-        if (this._currentSize === this._maxSize) {
-            this._maxSize = Math.round(this._currentSize * 1.5);
-            this._pool.lenght = this._maxSize;
+extend(Entity.prototype, EventEmitter.prototype);
+extend(Entity.prototype, {
+    add: function (name) {
+        if (is.not.unemptyString(name)) {
+            debug.warn(&#x27;component name must be a non-empty string&#x27;);
+            return this;
+        }
 
-            for (var i = this._currentSize + 1; i &lt; this._maxSize; i++) {
-                this._pool[i] = 0;
+        var lowercaseName = name.toLowerCase();
+
+        var component = this.engine._getNewComponent(lowercaseName);
+        if (component == null) {
+            debug.warn(&#x27;there is no component pattern with name %s&#x27;, name);
+            return this;
+        }
+
+        var args = slice.call(arguments, 1);
+        component._pattern.initialize.apply(component, args);
+
+        this.components[lowercaseName] = component;
+
+        this._modifications.push({
+            fn: function () {
+                this.bitset.set(register.getComponentID(lowercaseName));
             }
+        });
+
+        this.engine.markModifiedEntity(this);
+
+        return this;
+    },
+    remove: function (name) {
+        if (is.not.unemptyString(name)) {
+            debug.warn(&#x27;component name must be a non-empty string&#x27;);
+            return this;
         }
 
-        this._pool[++this._currentSize] = thing;
-    },
-    /**
-     * Gets value from the pool. Returns last put value.
-     *
-     * @method get
-     * @return {Any} value from the pool
-     */
-    get: function () {
-        if (this._currentSize === 0) {
-            return null;
+        var lowercaseName = name.toLowerCase();
+
+        if (!(lowercaseName in this.components)) {
+            debug.warn(&#x27;this entity does not have such component &quot;%s&quot; - nothing to remove&#x27;, name);
+            return this;
         }
 
-        return this._pool[this._currentSize--];
+        this._modifications.push({
+            fn: function () {
+                this.engine._addComponentToPool(this.components[lowercaseName]);
+
+                this.components[lowercaseName] = null;
+                this.bitset.clear(register.getComponentID(lowercaseName));
+            }
+        });
+
+        this.engine.markModifiedEntity(this);
+
+        return this;
     },
-    /**
-     * Returns current size of the pool (not maximum size).
-     *
-     * @method size
-     * @return {Number} pool size
-     */
-    size: function () {
-        return this._currentSize;
+    get: function (name) {
+         if (is.not.unemptyString(name)) {
+            debug.warn(&#x27;component name must be a non-empty string&#x27;);
+            return this;
+        }
+
+        return this.components[name.toLowerCase()];
+    },
+    reset: function () {
+        if (is.function(this._pattern.reset)) {
+            this.pattern.reset.call(this, this.engine.game);
+        }
+
+        this._setDefaults();
+
+        return this;
+    },
+    applyModifications: function () {
+        var mod;
+
+        while (mod = this._modifications.shift()) {
+            mod.fn.apply(this, mod.args);
+        }
+    },
+    clearModifications: function () {
+        while (this._modifications.shift());
+    },
+    _setDefaults: function () {
+        this._inFinalState = false;
+        this._remainingStateChanges = [];
+        this._stateObject = {};
+        this._currentStates = [];
+        this._stateChanges = [];
     }
 });
 
-module.exports = Pool;
+module.exports = Entity;
     </pre>
 </div>
                     </div>

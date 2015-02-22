@@ -2,19 +2,15 @@ YUI.add("yuidoc-meta", function(Y) {
    Y.YUIDoc = { meta: {
     "classes": [
         "Engine",
+        "Entity",
         "Entropy",
-        "Pool"
+        "Pool",
+        "Query"
     ],
     "modules": [
-        "Engine",
         "Entropy"
     ],
     "allModules": [
-        {
-            "displayName": "Engine",
-            "name": "Engine",
-            "description": "Engine module"
-        },
         {
             "displayName": "Entropy",
             "name": "Entropy",
