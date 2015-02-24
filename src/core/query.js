@@ -1,8 +1,8 @@
 'use strict';
 
 var is = require('check-types');
-var debug = require('../debug');
-var config = require('../config');
+var debug = require('./debug');
+var config = require('./config');
 var register = require('./register');
 var extend = require('node.extend');
 

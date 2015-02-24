@@ -4,8 +4,11 @@ YUI.add("yuidoc-meta", function(Y) {
         "Engine",
         "Entity",
         "Entropy",
+        "Game",
         "Pool",
-        "Query"
+        "Query",
+        "State",
+        "Ticker"
     ],
     "modules": [
         "Entropy"

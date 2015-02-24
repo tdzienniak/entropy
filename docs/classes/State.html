@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Entity - Entropy</title>
+    <title>State - Entropy</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -83,12 +83,12 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-<h1>Entity Class</h1>
+<h1>State Class</h1>
 <div class="box meta">
 
 
         <div class="foundat">
-            Defined in: <a href="../files/src_core_entity.js.html#l13"><code>src\core\entity.js:13</code></a>
+            Defined in: <a href="../files/src_core_state.js.html#l7"><code>src\core\state.js:7</code></a>
         </div>
 
             Module: <a href="../modules/Entropy.html">Entropy</a>
@@ -97,94 +97,10 @@
 
 
 <div class="box intro">
-    <p>Entity class. Class is used internaly. User should not instatiate this class.</p>
+    <p>This class is an implementation of simple state manager.</p>
 
 </div>
 
-    <div class="constructor">
-        <h2>Constructor</h2>
-        <div id="method_Entity" class="method item">
-            <h3 class="name"><code>Entity</code></h3>
-        
-                <div class="args">
-                    <span class="paren">(</span><ul class="args-list inline commas">
-                        <li class="arg">
-                                <code>name</code>
-                        </li>
-                        <li class="arg">
-                                <code>pattern</code>
-                        </li>
-                        <li class="arg">
-                                <code>engine</code>
-                        </li>
-                    </ul><span class="paren">)</span>
-                </div>
-        
-        
-        
-        
-        
-        
-        
-        
-            <div class="meta">
-                        <p>
-                        Defined in
-                <a href="../files/src_core_entity.js.html#l13"><code>src\core\entity.js:13</code></a>
-                </p>
-        
-        
-        
-            </div>
-        
-            <div class="description">
-                
-            </div>
-        
-                <div class="params">
-                    <h4>Parameters:</h4>
-        
-                    <ul class="params-list">
-                        <li class="param">
-                                <code class="param-name">name</code>
-                                <span class="type">String</span>
-        
-        
-                            <div class="param-description">
-                                <p>entity name</p>
-        
-                            </div>
-        
-                        </li>
-                        <li class="param">
-                                <code class="param-name">pattern</code>
-                                <span class="type">Object</span>
-        
-        
-                            <div class="param-description">
-                                <p>entity pattern</p>
-        
-                            </div>
-        
-                        </li>
-                        <li class="param">
-                                <code class="param-name">engine</code>
-                                <span class="type"><a href="../classes/Engine.html" class="crosslink">Engine</a></span>
-        
-        
-                            <div class="param-description">
-                                <p>Engine instance</p>
-        
-                            </div>
-        
-                        </li>
-                    </ul>
-                </div>
-        
-        
-        
-        </div>
-    </div>
 
 <div id="classdocs" class="tabview">
     <ul class="api-class-tabs">
@@ -202,8 +118,21 @@
 
                     <ul class="index-list methods">
                             <li class="index-item method">
-                                <a href="#method_add">add</a>
+                                <a href="#method_change">change</a>
 
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_current">current</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_isIn">isIn</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_Register">Register</a>
+
+                                    <span class="flag static">static</span>
                             </li>
                     </ul>
                 </div>
@@ -215,8 +144,8 @@
             <div id="methods" class="api-class-tabpanel">
                 <h2 class="off-left">Methods</h2>
 
-<div id="method_add" class="method item">
-    <h3 class="name"><code>add</code></h3>
+<div id="method_change" class="method item">
+    <h3 class="name"><code>change</code></h3>
 
         <div class="args">
             <span class="paren">(</span><ul class="args-list inline commas">
@@ -227,19 +156,20 @@
         </div>
 
         <span class="returns-inline">
-            <span class="type"><a href="../classes/Entity.html" class="crosslink">Entity</a></span>
+            <span class="type"><a href="../classes/State.html" class="crosslink">State</a></span>
         </span>
 
 
 
 
 
+        <span class="flag chainable">chainable</span>
 
 
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_entity.js.html#l40"><code>src\core\entity.js:40</code></a>
+        <a href="../files/src_core_state.js.html#l92"><code>src\core\state.js:92</code></a>
         </p>
 
 
@@ -247,9 +177,14 @@
     </div>
 
     <div class="description">
-        <p>Adds new component to an entity. Component is either created from scratch or reused from pool. In later case, component patterns <code>reset</code> method is called (if present).\
-Component patterns <code>initialize</code> method is called with additional arguments passed to <code>add</code> method.
-Addition does not happen imediately, but is postponed to nearest update cycle.</p>
+        <p>Changes state to one identified by <code>name</code> parameter.
+Changing state process looks roughly like this:</p>
+<ol>
+<li>calling current state&#39;s <code>exit</code> method (if present)</li>
+<li>calling next state&#39;s <code>initialize</code> method (if present)</li>
+<li>calling transition function (if present)</li>
+<li>calling next state&#39;s <code>enter</code> method (if present)</li>
+</ol>
 
     </div>
 
@@ -264,7 +199,7 @@ Addition does not happen imediately, but is postponed to nearest update cycle.</
                         <span class="flag multiple" title="This argument may occur one or more times.">multiple</span>
 
                     <div class="param-description">
-                        <p>name of component to add. Addidtional parameters are applied to component patterns <code>initialize</code> method.</p>
+                        <p>state to change into. Any addidtional parameter will be applied to transition method.</p>
 
                     </div>
 
@@ -276,23 +211,175 @@ Addition does not happen imediately, but is postponed to nearest update cycle.</
             <h4>Returns:</h4>
 
             <div class="returns-description">
-                        <span class="type"><a href="../classes/Entity.html" class="crosslink">Entity</a></span>:
-                    <p>Entity instance</p>
+                        <span class="type"><a href="../classes/State.html" class="crosslink">State</a></span>:
+                    <p>State instance</p>
 
             </div>
         </div>
 
 
-        <div class="example">
-            <h4>Example:</h4>
+</div>
+<div id="method_current" class="method item">
+    <h3 class="name"><code>current</code></h3>
 
-            <div class="example-content">
-                <pre class="code prettyprint"><code>//<code>this</code> is a reference to Entity instance
-//code like this often can be seen in entity pattern <code>create</code> method
-this.add(&quot;Position&quot;, 1, 1);
-</code></pre>
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">String</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_state.js.html#l154"><code>src\core\state.js:154</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Returns name of the current state.</p>
+
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">String</span>:
+                    <p>name of the current state</p>
+
             </div>
         </div>
+
+
+</div>
+<div id="method_isIn" class="method item">
+    <h3 class="name"><code>isIn</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>state</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Boolean</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_state.js.html#l164"><code>src\core\state.js:164</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Checks whether state machine is in state identified by name.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">state</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                        <p>states name</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Boolean</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_Register" class="method item">
+    <h3 class="name"><code>Register</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>state</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+        <span class="flag static">static</span>
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_state.js.html#l196"><code>src\core\state.js:196</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Registers new state.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">state</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>state object (see example)</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
 </div>
             </div>
 

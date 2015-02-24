@@ -23,6 +23,15 @@
             "fors": {},
             "namespaces": {}
         },
+        "src\\core\\game.js": {
+            "name": "src\\core\\game.js",
+            "modules": {},
+            "classes": {
+                "Game": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
         "src\\core\\pool.js": {
             "name": "src\\core\\pool.js",
             "modules": {},
@@ -37,6 +46,24 @@
             "modules": {},
             "classes": {
                 "Query": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\core\\state.js": {
+            "name": "src\\core\\state.js",
+            "modules": {},
+            "classes": {
+                "State": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\core\\ticker.js": {
+            "name": "src\\core\\ticker.js",
+            "modules": {},
+            "classes": {
+                "Ticker": 1
             },
             "fors": {},
             "namespaces": {}
@@ -60,15 +87,18 @@
             "classes": {
                 "Engine": 1,
                 "Entity": 1,
+                "Game": 1,
                 "Pool": 1,
                 "Query": 1,
+                "State": 1,
+                "Ticker": 1,
                 "Entropy": 1
             },
             "fors": {},
             "namespaces": {},
             "tag": "module",
             "file": "src\\entropy.js",
-            "line": 32,
+            "line": 28,
             "description": "Main Entropy module and top namespace."
         }
     },
@@ -84,6 +114,7 @@
             "module": "Entropy",
             "file": "src\\core\\engine.js",
             "line": 16,
+            "description": "Engine class. Class is used internaly. User should not instatiate this class.",
             "extends": "EventEmitter",
             "is_constructor": 1
         },
@@ -98,23 +129,43 @@
             "module": "Entropy",
             "file": "src\\core\\entity.js",
             "line": 13,
-            "description": "Entity class.",
+            "description": "Entity class. Class is used internaly. User should not instatiate this class.",
             "is_constructor": 1,
             "params": [
                 {
                     "name": "name",
-                    "description": "[description]",
+                    "description": "entity name",
                     "type": "String"
                 },
                 {
                     "name": "pattern",
-                    "description": "[description]",
+                    "description": "entity pattern",
                     "type": "Object"
                 },
                 {
                     "name": "engine",
-                    "description": "[description]",
+                    "description": "Engine instance",
                     "type": "Engine"
+                }
+            ]
+        },
+        "Game": {
+            "name": "Game",
+            "shortname": "Game",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Entropy",
+            "file": "src\\core\\game.js",
+            "line": 13,
+            "description": "Main framework class. This is the only class, that needs to be instatiated by user.",
+            "params": [
+                {
+                    "name": "initialState",
+                    "description": "initial state",
+                    "type": "String"
                 }
             ]
         },
@@ -159,6 +210,45 @@
                 }
             ]
         },
+        "State": {
+            "name": "State",
+            "shortname": "State",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Entropy",
+            "file": "src\\core\\state.js",
+            "line": 7,
+            "description": "This class is an implementation of simple state manager.",
+            "params": [
+                {
+                    "name": "game",
+                    "description": "Game instance",
+                    "type": "Game"
+                }
+            ]
+        },
+        "Ticker": {
+            "name": "Ticker",
+            "shortname": "Ticker",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Entropy",
+            "file": "src\\core\\ticker.js",
+            "line": 10,
+            "params": [
+                {
+                    "name": "game",
+                    "description": "Game instance",
+                    "type": "Game"
+                }
+            ]
+        },
         "Entropy": {
             "name": "Entropy",
             "shortname": "Entropy",
@@ -170,7 +260,7 @@
             "module": "Entropy",
             "namespace": "",
             "file": "src\\entropy.js",
-            "line": 32,
+            "line": 28,
             "description": "Main static framework. Used as top namespace.",
             "static": 1
         }
@@ -178,14 +268,16 @@
     "classitems": [
         {
             "file": "src\\core\\engine.js",
-            "line": 24,
-            "description": "[game description]",
-            "type": "{[type]}",
+            "line": 26,
+            "description": "Instance of {{#crossLink \"Game\"}}Game{{/crossLink}} class.",
+            "itemtype": "property",
+            "name": "game",
+            "type": "{Game}",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 30,
+            "line": 34,
             "description": "Indicates the greatest entity ID present in the system.\nUsed to generate new IDs.",
             "itemtype": "property",
             "name": "_gratestEntityID",
@@ -196,7 +288,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 40,
+            "line": 44,
             "description": "Pool of currently not used entity IDs. Will be reused.",
             "itemtype": "property",
             "name": "_idsToReuse",
@@ -207,7 +299,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 49,
+            "line": 53,
             "description": "Systems that are processed every tick.",
             "itemtype": "property",
             "name": "_systems",
@@ -218,7 +310,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 58,
+            "line": 62,
             "description": "Array with entities. Array index corresponds to ID of an entity.",
             "itemtype": "property",
             "name": "_entities",
@@ -229,13 +321,13 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 83,
+            "line": 88,
             "description": "Initialize components and entities pools.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 95,
+            "line": 100,
             "description": "Registers new component pattern.\nOnly argument should be an object with obligatory `name` property and `initialize` method.\nThis method is used to assign some data to component object. `this` inside `initialize` function is a\nreference to newly created component object.",
             "example": [
                 "\n    Entropy.Engine.Component({\n        name: \"Position\",\n        initialize: function (x, y) {\n            this.x = x;\n            this.y = y;\n        },\n        //not obligatory\n        reset: function () {\n            this.x = 0;\n            this.y = 0;\n        }\n    });"
@@ -254,7 +346,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 123,
+            "line": 128,
             "description": "Registers new entity pattern.\n\nPattern is an object with following properties:\n - __name__ (required) - name of an entity\n - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.\n  `this` inside function references newly created entity object (instance of {{#crossLink \"Entity\"}}Entity{{/crossLink}} class).\n  Function is called with first argument being `game` object and every others are parameters with witch {{#crossLink \"Engine/create:method\"}}create{{/crossLink}} method is called.\n - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).\n  First and only argument is a `game` object.",
             "example": [
                 "\n    Entropy.Engine.Entity({\n        name: \"Ball\",\n        create: function (game, x, y, radius) {\n            var sprite = new Sprite(\"Ball\");\n\n            game.container.make(\"renderer\").addSprite(sprite);\n\n            this.add(\"Position\", x, y)\n                .add(\"Radius\", radius)\n                .add(\"Velocity\", 5, 5)\n                .add(\"Sprite\", sprite);\n        },\n        //not oblgatory\n        remove: function (game) {\n            game.container.make(\"renderer\").removeSprite(this.components.sprite.sprite);\n        }\n    });"
@@ -273,7 +365,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 161,
+            "line": 166,
             "description": "Registers new system pattern.",
             "example": [
                 "\n    Entropy.Engine.System({\n        name: \"MovementSystem\",\n        priority: 1, //not obligatory\n        initialize: function () {\n            this.query = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n        },\n        update: function (delta) {\n            var entities = this.engine.getEntities(this.query);\n            var e;\n\n            var i = 0;\n            while (e = entities[i]) {\n                var position = e.components.position;\n                var velocity = e.components.velocity;\n\n                position.x += delta / 1000 * velocity.vx;\n                position.y += delta / 1000 * velocity.vy;\n\n                i++;\n            }     \n        },\n        //not obligatory\n        remove: function () {\n        \n        }\n    });"
@@ -281,11 +373,18 @@
             "itemtype": "method",
             "name": "System",
             "static": 1,
+            "params": [
+                {
+                    "name": "system",
+                    "description": "system pattern object",
+                    "type": "Object"
+                }
+            ],
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 199,
+            "line": 205,
             "description": "Used to perform matching of entities.\nOnly parameter is an array of component names to include or object with `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
             "example": [
                 "\n    var q1 = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n    var q2 = new Entropy.Engine.Query({\n        include: [\"Position\", \"Velocity\"],\n        exclude: [\"Sprite\"]\n    });"
@@ -308,7 +407,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 220,
+            "line": 226,
             "description": "Creates new entity using pattern identified by `name` parameter.\nEvery additional parameter will be applied to patterns `create` method.\nPatterns `create` method is called imediatelly after calling this method.",
             "example": [
                 "\n    game.engine.create(\"Ball\", 5, 5, 5); //x, y, radius"
@@ -331,11 +430,13 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 257,
+            "line": 263,
             "description": "Removes entity from engine.\nEntity removal does not happen imediatelly, but after current update cycle.",
             "example": [
                 "\n    //somwhere in the system 'update' method\n    if (entity.components.hp.quantity <= 0) { //entity is dead, remove\n        game.engine.remove(entity);\n    }"
             ],
+            "itemtype": "method",
+            "name": "remove",
             "params": [
                 {
                     "name": "entity",
@@ -351,11 +452,13 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 282,
+            "line": 289,
             "description": "Returns array of entities satisfying given {{#crossLink \"Query\"}}query{{/crossLink}} conditions.\nReturned arrays length does not correspond with matched entities quantity.\nTo loop over entities start from 0 index, and then check if element is different than 0.\nThis method guaranties, that entities will be arranged as subsequent array slice, starting from 0 index and ending on element equal to 0.\nThe array is in this form for performance reasons.",
             "example": [
                 "\n    //in systems 'initialize' method...\n    this.query = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n\n    //in systems 'update' method\n    var movingEntities = this.engine.getEntities(this.query);\n\n    //here do something with entities in loop\n    ..."
             ],
+            "itemtype": "method",
+            "name": "getEntities",
             "params": [
                 {
                     "name": "query",
@@ -371,43 +474,66 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 423,
+            "line": 317,
+            "description": "Creates new system object and adds it to the engine. System patterns `initialize` method is called (if present).\nIt can be called in two ways - with first argument being either:\n- system name - then system has priority as defined by patterns `priority` property or 0.\n- array with two elements - system name and its desired priority. In this case patterns `priority` property is simply skiped.",
+            "example": [
+                "\n    game.engine.addSystem(\"Renderer\", rendererObject);\n    \n    //or\n\n    game.engine.addSystem([\"Renderer\", 1], rendererObject);"
+            ],
+            "itemtype": "method",
+            "name": "addSystem",
+            "params": [
+                {
+                    "name": "name",
+                    "description": "name of a system or array with two elements - name of a system and desired priority (see example). Additional arguments are applied to patterns `initialize` method.",
+                    "type": "String|Array",
+                    "multiple": true
+                }
+            ],
+            "return": {
+                "description": "engine instance",
+                "type": "Engine"
+            },
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 447,
             "description": "Removing entities.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 457,
+            "line": 481,
             "description": "Adding entities.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 486,
+            "line": 510,
             "description": "Modifying entities.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 518,
+            "line": 542,
             "description": "Removing systems.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 537,
+            "line": 561,
             "description": "Adding systems.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 553,
+            "line": 577,
             "description": "Fetching query indexes.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 599,
+            "line": 623,
             "description": "Returns ID for an entity. Reuses old IDs or creates new.",
             "access": "private",
             "tagname": "",
@@ -419,7 +545,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 614,
+            "line": 638,
             "description": "Initializes new query. Performs initial entity search.",
             "params": [
                 {
@@ -429,6 +555,113 @@
                 }
             ],
             "class": "Engine"
+        },
+        {
+            "file": "src\\core\\entity.js",
+            "line": 40,
+            "description": "Adds new component to an entity. Component is either created from scratch or reused from pool. In later case, component patterns `reset` method is called (if present).\\\nComponent patterns `initialize` method is called with additional arguments passed to `add` method.\nAddition does not happen imediately, but is postponed to nearest update cycle.",
+            "example": [
+                "\n    //`this` is a reference to Entity instance\n    //code like this often can be seen in entity pattern `create` method\n    this.add(\"Position\", 1, 1);"
+            ],
+            "itemtype": "method",
+            "name": "add",
+            "params": [
+                {
+                    "name": "name",
+                    "description": "name of component to add. Addidtional parameters are applied to component patterns `initialize` method.",
+                    "type": "String",
+                    "multiple": true
+                }
+            ],
+            "return": {
+                "description": "Entity instance",
+                "type": "Entity"
+            },
+            "class": "Entity"
+        },
+        {
+            "file": "src\\core\\game.js",
+            "line": 25,
+            "description": "Instance of Inverse class.\nHow to use:\n[https://github.com/mcordingley/Inverse.js](https://github.com/mcordingley/Inverse.js)",
+            "itemtype": "property",
+            "name": "container",
+            "type": "{Inverse}",
+            "class": "Game"
+        },
+        {
+            "file": "src\\core\\game.js",
+            "line": 35,
+            "description": "Instance of Ticker class.",
+            "itemtype": "property",
+            "name": "ticker",
+            "type": "{Ticker}",
+            "class": "Game"
+        },
+        {
+            "file": "src\\core\\game.js",
+            "line": 48,
+            "example": [
+                "\n    Entropy.Game.State({\n        name: \"initialize\",\n        initialize: function (game, done) {\n            console.log('State initialized.');\n            \n            return done();\n        },\n        enter: function (game, done) {\n            console.log('State entered.');\n            \n            return done();\n        },\n        exit: function (game, done) {\n            console.log('State exited.');\n            \n            return done();\n        },\n        trnsitions: {\n            menu: \"toMenu\"\n        },\n        toMenu: function (game, nextState, done) {\n            console.log('Transitioning from `initialize` to `menu`.');\n            \n            return done();\n        }\n    });"
+            ],
+            "static": 1,
+            "itemtype": "method",
+            "name": "State",
+            "params": [
+                {
+                    "name": "state",
+                    "description": "state object",
+                    "type": "Object"
+                }
+            ],
+            "class": "Game"
+        },
+        {
+            "file": "src\\core\\game.js",
+            "line": 87,
+            "description": "Starts the game. See Ticker's {{#crossLink \"Ticker/start:method\"}}start{{/crossLink}} method for more details.",
+            "itemtype": "method",
+            "name": "start",
+            "return": {
+                "description": "succesfuly started or not",
+                "type": "Boolean"
+            },
+            "class": "Game"
+        },
+        {
+            "file": "src\\core\\game.js",
+            "line": 97,
+            "description": "Stops the game. See Ticker's {{#crossLink \"Ticker/stop:method\"}}stop{{/crossLink}} method for more details.",
+            "itemtype": "method",
+            "name": "stop",
+            "return": {
+                "description": "[description]",
+                "type": "Boolean"
+            },
+            "class": "Game"
+        },
+        {
+            "file": "src\\core\\game.js",
+            "line": 107,
+            "description": "Pauses the game. See Ticker's {{#crossLink \"Ticker/pause:method\"}}pause{{/crossLink}} method for more details.",
+            "itemtype": "method",
+            "name": "pause",
+            "return": {
+                "description": "[description]",
+                "type": "Boolean"
+            },
+            "class": "Game"
+        },
+        {
+            "file": "src\\core\\game.js",
+            "line": 117,
+            "description": "Resumes the game. See Ticker's {{#crossLink \"Ticker/resume:method\"}}resume{{/crossLink}} method for more details.",
+            "itemtype": "method",
+            "name": "resume",
+            "return": {
+                "description": "[description]",
+                "type": "Boolean"
+            },
+            "class": "Game"
         },
         {
             "file": "src\\core\\pool.js",
@@ -470,23 +703,124 @@
             "class": "Pool"
         },
         {
-            "file": "src\\entropy.js",
-            "line": 8,
-            "description": "Requiring polyfills for requestAnimationFrame and performance.now.",
-            "class": "Entropy",
-            "module": "Entropy"
+            "file": "src\\core\\state.js",
+            "line": 92,
+            "description": "Changes state to one identified by `name` parameter.\nChanging state process looks roughly like this:\n 1. calling current state's `exit` method (if present)\n 2. calling next state's `initialize` method (if present)\n 3. calling transition function (if present)\n 4. calling next state's `enter` method (if present)",
+            "itemtype": "method",
+            "name": "change",
+            "chainable": 1,
+            "params": [
+                {
+                    "name": "name",
+                    "description": "state to change into. Any addidtional parameter will be applied to transition method.",
+                    "type": "String",
+                    "multiple": true
+                }
+            ],
+            "return": {
+                "description": "State instance",
+                "type": "State"
+            },
+            "class": "State"
+        },
+        {
+            "file": "src\\core\\state.js",
+            "line": 154,
+            "description": "Returns name of the current state.",
+            "itemtype": "method",
+            "name": "current",
+            "return": {
+                "description": "name of the current state",
+                "type": "String"
+            },
+            "class": "State"
+        },
+        {
+            "file": "src\\core\\state.js",
+            "line": 164,
+            "description": "Checks whether state machine is in state identified by name.",
+            "itemtype": "method",
+            "name": "isIn",
+            "params": [
+                {
+                    "name": "state",
+                    "description": "states name",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "State"
+        },
+        {
+            "file": "src\\core\\state.js",
+            "line": 196,
+            "description": "Registers new state.",
+            "static": 1,
+            "itemtype": "method",
+            "name": "Register",
+            "params": [
+                {
+                    "name": "state",
+                    "description": "state object (see example)",
+                    "type": "Object"
+                }
+            ],
+            "class": "State"
+        },
+        {
+            "file": "src\\core\\ticker.js",
+            "line": 42,
+            "itemtype": "method",
+            "name": "pause",
+            "return": {
+                "description": "[description]",
+                "type": "[type]"
+            },
+            "class": "Ticker"
+        },
+        {
+            "file": "src\\core\\ticker.js",
+            "line": 56,
+            "itemtype": "method",
+            "name": "resume",
+            "return": {
+                "description": "[description]",
+                "type": "[type]"
+            },
+            "class": "Ticker"
+        },
+        {
+            "file": "src\\core\\ticker.js",
+            "line": 70,
+            "itemtype": "method",
+            "name": "start",
+            "return": {
+                "description": "[description]",
+                "type": "[type]"
+            },
+            "class": "Ticker"
+        },
+        {
+            "file": "src\\core\\ticker.js",
+            "line": 124,
+            "itemtype": "method",
+            "name": "stop",
+            "return": {
+                "description": "[description]",
+                "type": "[type]"
+            },
+            "class": "Ticker"
         },
         {
             "file": "src\\entropy.js",
-            "line": 20,
-            "description": "Welcome message.",
-            "class": "Entropy",
-            "module": "Entropy"
-        },
-        {
-            "file": "src\\entropy.js",
-            "line": 43,
+            "line": 39,
             "description": "Assignes new property to main Entropy namespace identified by key (uppercased).\nOnce assigned, can't be assigned again.\nCan be later accessed by: Entropy.KEY",
+            "example": [
+                "\n    Entropy.Const('WIDTH', 800);\n\n    Entropy.WIDTH; //800"
+            ],
             "static": 1,
             "itemtype": "method",
             "name": "Const",
@@ -504,64 +838,66 @@
             ],
             "class": "Entropy",
             "module": "Entropy"
+        },
+        {
+            "file": "src\\entropy.js",
+            "line": 58,
+            "description": "{{#crossLink \"Game\"}}Game{{/crossLink}} class reference.",
+            "static": 1,
+            "itemtype": "method",
+            "name": "Game",
+            "type": "{Game}",
+            "class": "Entropy",
+            "module": "Entropy"
+        },
+        {
+            "file": "src\\entropy.js",
+            "line": 67,
+            "description": "{{#crossLink \"Engine\"}}Engine{{/crossLink}} class reference.",
+            "static": 1,
+            "itemtype": "method",
+            "name": "Engine",
+            "type": "{Engine}",
+            "class": "Entropy",
+            "module": "Entropy"
         }
     ],
     "warnings": [
         {
-            "message": "Missing item type\n[game description]",
-            "line": " src\\core\\engine.js:24"
-        },
-        {
             "message": "Missing item type\nInitialize components and entities pools.",
-            "line": " src\\core\\engine.js:83"
-        },
-        {
-            "message": "Missing item type\nRemoves entity from engine.\nEntity removal does not happen imediatelly, but after current update cycle.",
-            "line": " src\\core\\engine.js:257"
-        },
-        {
-            "message": "Missing item type\nReturns array of entities satisfying given {{#crossLink \"Query\"}}query{{/crossLink}} conditions.\nReturned arrays length does not correspond with matched entities quantity.\nTo loop over entities start from 0 index, and then check if element is different than 0.\nThis method guaranties, that entities will be arranged as subsequent array slice, starting from 0 index and ending on element equal to 0.\nThe array is in this form for performance reasons.",
-            "line": " src\\core\\engine.js:282"
+            "line": " src\\core\\engine.js:88"
         },
         {
             "message": "Missing item type\nRemoving entities.",
-            "line": " src\\core\\engine.js:423"
+            "line": " src\\core\\engine.js:447"
         },
         {
             "message": "Missing item type\nAdding entities.",
-            "line": " src\\core\\engine.js:457"
+            "line": " src\\core\\engine.js:481"
         },
         {
             "message": "Missing item type\nModifying entities.",
-            "line": " src\\core\\engine.js:486"
+            "line": " src\\core\\engine.js:510"
         },
         {
             "message": "Missing item type\nRemoving systems.",
-            "line": " src\\core\\engine.js:518"
+            "line": " src\\core\\engine.js:542"
         },
         {
             "message": "Missing item type\nAdding systems.",
-            "line": " src\\core\\engine.js:537"
+            "line": " src\\core\\engine.js:561"
         },
         {
             "message": "Missing item type\nFetching query indexes.",
-            "line": " src\\core\\engine.js:553"
+            "line": " src\\core\\engine.js:577"
         },
         {
             "message": "Missing item type\nReturns ID for an entity. Reuses old IDs or creates new.",
-            "line": " src\\core\\engine.js:599"
+            "line": " src\\core\\engine.js:623"
         },
         {
             "message": "Missing item type\nInitializes new query. Performs initial entity search.",
-            "line": " src\\core\\engine.js:614"
-        },
-        {
-            "message": "Missing item type\nRequiring polyfills for requestAnimationFrame and performance.now.",
-            "line": " src\\entropy.js:8"
-        },
-        {
-            "message": "Missing item type\nWelcome message.",
-            "line": " src\\entropy.js:20"
+            "line": " src\\core\\engine.js:638"
         }
     ]
 }

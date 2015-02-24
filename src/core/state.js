@@ -2,8 +2,15 @@
 
 var is = require('check-types');
 var slice = Array.prototype.slice;
+var states = [];
 
-module.exports = function (states, game) {
+/**
+ * This class is an implementation of simple state manager.
+ *
+ * @class State
+ * @param {Game} game Game instance
+ */
+function State(game) {
     var queue = [];
     var current = {
         transitions: {}
@@ -78,78 +85,132 @@ module.exports = function (states, game) {
         }
 
         var done = args.pop();
+
         return done();
     };
 
-    return {
-        change: function (name) {
-            if (!is.string(name) || !(name in states)) {
-                console.warn('State %s does not exists - change will not occur.', name);
-                return;
-            }
+    /**
+     * Changes state to one identified by `name` parameter.
+     * Changing state process looks roughly like this:
+     *  1. calling current state's `exit` method (if present)
+     *  2. calling next state's `initialize` method (if present)
+     *  3. calling transition function (if present)
+     *  4. calling next state's `enter` method (if present)
+     * 
+     * @method change
+     * @chainable
+     * @param  {String} ...name state to change into. Any addidtional parameter will be applied to transition method.
+     * @return {State}          State instance
+     */
+    this.change = function (name) {
+        if (!is.string(name) || !(name in states)) {
+            console.warn('State %s does not exists - change will not occur.', name);
+            return;
+        }
 
-            var args = slice.call(arguments, 1);
+        var args = slice.call(arguments, 1);
+        var next = states[name];
 
-            var next = states[name];
+        if (next.manager == null) {
+            next.manager = this;
+        }
 
+        queue.push({
+            fn: exitState
+        });
+
+        if (!next._initialized) {
             queue.push({
-                fn: exitState
-            });
-
-            if (!next._initialized) {
-                queue.push({
-                    fn: initializeState,
-                    args: [next]
-                });
-
-                queue.push({
-                    fn: setInitialized,
-                    args: [next]
-                });
-            }
-
-            queue.push({
-                fn: doTransition,
-                args: [name, next].concat(args)
-            });
-
-            queue.push({
-                fn: enterState,
+                fn: initializeState,
                 args: [next]
             });
 
             queue.push({
-                fn: setCurrentState,
+                fn: setInitialized,
                 args: [next]
             });
+        }
 
-            if (!shifting) {
-                return shift();
-            }
-        },
-        current: function () {
-            return current.name;
-        },
-        isIn: function (state) {
-            return state === current.name;
-        },
-        feed: function (state) {
-            return this.register(state);
-        },
-        register: function (state) {
-            if (!is.object(state)) {
-                return console.warn('Registered state must be an object.');
-            }
+        queue.push({
+            fn: doTransition,
+            args: [name, next].concat(args)
+        });
 
-            if (!('transitions' in state)) {
-                state.transitions = {};
-            }
+        queue.push({
+            fn: enterState,
+            args: [next]
+        });
 
-            state._initialized = false;
-            state.manager = this;
-            states[state.name] = state;
+        queue.push({
+            fn: setCurrentState,
+            args: [next]
+        });
 
-            return this;
+        if (!shifting) {
+            return shift();
         }
     };
-};
+
+    /**
+     * Returns name of the current state.
+     * 
+     * @method current
+     * @return {String} name of the current state
+     */
+    this.current = function () {
+        return current.name;
+    };
+
+    /**
+     * Checks whether state machine is in state identified by name.
+     * 
+     * @method isIn
+     * @param  {String}  state states name
+     * @return {Boolean}
+     */
+    this.isIn = function (state) {
+        return state === current.name;
+    };
+
+    this.feed = function (state) {
+        return this.register(state);
+    };
+
+    this.register = function (state) {
+        if (!is.object(state)) {
+            return console.warn('Registered state must be an object.');
+        }
+
+        if (!('transitions' in state)) {
+            state.transitions = {};
+        }
+
+        state._initialized = false;
+        state.manager = this;
+        states[state.name] = state;
+
+        return this;
+    };
+}
+
+/**
+ * Registers new state.
+ * 
+ * @static
+ * @method Register
+ * @param {Object} state state object (see example)
+ */
+State.Register = function (state) {
+    if (!is.object(state)) {
+        return debug.warn('Registered state must be an object.');
+    }
+
+    if (!('transitions' in state)) {
+        state.transitions = {};
+    }
+
+    state._initialized = false;
+    states[state.name] = state;
+}
+
+module.exports = State;

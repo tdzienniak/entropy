@@ -5,21 +5,17 @@
  */
 'use strict';
 
-/**
- * Requiring polyfills for requestAnimationFrame and performance.now.
- */
+//Requiring polyfills for requestAnimationFrame and performance.now.
 require('./core/polyfill');
 
-var debug = require('./debug');
-var config = require('./config');
+var debug = require('./core/debug');
+var config = require('./core/config');
 
 var Const = require('./core/const');
 var Game = require('./core/game');
 var Engine = require('./core/engine');
 
-/**
- * Welcome message.
- */
+//Welcome message.
 console.log.apply(console, [
     '%c %c %c Entropy 0.2.0 - Entity System Framework for JavaScript %c %c ',
     'background: rgb(200, 200,200);',  
@@ -45,6 +41,11 @@ function Entropy () {
  * Once assigned, can't be assigned again.
  * Can be later accessed by: Entropy.KEY
  *
+ * @example
+ *     Entropy.Const('WIDTH', 800);
+ *
+ *     Entropy.WIDTH; //800
+ *
  * @static
  * @method Const
  * @param {String}  key      constans key
@@ -54,7 +55,22 @@ Entropy.Const = function (key, value) {
     return Const.call(this, key, value);
 };
 
+/**
+ * {{#crossLink "Game"}}Game{{/crossLink}} class reference.
+ * 
+ * @static
+ * @method Game
+ * @type {Game}
+ */
 Entropy.Game = Game;
+
+/**
+ * {{#crossLink "Engine"}}Engine{{/crossLink}} class reference.
+ * 
+ * @static
+ * @method Engine
+ * @type {Engine}
+ */
 Entropy.Engine = Engine;
 
 module.exports = Entropy;

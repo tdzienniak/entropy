@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Entropy - Entropy</title>
+    <title>src\core\game.js - Entropy</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -83,73 +83,139 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-<h1>Entropy Module</h1>
-<div class="box clearfix meta">
+<h1 class="file-heading">File: src\core\game.js</h1>
 
+<div class="file">
+    <pre class="code prettyprint linenums">
+&#x27;use strict&#x27;;
 
-        <div class="foundat">
-            Defined in: <a href="../files/src_entropy.js.html#l28"><code>src\entropy.js:28</code></a>
-        </div>
+var is = require(&#x27;check-types&#x27;);
+var debug = require(&#x27;./debug&#x27;);
+var extend = require(&#x27;node.extend&#x27;);
 
-</div>
+var EventEmitter = require(&#x27;./event&#x27;);
+var State = require(&#x27;./state&#x27;);
+var Engine = require(&#x27;./engine&#x27;);
+var Inverse = require(&#x27;inverse&#x27;);
+var Ticker = require(&#x27;./ticker&#x27;);
 
+/**
+ * Main framework class. This is the only class, that needs to be instatiated by user.
+ * 
+ * @class Game
+ * @param {String} initialState initial state
+ */
+function Game (initialState) {
+    EventEmitter.call(this);
 
-<div class="box intro">
-    <p>Main Entropy module and top namespace.</p>
+    this.engine = new Engine(this);
+    this.state = new State(this);
 
-</div>
+    /**
+     * Instance of Inverse class.
+     * How to use:
+     * [https://github.com/mcordingley/Inverse.js](https://github.com/mcordingley/Inverse.js)
+     *
+     * @property container
+     * @type {Inverse}
+     */
+    this.container = new Inverse();
 
+    /**
+     * Instance of Ticker class.
+     *
+     * @property ticker
+     * @type {Ticker}
+     */
+    this.ticker = new Ticker(this);
 
-<div class="yui3-g">
-    <div class="yui3-u-1-2">
-            <p>This module provides the following classes:</p>
+    this.ticker.on(&#x27;tick&#x27;, this.engine.update, this.engine);
 
-            <ul class="module-classes">
-                <li class="module-class">
-                    <a href="../classes/Engine.html">
-                        Engine
-                    </a>
-                </li>
-                <li class="module-class">
-                    <a href="../classes/Entity.html">
-                        Entity
-                    </a>
-                </li>
-                <li class="module-class">
-                    <a href="../classes/Entropy.html">
-                        Entropy
-                    </a>
-                </li>
-                <li class="module-class">
-                    <a href="../classes/Game.html">
-                        Game
-                    </a>
-                </li>
-                <li class="module-class">
-                    <a href="../classes/Pool.html">
-                        Pool
-                    </a>
-                </li>
-                <li class="module-class">
-                    <a href="../classes/Query.html">
-                        Query
-                    </a>
-                </li>
-                <li class="module-class">
-                    <a href="../classes/State.html">
-                        State
-                    </a>
-                </li>
-                <li class="module-class">
-                    <a href="../classes/Ticker.html">
-                        Ticker
-                    </a>
-                </li>
-            </ul>
-    </div>
+    this.state.change(initialState);
+}
 
-    <div class="yui3-u-1-2">
-    </div>
+/**
+ * @example
+ *     Entropy.Game.State({
+ *         name: &quot;initialize&quot;,
+ *         initialize: function (game, done) {
+ *             console.log(&#x27;State initialized.&#x27;);
+ *             
+ *             return done();
+ *         },
+ *         enter: function (game, done) {
+ *             console.log(&#x27;State entered.&#x27;);
+ *             
+ *             return done();
+ *         },
+ *         exit: function (game, done) {
+ *             console.log(&#x27;State exited.&#x27;);
+ *             
+ *             return done();
+ *         },
+ *         trnsitions: {
+ *             menu: &quot;toMenu&quot;
+ *         },
+ *         toMenu: function (game, nextState, done) {
+ *             console.log(&#x27;Transitioning from &#x60;initialize&#x60; to &#x60;menu&#x60;.&#x27;);
+ *             
+ *             return done();
+ *         }
+ *     });
+ * 
+ * @static
+ * @method State
+ * @param {Object} state state object
+ */
+Game.State = function (state) {
+    State.Register(state);
+}
+
+extend(Game.prototype, EventEmitter.prototype);
+extend(Game.prototype, {
+    /**
+     * Starts the game. See Ticker&#x27;s {{#crossLink &quot;Ticker/start:method&quot;}}start{{/crossLink}} method for more details.
+     * 
+     * @method start
+     * @return {Boolean} succesfuly started or not
+     */
+    start: function () {
+        return this.ticker.start();
+    },
+
+    /**
+     * Stops the game. See Ticker&#x27;s {{#crossLink &quot;Ticker/stop:method&quot;}}stop{{/crossLink}} method for more details.
+     * 
+     * @method stop
+     * @return {Boolean} [description]
+     */
+    stop: function () {
+        return this.ticker.stop();
+    },
+
+    /**
+     * Pauses the game. See Ticker&#x27;s {{#crossLink &quot;Ticker/pause:method&quot;}}pause{{/crossLink}} method for more details.
+     * 
+     * @method pause
+     * @return {Boolean} [description]
+     */
+    pause: function () {
+        return this.ticker.pause();
+    },
+
+    /**
+     * Resumes the game. See Ticker&#x27;s {{#crossLink &quot;Ticker/resume:method&quot;}}resume{{/crossLink}} method for more details.
+     * 
+     * @method resume
+     * @return {Boolean} [description]
+     */
+    resume: function () {
+        return this.ticker.resume();
+    }
+});
+
+module.exports = Game;
+    </pre>
 </div>
                     </div>
                 </div>

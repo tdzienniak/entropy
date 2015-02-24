@@ -41,8 +41,11 @@
                                 <li><a href="../classes/Engine.html">Engine</a></li>
                                 <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
+                                <li><a href="../classes/Game.html">Game</a></li>
                                 <li><a href="../classes/Pool.html">Pool</a></li>
                                 <li><a href="../classes/Query.html">Query</a></li>
+                                <li><a href="../classes/State.html">State</a></li>
+                                <li><a href="../classes/Ticker.html">Ticker</a></li>
                             </ul>
                 
                             <ul id="api-modules" class="apis modules">
@@ -91,21 +94,17 @@
  */
 &#x27;use strict&#x27;;
 
-/**
- * Requiring polyfills for requestAnimationFrame and performance.now.
- */
+//Requiring polyfills for requestAnimationFrame and performance.now.
 require(&#x27;./core/polyfill&#x27;);
 
-var debug = require(&#x27;./debug&#x27;);
-var config = require(&#x27;./config&#x27;);
+var debug = require(&#x27;./core/debug&#x27;);
+var config = require(&#x27;./core/config&#x27;);
 
 var Const = require(&#x27;./core/const&#x27;);
 var Game = require(&#x27;./core/game&#x27;);
 var Engine = require(&#x27;./core/engine&#x27;);
 
-/**
- * Welcome message.
- */
+//Welcome message.
 console.log.apply(console, [
     &#x27;%c %c %c Entropy 0.2.0 - Entity System Framework for JavaScript %c %c &#x27;,
     &#x27;background: rgb(200, 200,200);&#x27;,  
@@ -131,6 +130,11 @@ function Entropy () {
  * Once assigned, can&#x27;t be assigned again.
  * Can be later accessed by: Entropy.KEY
  *
+ * @example
+ *     Entropy.Const(&#x27;WIDTH&#x27;, 800);
+ *
+ *     Entropy.WIDTH; //800
+ *
  * @static
  * @method Const
  * @param {String}  key      constans key
@@ -140,7 +144,22 @@ Entropy.Const = function (key, value) {
     return Const.call(this, key, value);
 };
 
+/**
+ * {{#crossLink &quot;Game&quot;}}Game{{/crossLink}} class reference.
+ * 
+ * @static
+ * @method Game
+ * @type {Game}
+ */
 Entropy.Game = Game;
+
+/**
+ * {{#crossLink &quot;Engine&quot;}}Engine{{/crossLink}} class reference.
+ * 
+ * @static
+ * @method Engine
+ * @type {Engine}
+ */
 Entropy.Engine = Engine;
 
 module.exports = Entropy;

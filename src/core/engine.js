@@ -1,10 +1,10 @@
 'use strict';
 
 var extend = require('node.extend');
-var config = require('../config');
+var config = require('./config');
 var array = require('./fastarray');
 var is = require('check-types');
-var debug = require('../debug');
+var debug = require('./debug');
 var register = require('./register');
 var slice = Array.prototype.slice;
 
@@ -14,6 +14,8 @@ var Pool = require('./pool');
 var Entity = require('./entity');
 
 /**
+ * Engine class. Class is used internaly. User should not instatiate this class.
+ * 
  * @class Engine
  * @extends EventEmitter
  * @constructor
@@ -22,8 +24,10 @@ function Engine (game) {
     EventEmitter.call(this);
     
     /**
-     * [game description]
-     * @type {[type]}
+     * Instance of {{#crossLink "Game"}}Game{{/crossLink}} class.
+     *
+     * @property game
+     * @type {Game}
      */
     this.game = game;
 
@@ -57,6 +61,7 @@ function Engine (game) {
 
     /**
      * Array with entities. Array index corresponds to ID of an entity.
+     * 
      * @property _entities
      * @private
      * @type Array
@@ -191,6 +196,7 @@ Engine.Entity = function (entity) {
  * 
  * @method System
  * @static
+ * @param {Object} system system pattern object
  */
 Engine.System = function (system) {
     register.registerSystem(system);
@@ -264,6 +270,7 @@ extend(Engine.prototype, {
      *         game.engine.remove(entity);
      *     }
      * 
+     * @method remove
      * @param  {Entity} entity Entity instance
      * @return {Engine}        Engine instance
      */
@@ -295,7 +302,8 @@ extend(Engine.prototype, {
      *
      *     //here do something with entities in loop
      *     ...
-     *     
+     *
+     * @method getEntities
      * @param  {Query}  query query object
      * @return {Array}  array of matched entities
      */
@@ -306,7 +314,23 @@ extend(Engine.prototype, {
 
         return query.entities;
     },
-    
+    /**
+     * Creates new system object and adds it to the engine. System patterns `initialize` method is called (if present).
+     * It can be called in two ways - with first argument being either:
+     * - system name - then system has priority as defined by patterns `priority` property or 0.
+     * - array with two elements - system name and its desired priority. In this case patterns `priority` property is simply skiped.
+     *
+     * @example
+     *     game.engine.addSystem("Renderer", rendererObject);
+     *     
+     *     //or
+     *
+     *     game.engine.addSystem(["Renderer", 1], rendererObject);
+     *     
+     * @method addSystem
+     * @param {String|Array} ...name name of a system or array with two elements - name of a system and desired priority (see example). Additional arguments are applied to patterns `initialize` method.
+     * @return {Engine} engine instance
+     */
     addSystem: function (name) {
         var systemName, priority;
 

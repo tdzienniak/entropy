@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Entity - Entropy</title>
+    <title>Ticker - Entropy</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -83,12 +83,12 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-<h1>Entity Class</h1>
+<h1>Ticker Class</h1>
 <div class="box meta">
 
 
         <div class="foundat">
-            Defined in: <a href="../files/src_core_entity.js.html#l13"><code>src\core\entity.js:13</code></a>
+            Defined in: <a href="../files/src_core_ticker.js.html#l10"><code>src\core\ticker.js:10</code></a>
         </div>
 
             Module: <a href="../modules/Entropy.html">Entropy</a>
@@ -97,94 +97,9 @@
 
 
 <div class="box intro">
-    <p>Entity class. Class is used internaly. User should not instatiate this class.</p>
-
+    
 </div>
 
-    <div class="constructor">
-        <h2>Constructor</h2>
-        <div id="method_Entity" class="method item">
-            <h3 class="name"><code>Entity</code></h3>
-        
-                <div class="args">
-                    <span class="paren">(</span><ul class="args-list inline commas">
-                        <li class="arg">
-                                <code>name</code>
-                        </li>
-                        <li class="arg">
-                                <code>pattern</code>
-                        </li>
-                        <li class="arg">
-                                <code>engine</code>
-                        </li>
-                    </ul><span class="paren">)</span>
-                </div>
-        
-        
-        
-        
-        
-        
-        
-        
-            <div class="meta">
-                        <p>
-                        Defined in
-                <a href="../files/src_core_entity.js.html#l13"><code>src\core\entity.js:13</code></a>
-                </p>
-        
-        
-        
-            </div>
-        
-            <div class="description">
-                
-            </div>
-        
-                <div class="params">
-                    <h4>Parameters:</h4>
-        
-                    <ul class="params-list">
-                        <li class="param">
-                                <code class="param-name">name</code>
-                                <span class="type">String</span>
-        
-        
-                            <div class="param-description">
-                                <p>entity name</p>
-        
-                            </div>
-        
-                        </li>
-                        <li class="param">
-                                <code class="param-name">pattern</code>
-                                <span class="type">Object</span>
-        
-        
-                            <div class="param-description">
-                                <p>entity pattern</p>
-        
-                            </div>
-        
-                        </li>
-                        <li class="param">
-                                <code class="param-name">engine</code>
-                                <span class="type"><a href="../classes/Engine.html" class="crosslink">Engine</a></span>
-        
-        
-                            <div class="param-description">
-                                <p>Engine instance</p>
-        
-                            </div>
-        
-                        </li>
-                    </ul>
-                </div>
-        
-        
-        
-        </div>
-    </div>
 
 <div id="classdocs" class="tabview">
     <ul class="api-class-tabs">
@@ -202,7 +117,19 @@
 
                     <ul class="index-list methods">
                             <li class="index-item method">
-                                <a href="#method_add">add</a>
+                                <a href="#method_pause">pause</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_resume">resume</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_start">start</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_stop">stop</a>
 
                             </li>
                     </ul>
@@ -215,19 +142,13 @@
             <div id="methods" class="api-class-tabpanel">
                 <h2 class="off-left">Methods</h2>
 
-<div id="method_add" class="method item">
-    <h3 class="name"><code>add</code></h3>
+<div id="method_pause" class="method item">
+    <h3 class="name"><code>pause</code></h3>
 
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>name</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
+        <span class="paren">()</span>
 
         <span class="returns-inline">
-            <span class="type"><a href="../classes/Entity.html" class="crosslink">Entity</a></span>
+            <span class="type">type</span>
         </span>
 
 
@@ -239,7 +160,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_entity.js.html#l40"><code>src\core\entity.js:40</code></a>
+        <a href="../files/src_core_ticker.js.html#l42"><code>src\core\ticker.js:42</code></a>
         </p>
 
 
@@ -247,52 +168,147 @@
     </div>
 
     <div class="description">
-        <p>Adds new component to an entity. Component is either created from scratch or reused from pool. In later case, component patterns <code>reset</code> method is called (if present).\
-Component patterns <code>initialize</code> method is called with additional arguments passed to <code>add</code> method.
-Addition does not happen imediately, but is postponed to nearest update cycle.</p>
-
+        
     </div>
 
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">name</code>
-                        <span class="type">String</span>
-
-                        <span class="flag multiple" title="This argument may occur one or more times.">multiple</span>
-
-                    <div class="param-description">
-                        <p>name of component to add. Addidtional parameters are applied to component patterns <code>initialize</code> method.</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
 
         <div class="returns">
             <h4>Returns:</h4>
 
             <div class="returns-description">
-                        <span class="type"><a href="../classes/Entity.html" class="crosslink">Entity</a></span>:
-                    <p>Entity instance</p>
+                        <span class="type">type</span>:
+                    <p>[description]</p>
 
             </div>
         </div>
 
 
-        <div class="example">
-            <h4>Example:</h4>
+</div>
+<div id="method_resume" class="method item">
+    <h3 class="name"><code>resume</code></h3>
 
-            <div class="example-content">
-                <pre class="code prettyprint"><code>//<code>this</code> is a reference to Entity instance
-//code like this often can be seen in entity pattern <code>create</code> method
-this.add(&quot;Position&quot;, 1, 1);
-</code></pre>
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">type</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_ticker.js.html#l56"><code>src\core\ticker.js:56</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">type</span>:
+                    <p>[description]</p>
+
             </div>
         </div>
+
+
+</div>
+<div id="method_start" class="method item">
+    <h3 class="name"><code>start</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">type</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_ticker.js.html#l70"><code>src\core\ticker.js:70</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">type</span>:
+                    <p>[description]</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_stop" class="method item">
+    <h3 class="name"><code>stop</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">type</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_ticker.js.html#l124"><code>src\core\ticker.js:124</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">type</span>:
+                    <p>[description]</p>
+
+            </div>
+        </div>
+
+
 </div>
             </div>
 

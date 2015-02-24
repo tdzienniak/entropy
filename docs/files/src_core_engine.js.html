@@ -41,8 +41,11 @@
                                 <li><a href="../classes/Engine.html">Engine</a></li>
                                 <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
+                                <li><a href="../classes/Game.html">Game</a></li>
                                 <li><a href="../classes/Pool.html">Pool</a></li>
                                 <li><a href="../classes/Query.html">Query</a></li>
+                                <li><a href="../classes/State.html">State</a></li>
+                                <li><a href="../classes/Ticker.html">Ticker</a></li>
                             </ul>
                 
                             <ul id="api-modules" class="apis modules">
@@ -87,10 +90,10 @@
 &#x27;use strict&#x27;;
 
 var extend = require(&#x27;node.extend&#x27;);
-var config = require(&#x27;../config&#x27;);
+var config = require(&#x27;./config&#x27;);
 var array = require(&#x27;./fastarray&#x27;);
 var is = require(&#x27;check-types&#x27;);
-var debug = require(&#x27;../debug&#x27;);
+var debug = require(&#x27;./debug&#x27;);
 var register = require(&#x27;./register&#x27;);
 var slice = Array.prototype.slice;
 
@@ -100,6 +103,8 @@ var Pool = require(&#x27;./pool&#x27;);
 var Entity = require(&#x27;./entity&#x27;);
 
 /**
+ * Engine class. Class is used internaly. User should not instatiate this class.
+ * 
  * @class Engine
  * @extends EventEmitter
  * @constructor
@@ -108,8 +113,10 @@ function Engine (game) {
     EventEmitter.call(this);
     
     /**
-     * [game description]
-     * @type {[type]}
+     * Instance of {{#crossLink &quot;Game&quot;}}Game{{/crossLink}} class.
+     *
+     * @property game
+     * @type {Game}
      */
     this.game = game;
 
@@ -143,6 +150,7 @@ function Engine (game) {
 
     /**
      * Array with entities. Array index corresponds to ID of an entity.
+     * 
      * @property _entities
      * @private
      * @type Array
@@ -277,6 +285,7 @@ Engine.Entity = function (entity) {
  * 
  * @method System
  * @static
+ * @param {Object} system system pattern object
  */
 Engine.System = function (system) {
     register.registerSystem(system);
@@ -350,6 +359,7 @@ extend(Engine.prototype, {
      *         game.engine.remove(entity);
      *     }
      * 
+     * @method remove
      * @param  {Entity} entity Entity instance
      * @return {Engine}        Engine instance
      */
@@ -381,7 +391,8 @@ extend(Engine.prototype, {
      *
      *     //here do something with entities in loop
      *     ...
-     *     
+     *
+     * @method getEntities
      * @param  {Query}  query query object
      * @return {Array}  array of matched entities
      */
@@ -392,7 +403,23 @@ extend(Engine.prototype, {
 
         return query.entities;
     },
-    
+    /**
+     * Creates new system object and adds it to the engine. System patterns &#x60;initialize&#x60; method is called (if present).
+     * It can be called in two ways - with first argument being either:
+     * - system name - then system has priority as defined by patterns &#x60;priority&#x60; property or 0.
+     * - array with two elements - system name and its desired priority. In this case patterns &#x60;priority&#x60; property is simply skiped.
+     *
+     * @example
+     *     game.engine.addSystem(&quot;Renderer&quot;, rendererObject);
+     *     
+     *     //or
+     *
+     *     game.engine.addSystem([&quot;Renderer&quot;, 1], rendererObject);
+     *     
+     * @method addSystem
+     * @param {String|Array} ...name name of a system or array with two elements - name of a system and desired priority (see example). Additional arguments are applied to patterns &#x60;initialize&#x60; method.
+     * @return {Engine} engine instance
+     */
     addSystem: function (name) {
         var systemName, priority;
 

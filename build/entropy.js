@@ -2089,7 +2089,7 @@ module.exports = function (key, value) {
 'use strict';
 
 var is = require('check-types');
-var debug = require('../debug');
+var debug = require('./debug');
 
 module.exports = function (key, value) {
     if (is.not.unemptyString(key)) {
@@ -2110,14 +2110,36 @@ module.exports = function (key, value) {
 
     return value;
 };
-},{"../debug":20,"check-types":2}],9:[function(require,module,exports){
+},{"./debug":9,"check-types":2}],9:[function(require,module,exports){
+'use strict';
+
+var config = require('./config');
+
+module.exports = {
+    log: function () {
+        if (config('debug') >= 3) {
+            console.log.apply(console, arguments);
+        }
+    },
+    warn: function () {
+        if (config('debug') >= 2) {
+            console.warn.apply(console, arguments);
+        }
+    },
+    error: function () {
+        if (config('debug') >= 1) {
+            console.error.apply(console, arguments);
+        }
+    }
+};
+},{"./config":7}],10:[function(require,module,exports){
 'use strict';
 
 var extend = require('node.extend');
-var config = require('../config');
+var config = require('./config');
 var array = require('./fastarray');
 var is = require('check-types');
-var debug = require('../debug');
+var debug = require('./debug');
 var register = require('./register');
 var slice = Array.prototype.slice;
 
@@ -2127,6 +2149,8 @@ var Pool = require('./pool');
 var Entity = require('./entity');
 
 /**
+ * Engine class. Class is used internaly. User should not instatiate this class.
+ * 
  * @class Engine
  * @extends EventEmitter
  * @constructor
@@ -2135,8 +2159,10 @@ function Engine (game) {
     EventEmitter.call(this);
     
     /**
-     * [game description]
-     * @type {[type]}
+     * Instance of {{#crossLink "Game"}}Game{{/crossLink}} class.
+     *
+     * @property game
+     * @type {Game}
      */
     this.game = game;
 
@@ -2170,6 +2196,7 @@ function Engine (game) {
 
     /**
      * Array with entities. Array index corresponds to ID of an entity.
+     * 
      * @property _entities
      * @private
      * @type Array
@@ -2206,24 +2233,105 @@ function Engine (game) {
 }
 
 /**
+ * Registers new component pattern.
+ * Only argument should be an object with obligatory `name` property and `initialize` method.
+ * This method is used to assign some data to component object. `this` inside `initialize` function is a
+ * reference to newly created component object.
+ *
+ * @example
+ *     Entropy.Engine.Component({
+ *         name: "Position",
+ *         initialize: function (x, y) {
+ *             this.x = x;
+ *             this.y = y;
+ *         },
+ *         //not obligatory
+ *         reset: function () {
+ *             this.x = 0;
+ *             this.y = 0;
+ *         }
+ *     });
+ * 
  * @method Component
  * @static
+ * @param {Object} component component pattern
  */
 Engine.Component = function (component) {
     register.registerComponent(component);
 }
 
 /**
+ * Registers new entity pattern.
+ *
+ * Pattern is an object with following properties:
+ *  - __name__ (required) - name of an entity
+ *  - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.
+ *   `this` inside function references newly created entity object (instance of {{#crossLink "Entity"}}Entity{{/crossLink}} class).
+ *   Function is called with first argument being `game` object and every others are parameters with witch {{#crossLink "Engine/create:method"}}create{{/crossLink}} method is called.
+ *  - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).
+ *   First and only argument is a `game` object.
+ *
+ * @example
+ *     Entropy.Engine.Entity({
+ *         name: "Ball",
+ *         create: function (game, x, y, radius) {
+ *             var sprite = new Sprite("Ball");
+ * 
+ *             game.container.make("renderer").addSprite(sprite);
+ * 
+ *             this.add("Position", x, y)
+ *                 .add("Radius", radius)
+ *                 .add("Velocity", 5, 5)
+ *                 .add("Sprite", sprite);
+ *         },
+ *         //not oblgatory
+ *         remove: function (game) {
+ *             game.container.make("renderer").removeSprite(this.components.sprite.sprite);
+ *         }
+ *     });
+ * 
  * @method Entity
  * @static
+ * @param {Object} entity entity pattern
  */
 Engine.Entity = function (entity) {
     register.registerEntity(entity);
 }
 
 /**
+ * Registers new system pattern.
+ *
+ * @example
+ *     Entropy.Engine.System({
+ *         name: "MovementSystem",
+ *         priority: 1, //not obligatory
+ *         initialize: function () {
+ *             this.query = new Entropy.Engine.Query(["Position", "Velocity"]);
+ *         },
+ *         update: function (delta) {
+ *             var entities = this.engine.getEntities(this.query);
+ *             var e;
+ *
+ *             var i = 0;
+ *             while (e = entities[i]) {
+ *                 var position = e.components.position;
+ *                 var velocity = e.components.velocity;
+ *
+ *                 position.x += delta / 1000 * velocity.vx;
+ *                 position.y += delta / 1000 * velocity.vy;
+ * 
+ *                 i++;
+ *             }     
+ *         },
+ *         //not obligatory
+ *         remove: function () {
+ *         
+ *         }
+ *     });
+ * 
  * @method System
  * @static
+ * @param {Object} system system pattern object
  */
 Engine.System = function (system) {
     register.registerSystem(system);
@@ -2233,6 +2341,13 @@ Engine.System = function (system) {
  * Used to perform matching of entities.
  * Only parameter is an array of component names to include or object with `include` and/or `exclude` properties,
  * witch are arrays of component names to respectively include and/or exclude.
+ *
+ * @example
+ *     var q1 = new Entropy.Engine.Query(["Position", "Velocity"]);
+ *     var q2 = new Entropy.Engine.Query({
+ *         include: ["Position", "Velocity"],
+ *         exclude: ["Sprite"]
+ *     });
  * 
  * @method Query
  * @static
@@ -2244,11 +2359,15 @@ Engine.Query = Query;
 extend(Engine.prototype, EventEmitter.prototype);
 extend(Engine.prototype, {
     /**
-     * Creates new entity using pattern identified by 'name' parameter.
-     * Every additional parameter will be applied to patterns 'create' method.
+     * Creates new entity using pattern identified by `name` parameter.
+     * Every additional parameter will be applied to patterns `create` method.
+     * Patterns `create` method is called imediatelly after calling this method.
+     *
+     * @example
+     *     game.engine.create("Ball", 5, 5, 5); //x, y, radius
      *
      * @method create
-     * @param  {String} name    name of entity pattern
+     * @param  {String} ...name first argument is a name of entity (entity pattern). Every additional argument will be applied to patterns `create` method.
      * @return {Engine}         engine instance
      */
     create: function (name) {
@@ -2276,6 +2395,20 @@ extend(Engine.prototype, {
 
         return this;
     },
+    /**
+     * Removes entity from engine.
+     * Entity removal does not happen imediatelly, but after current update cycle.
+     *
+     * @example
+     *     //somwhere in the system 'update' method
+     *     if (entity.components.hp.quantity <= 0) { //entity is dead, remove
+     *         game.engine.remove(entity);
+     *     }
+     * 
+     * @method remove
+     * @param  {Entity} entity Entity instance
+     * @return {Engine}        Engine instance
+     */
     remove: function (entity) {
         if (entity == null) {
             return this;
@@ -2289,8 +2422,23 @@ extend(Engine.prototype, {
 
     },
     /**
-     * Returns array of entities satisfying given query conditions.
-     * 
+     * Returns array of entities satisfying given {{#crossLink "Query"}}query{{/crossLink}} conditions.
+     * Returned arrays length does not correspond with matched entities quantity.
+     * To loop over entities start from 0 index, and then check if element is different than 0.
+     * This method guaranties, that entities will be arranged as subsequent array slice, starting from 0 index and ending on element equal to 0.
+     * The array is in this form for performance reasons.
+     *
+     * @example
+     *     //in systems 'initialize' method...
+     *     this.query = new Entropy.Engine.Query(["Position", "Velocity"]);
+     *
+     *     //in systems 'update' method
+     *     var movingEntities = this.engine.getEntities(this.query);
+     *
+     *     //here do something with entities in loop
+     *     ...
+     *
+     * @method getEntities
      * @param  {Query}  query query object
      * @return {Array}  array of matched entities
      */
@@ -2301,6 +2449,23 @@ extend(Engine.prototype, {
 
         return query.entities;
     },
+    /**
+     * Creates new system object and adds it to the engine. System patterns `initialize` method is called (if present).
+     * It can be called in two ways - with first argument being either:
+     * - system name - then system has priority as defined by patterns `priority` property or 0.
+     * - array with two elements - system name and its desired priority. In this case patterns `priority` property is simply skiped.
+     *
+     * @example
+     *     game.engine.addSystem("Renderer", rendererObject);
+     *     
+     *     //or
+     *
+     *     game.engine.addSystem(["Renderer", 1], rendererObject);
+     *     
+     * @method addSystem
+     * @param {String|Array} ...name name of a system or array with two elements - name of a system and desired priority (see example). Additional arguments are applied to patterns `initialize` method.
+     * @return {Engine} engine instance
+     */
     addSystem: function (name) {
         var systemName, priority;
 
@@ -2393,7 +2558,7 @@ extend(Engine.prototype, {
         array.push(this._modifiedEntities, this._modifiedEntitiesLength++, entity.id);
     },
     clear: function () {
-        
+
 
 
     },
@@ -2608,7 +2773,7 @@ extend(Engine.prototype, {
     /**
      * Initializes new query. Performs initial entity search.
      * 
-     * @param  {Object} query query object
+     * @param {Object} query query object
      */
     _initializeQuery: function (query) {
         //TODO: add check for existing query
@@ -2644,19 +2809,28 @@ extend(Engine.prototype, {
 });
 
 module.exports = Engine;
-},{"../config":7,"../debug":20,"./entity":10,"./event":11,"./fastarray":12,"./pool":15,"./query":16,"./register":17,"check-types":2,"node.extend":4}],10:[function(require,module,exports){
+},{"./config":7,"./debug":9,"./entity":11,"./event":12,"./fastarray":13,"./pool":16,"./query":17,"./register":18,"check-types":2,"node.extend":4}],11:[function(require,module,exports){
 'use strict';
 
 var is = require('check-types');
-var debug = require('../debug');
+var debug = require('./debug');
 var extend = require('node.extend');
-var config = require('../config');
+var config = require('./config');
 var register = require('./register');
 var slice = Array.prototype.slice;
 
 var EventEmitter = require('./event');
 var BitSet = require('bitset.js').BitSet;
 
+/**
+ * Entity class. Class is used internaly. User should not instatiate this class.
+ *
+ * @class Entity
+ * @constructor
+ * @param {String} name    entity name
+ * @param {Object} pattern entity pattern
+ * @param {Engine} engine  Engine instance
+ */
 function Entity(name, pattern, engine) {
     EventEmitter.call(this);
 
@@ -2675,6 +2849,20 @@ function Entity(name, pattern, engine) {
 
 extend(Entity.prototype, EventEmitter.prototype);
 extend(Entity.prototype, {
+    /**
+     * Adds new component to an entity. Component is either created from scratch or reused from pool. In later case, component patterns `reset` method is called (if present).\
+     * Component patterns `initialize` method is called with additional arguments passed to `add` method.
+     * Addition does not happen imediately, but is postponed to nearest update cycle.
+     *
+     * @example
+     *     //`this` is a reference to Entity instance
+     *     //code like this often can be seen in entity pattern `create` method
+     *     this.add("Position", 1, 1);
+     * 
+     * @method add
+     * @param {String} ...name name of component to add. Addidtional parameters are applied to component patterns `initialize` method.
+     * @return {Entity} Entity instance
+     */
     add: function (name) {
         if (is.not.unemptyString(name)) {
             debug.warn('component name must be a non-empty string');
@@ -2739,7 +2927,7 @@ extend(Entity.prototype, {
         return this.components[name.toLowerCase()];
     },
     reset: function () {
-        if (is.function(this._pattern.reset)) {
+        if (is.function(this.pattern.reset)) {
             this.pattern.reset.call(this, this.engine.game);
         }
 
@@ -2767,7 +2955,7 @@ extend(Entity.prototype, {
 });
 
 module.exports = Entity;
-},{"../config":7,"../debug":20,"./event":11,"./register":17,"bitset.js":1,"check-types":2,"node.extend":4}],11:[function(require,module,exports){
+},{"./config":7,"./debug":9,"./event":12,"./register":18,"bitset.js":1,"check-types":2,"node.extend":4}],12:[function(require,module,exports){
 'use strict';
 
 var is = require('check-types');
@@ -2837,7 +3025,7 @@ extend(EventEmitter.prototype, {
 });
 
 module.exports = EventEmitter;
-},{"check-types":2,"node.extend":4}],12:[function(require,module,exports){
+},{"check-types":2,"node.extend":4}],13:[function(require,module,exports){
 module.exports = {
     alloc: function (size) {
         var arr = new Array(size);
@@ -2906,11 +3094,11 @@ module.exports = {
     }
 };
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 var is = require('check-types');
-var debug = require('../debug');
+var debug = require('./debug');
 var extend = require('node.extend');
 
 var EventEmitter = require('./event');
@@ -2919,14 +3107,34 @@ var Engine = require('./engine');
 var Inverse = require('inverse');
 var Ticker = require('./ticker');
 
-var states = {};
-
+/**
+ * Main framework class. This is the only class, that needs to be instatiated by user.
+ * 
+ * @class Game
+ * @param {String} initialState initial state
+ */
 function Game (initialState) {
     EventEmitter.call(this);
 
     this.engine = new Engine(this);
-    this.state = State(states, this);
+    this.state = new State(this);
+
+    /**
+     * Instance of Inverse class.
+     * How to use:
+     * [https://github.com/mcordingley/Inverse.js](https://github.com/mcordingley/Inverse.js)
+     *
+     * @property container
+     * @type {Inverse}
+     */
     this.container = new Inverse();
+
+    /**
+     * Instance of Ticker class.
+     *
+     * @property ticker
+     * @type {Ticker}
+     */
     this.ticker = new Ticker(this);
 
     this.ticker.on('tick', this.engine.update, this.engine);
@@ -2934,38 +3142,88 @@ function Game (initialState) {
     this.state.change(initialState);
 }
 
+/**
+ * @example
+ *     Entropy.Game.State({
+ *         name: "initialize",
+ *         initialize: function (game, done) {
+ *             console.log('State initialized.');
+ *             
+ *             return done();
+ *         },
+ *         enter: function (game, done) {
+ *             console.log('State entered.');
+ *             
+ *             return done();
+ *         },
+ *         exit: function (game, done) {
+ *             console.log('State exited.');
+ *             
+ *             return done();
+ *         },
+ *         trnsitions: {
+ *             menu: "toMenu"
+ *         },
+ *         toMenu: function (game, nextState, done) {
+ *             console.log('Transitioning from `initialize` to `menu`.');
+ *             
+ *             return done();
+ *         }
+ *     });
+ * 
+ * @static
+ * @method State
+ * @param {Object} state state object
+ */
 Game.State = function (state) {
-    if (!is.object(state)) {
-        return debug.warn('Registered state must be an object.');
-    }
-
-    if (!('transitions' in state)) {
-        state.transitions = {};
-    }
-
-    state._initialized = false;
-    state.manager = this;
-    states[state.name] = state;
+    State.Register(state);
 }
 
 extend(Game.prototype, EventEmitter.prototype);
 extend(Game.prototype, {
+    /**
+     * Starts the game. See Ticker's {{#crossLink "Ticker/start:method"}}start{{/crossLink}} method for more details.
+     * 
+     * @method start
+     * @return {Boolean} succesfuly started or not
+     */
     start: function () {
         return this.ticker.start();
     },
+
+    /**
+     * Stops the game. See Ticker's {{#crossLink "Ticker/stop:method"}}stop{{/crossLink}} method for more details.
+     * 
+     * @method stop
+     * @return {Boolean} [description]
+     */
     stop: function () {
         return this.ticker.stop();
     },
+
+    /**
+     * Pauses the game. See Ticker's {{#crossLink "Ticker/pause:method"}}pause{{/crossLink}} method for more details.
+     * 
+     * @method pause
+     * @return {Boolean} [description]
+     */
     pause: function () {
         return this.ticker.pause();
     },
+
+    /**
+     * Resumes the game. See Ticker's {{#crossLink "Ticker/resume:method"}}resume{{/crossLink}} method for more details.
+     * 
+     * @method resume
+     * @return {Boolean} [description]
+     */
     resume: function () {
         return this.ticker.resume();
     }
 });
 
 module.exports = Game;
-},{"../debug":20,"./engine":9,"./event":11,"./state":18,"./ticker":19,"check-types":2,"inverse":3,"node.extend":4}],14:[function(require,module,exports){
+},{"./debug":9,"./engine":10,"./event":12,"./state":19,"./ticker":20,"check-types":2,"inverse":3,"node.extend":4}],15:[function(require,module,exports){
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
  
@@ -3034,7 +3292,7 @@ module.exports = Game;
   }
  
 })();
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var extend = require('node.extend');
 
 /**
@@ -3097,12 +3355,12 @@ extend(Pool.prototype, {
 });
 
 module.exports = Pool;
-},{"node.extend":4}],16:[function(require,module,exports){
+},{"node.extend":4}],17:[function(require,module,exports){
 'use strict';
 
 var is = require('check-types');
-var debug = require('../debug');
-var config = require('../config');
+var debug = require('./debug');
+var config = require('./config');
 var register = require('./register');
 var extend = require('node.extend');
 
@@ -3175,12 +3433,12 @@ extend(Query.prototype, {
 });
 
 module.exports = Query;
-},{"../config":7,"../debug":20,"./register":17,"bitset.js":1,"check-types":2,"node.extend":4}],17:[function(require,module,exports){
+},{"./config":7,"./debug":9,"./register":18,"bitset.js":1,"check-types":2,"node.extend":4}],18:[function(require,module,exports){
 'use strict';
 
 var is = require('check-types');
-var debug = require('../debug');
-var config = require('../config');
+var debug = require('./debug');
+var config = require('./config');
 
 var canModify = true;
 var componentPatterns = {};
@@ -3290,13 +3548,20 @@ module.exports = {
         canModify = false;
     }
 }
-},{"../config":7,"../debug":20,"check-types":2}],18:[function(require,module,exports){
+},{"./config":7,"./debug":9,"check-types":2}],19:[function(require,module,exports){
 'use strict';
 
 var is = require('check-types');
 var slice = Array.prototype.slice;
+var states = [];
 
-module.exports = function (states, game) {
+/**
+ * This class is an implementation of simple state manager.
+ *
+ * @class State
+ * @param {Game} game Game instance
+ */
+function State(game) {
     var queue = [];
     var current = {
         transitions: {}
@@ -3371,93 +3636,150 @@ module.exports = function (states, game) {
         }
 
         var done = args.pop();
+
         return done();
     };
 
-    return {
-        change: function (name) {
-            if (!is.string(name) || !(name in states)) {
-                console.warn('State %s does not exists - change will not occur.', name);
-                return;
-            }
+    /**
+     * Changes state to one identified by `name` parameter.
+     * Changing state process looks roughly like this:
+     *  1. calling current state's `exit` method (if present)
+     *  2. calling next state's `initialize` method (if present)
+     *  3. calling transition function (if present)
+     *  4. calling next state's `enter` method (if present)
+     * 
+     * @method change
+     * @chainable
+     * @param  {String} ...name state to change into. Any addidtional parameter will be applied to transition method.
+     * @return {State}          State instance
+     */
+    this.change = function (name) {
+        if (!is.string(name) || !(name in states)) {
+            console.warn('State %s does not exists - change will not occur.', name);
+            return;
+        }
 
-            var args = slice.call(arguments, 1);
+        var args = slice.call(arguments, 1);
+        var next = states[name];
 
-            var next = states[name];
+        if (next.manager == null) {
+            next.manager = this;
+        }
 
+        queue.push({
+            fn: exitState
+        });
+
+        if (!next._initialized) {
             queue.push({
-                fn: exitState
-            });
-
-            if (!next._initialized) {
-                queue.push({
-                    fn: initializeState,
-                    args: [next]
-                });
-
-                queue.push({
-                    fn: setInitialized,
-                    args: [next]
-                });
-            }
-
-            queue.push({
-                fn: doTransition,
-                args: [name, next].concat(args)
-            });
-
-            queue.push({
-                fn: enterState,
+                fn: initializeState,
                 args: [next]
             });
 
             queue.push({
-                fn: setCurrentState,
+                fn: setInitialized,
                 args: [next]
             });
+        }
 
-            if (!shifting) {
-                return shift();
-            }
-        },
-        current: function () {
-            return current.name;
-        },
-        isIn: function (state) {
-            return state === current.name;
-        },
-        feed: function (state) {
-            return this.register(state);
-        },
-        register: function (state) {
-            if (!is.object(state)) {
-                return console.warn('Registered state must be an object.');
-            }
+        queue.push({
+            fn: doTransition,
+            args: [name, next].concat(args)
+        });
 
-            if (!('transitions' in state)) {
-                state.transitions = {};
-            }
+        queue.push({
+            fn: enterState,
+            args: [next]
+        });
 
-            state._initialized = false;
-            state.manager = this;
-            states[state.name] = state;
+        queue.push({
+            fn: setCurrentState,
+            args: [next]
+        });
 
-            return this;
+        if (!shifting) {
+            return shift();
         }
     };
-};
 
-},{"check-types":2}],19:[function(require,module,exports){
+    /**
+     * Returns name of the current state.
+     * 
+     * @method current
+     * @return {String} name of the current state
+     */
+    this.current = function () {
+        return current.name;
+    };
+
+    /**
+     * Checks whether state machine is in state identified by name.
+     * 
+     * @method isIn
+     * @param  {String}  state states name
+     * @return {Boolean}
+     */
+    this.isIn = function (state) {
+        return state === current.name;
+    };
+
+    this.feed = function (state) {
+        return this.register(state);
+    };
+
+    this.register = function (state) {
+        if (!is.object(state)) {
+            return console.warn('Registered state must be an object.');
+        }
+
+        if (!('transitions' in state)) {
+            state.transitions = {};
+        }
+
+        state._initialized = false;
+        state.manager = this;
+        states[state.name] = state;
+
+        return this;
+    };
+}
+
+/**
+ * Registers new state.
+ * 
+ * @static
+ * @method Register
+ * @param {Object} state state object (see example)
+ */
+State.Register = function (state) {
+    if (!is.object(state)) {
+        return debug.warn('Registered state must be an object.');
+    }
+
+    if (!('transitions' in state)) {
+        state.transitions = {};
+    }
+
+    state._initialized = false;
+    states[state.name] = state;
+}
+
+module.exports = State;
+},{"check-types":2}],20:[function(require,module,exports){
 (function (global){
 'use strict';
 
 var raf = global.requestAnimationFrame;
 var extend = require('node.extend');
-var config = require('../config');
+var config = require('./config');
 var Stats = require('../lib/stats');
 
 var EventEmitter = require('./event');
 
+/**
+ * @class Ticker
+ * @param {Game} game    Game instance
+ */
 function Ticker (game, variant) {
     EventEmitter.call(this);
 
@@ -3486,6 +3808,10 @@ extend(Ticker.prototype, {
     setTimeFactor: function (factor) {
         this.TIME_FACTOR = factor;
     },
+    /**
+     * @method pause
+     * @return {[type]} [description]
+     */
     pause: function () {
         if (!this.isRunning() || this.isPaused()) {
             return false;
@@ -3496,6 +3822,10 @@ extend(Ticker.prototype, {
 
         return true;
     },
+    /**
+     * @method resume
+     * @return {[type]} [description]
+     */
     resume: function () {
         if (!this.isRunning() || !this.isPaused()) {
             return false;
@@ -3506,6 +3836,10 @@ extend(Ticker.prototype, {
 
         return true;
     },
+    /**
+     * @method start
+     * @return {[type]} [description]
+     */
     start: function () {
         var self = this;
 
@@ -3556,6 +3890,10 @@ extend(Ticker.prototype, {
             }
         }
     },
+    /**
+     * @method stop
+     * @return {[type]} [description]
+     */
     stop: function () {
         if (this._rafID === 0) {
             return false;
@@ -3596,29 +3934,7 @@ extend(Ticker.prototype, {
 
 module.exports = Ticker;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../config":7,"../lib/stats":22,"./event":11,"node.extend":4}],20:[function(require,module,exports){
-'use strict';
-
-var config = require('../config');
-
-module.exports = {
-    log: function () {
-        if (config('debug') >= 3) {
-            console.log.apply(console, arguments);
-        }
-    },
-    warn: function () {
-        if (config('debug') >= 2) {
-            console.warn.apply(console, arguments);
-        }
-    },
-    error: function () {
-        if (config('debug') >= 1) {
-            console.error.apply(console, arguments);
-        }
-    }
-};
-},{"../config":7}],21:[function(require,module,exports){
+},{"../lib/stats":22,"./config":7,"./event":12,"node.extend":4}],21:[function(require,module,exports){
 /**
  * Main Entropy module and top namespace.
  * 
@@ -3626,21 +3942,17 @@ module.exports = {
  */
 'use strict';
 
-/**
- * Requiring polyfills for requestAnimationFrame and performance.now.
- */
+//Requiring polyfills for requestAnimationFrame and performance.now.
 require('./core/polyfill');
 
-var debug = require('./debug');
-var config = require('./config');
+var debug = require('./core/debug');
+var config = require('./core/config');
 
 var Const = require('./core/const');
 var Game = require('./core/game');
 var Engine = require('./core/engine');
 
-/**
- * Welcome message.
- */
+//Welcome message.
 console.log.apply(console, [
     '%c %c %c Entropy 0.2.0 - Entity System Framework for JavaScript %c %c ',
     'background: rgb(200, 200,200);',  
@@ -3666,6 +3978,11 @@ function Entropy () {
  * Once assigned, can't be assigned again.
  * Can be later accessed by: Entropy.KEY
  *
+ * @example
+ *     Entropy.Const('WIDTH', 800);
+ *
+ *     Entropy.WIDTH; //800
+ *
  * @static
  * @method Const
  * @param {String}  key      constans key
@@ -3675,11 +3992,26 @@ Entropy.Const = function (key, value) {
     return Const.call(this, key, value);
 };
 
+/**
+ * {{#crossLink "Game"}}Game{{/crossLink}} class reference.
+ * 
+ * @static
+ * @method Game
+ * @type {Game}
+ */
 Entropy.Game = Game;
+
+/**
+ * {{#crossLink "Engine"}}Engine{{/crossLink}} class reference.
+ * 
+ * @static
+ * @method Engine
+ * @type {Engine}
+ */
 Entropy.Engine = Engine;
 
 module.exports = Entropy;
-},{"./config":7,"./core/const":8,"./core/engine":9,"./core/game":13,"./core/polyfill":14,"./debug":20}],22:[function(require,module,exports){
+},{"./core/config":7,"./core/const":8,"./core/debug":9,"./core/engine":10,"./core/game":14,"./core/polyfill":15}],22:[function(require,module,exports){
 // stats.js - http://github.com/mrdoob/stats.js
 var Stats=function(){var l=Date.now(),m=l,g=0,n=Infinity,o=0,h=0,p=Infinity,q=0,r=0,s=0,f=document.createElement("div");f.id="stats";f.addEventListener("mousedown",function(b){b.preventDefault();t(++s%2)},!1);f.style.cssText="width:80px;opacity:0.9;cursor:pointer";var a=document.createElement("div");a.id="fps";a.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#002";f.appendChild(a);var i=document.createElement("div");i.id="fpsText";i.style.cssText="color:#0ff;font-family:Helvetica,Arial,sans-serif;font-size:9px;font-weight:bold;line-height:15px";
 i.innerHTML="FPS";a.appendChild(i);var c=document.createElement("div");c.id="fpsGraph";c.style.cssText="position:relative;width:74px;height:30px;background-color:#0ff";for(a.appendChild(c);74>c.children.length;){var j=document.createElement("span");j.style.cssText="width:1px;height:30px;float:left;background-color:#113";c.appendChild(j)}var d=document.createElement("div");d.id="ms";d.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#020;display:none";f.appendChild(d);var k=document.createElement("div");

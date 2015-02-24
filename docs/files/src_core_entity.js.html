@@ -41,8 +41,11 @@
                                 <li><a href="../classes/Engine.html">Engine</a></li>
                                 <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
+                                <li><a href="../classes/Game.html">Game</a></li>
                                 <li><a href="../classes/Pool.html">Pool</a></li>
                                 <li><a href="../classes/Query.html">Query</a></li>
+                                <li><a href="../classes/State.html">State</a></li>
+                                <li><a href="../classes/Ticker.html">Ticker</a></li>
                             </ul>
                 
                             <ul id="api-modules" class="apis modules">
@@ -87,9 +90,9 @@
 &#x27;use strict&#x27;;
 
 var is = require(&#x27;check-types&#x27;);
-var debug = require(&#x27;../debug&#x27;);
+var debug = require(&#x27;./debug&#x27;);
 var extend = require(&#x27;node.extend&#x27;);
-var config = require(&#x27;../config&#x27;);
+var config = require(&#x27;./config&#x27;);
 var register = require(&#x27;./register&#x27;);
 var slice = Array.prototype.slice;
 
@@ -97,13 +100,13 @@ var EventEmitter = require(&#x27;./event&#x27;);
 var BitSet = require(&#x27;bitset.js&#x27;).BitSet;
 
 /**
- * Entity class.
+ * Entity class. Class is used internaly. User should not instatiate this class.
  *
  * @class Entity
  * @constructor
- * @param {String} name    [description]
- * @param {Object} pattern [description]
- * @param {Engine} engine  [description]
+ * @param {String} name    entity name
+ * @param {Object} pattern entity pattern
+ * @param {Engine} engine  Engine instance
  */
 function Entity(name, pattern, engine) {
     EventEmitter.call(this);
@@ -123,6 +126,20 @@ function Entity(name, pattern, engine) {
 
 extend(Entity.prototype, EventEmitter.prototype);
 extend(Entity.prototype, {
+    /**
+     * Adds new component to an entity. Component is either created from scratch or reused from pool. In later case, component patterns &#x60;reset&#x60; method is called (if present).\
+     * Component patterns &#x60;initialize&#x60; method is called with additional arguments passed to &#x60;add&#x60; method.
+     * Addition does not happen imediately, but is postponed to nearest update cycle.
+     *
+     * @example
+     *     //&#x60;this&#x60; is a reference to Entity instance
+     *     //code like this often can be seen in entity pattern &#x60;create&#x60; method
+     *     this.add(&quot;Position&quot;, 1, 1);
+     * 
+     * @method add
+     * @param {String} ...name name of component to add. Addidtional parameters are applied to component patterns &#x60;initialize&#x60; method.
+     * @return {Entity} Entity instance
+     */
     add: function (name) {
         if (is.not.unemptyString(name)) {
             debug.warn(&#x27;component name must be a non-empty string&#x27;);
@@ -187,7 +204,7 @@ extend(Entity.prototype, {
         return this.components[name.toLowerCase()];
     },
     reset: function () {
-        if (is.function(this._pattern.reset)) {
+        if (is.function(this.pattern.reset)) {
             this.pattern.reset.call(this, this.engine.game);
         }
 

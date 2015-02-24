@@ -2,11 +2,15 @@
 
 var raf = global.requestAnimationFrame;
 var extend = require('node.extend');
-var config = require('../config');
+var config = require('./config');
 var Stats = require('../lib/stats');
 
 var EventEmitter = require('./event');
 
+/**
+ * @class Ticker
+ * @param {Game} game    Game instance
+ */
 function Ticker (game, variant) {
     EventEmitter.call(this);
 
@@ -35,6 +39,10 @@ extend(Ticker.prototype, {
     setTimeFactor: function (factor) {
         this.TIME_FACTOR = factor;
     },
+    /**
+     * @method pause
+     * @return {[type]} [description]
+     */
     pause: function () {
         if (!this.isRunning() || this.isPaused()) {
             return false;
@@ -45,6 +53,10 @@ extend(Ticker.prototype, {
 
         return true;
     },
+    /**
+     * @method resume
+     * @return {[type]} [description]
+     */
     resume: function () {
         if (!this.isRunning() || !this.isPaused()) {
             return false;
@@ -55,6 +67,10 @@ extend(Ticker.prototype, {
 
         return true;
     },
+    /**
+     * @method start
+     * @return {[type]} [description]
+     */
     start: function () {
         var self = this;
 
@@ -105,6 +121,10 @@ extend(Ticker.prototype, {
             }
         }
     },
+    /**
+     * @method stop
+     * @return {[type]} [description]
+     */
     stop: function () {
         if (this._rafID === 0) {
             return false;

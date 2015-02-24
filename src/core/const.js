@@ -1,7 +1,7 @@
 'use strict';
 
 var is = require('check-types');
-var debug = require('../debug');
+var debug = require('./debug');
 
 module.exports = function (key, value) {
     if (is.not.unemptyString(key)) {

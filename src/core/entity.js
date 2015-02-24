@@ -1,9 +1,9 @@
 'use strict';
 
 var is = require('check-types');
-var debug = require('../debug');
+var debug = require('./debug');
 var extend = require('node.extend');
-var config = require('../config');
+var config = require('./config');
 var register = require('./register');
 var slice = Array.prototype.slice;
 
@@ -11,13 +11,13 @@ var EventEmitter = require('./event');
 var BitSet = require('bitset.js').BitSet;
 
 /**
- * Entity class.
+ * Entity class. Class is used internaly. User should not instatiate this class.
  *
  * @class Entity
  * @constructor
- * @param {String} name    [description]
- * @param {Object} pattern [description]
- * @param {Engine} engine  [description]
+ * @param {String} name    entity name
+ * @param {Object} pattern entity pattern
+ * @param {Engine} engine  Engine instance
  */
 function Entity(name, pattern, engine) {
     EventEmitter.call(this);
@@ -37,6 +37,20 @@ function Entity(name, pattern, engine) {
 
 extend(Entity.prototype, EventEmitter.prototype);
 extend(Entity.prototype, {
+    /**
+     * Adds new component to an entity. Component is either created from scratch or reused from pool. In later case, component patterns `reset` method is called (if present).\
+     * Component patterns `initialize` method is called with additional arguments passed to `add` method.
+     * Addition does not happen imediately, but is postponed to nearest update cycle.
+     *
+     * @example
+     *     //`this` is a reference to Entity instance
+     *     //code like this often can be seen in entity pattern `create` method
+     *     this.add("Position", 1, 1);
+     * 
+     * @method add
+     * @param {String} ...name name of component to add. Addidtional parameters are applied to component patterns `initialize` method.
+     * @return {Entity} Entity instance
+     */
     add: function (name) {
         if (is.not.unemptyString(name)) {
             debug.warn('component name must be a non-empty string');
@@ -101,7 +115,7 @@ extend(Entity.prototype, {
         return this.components[name.toLowerCase()];
     },
     reset: function () {
-        if (is.function(this._pattern.reset)) {
+        if (is.function(this.pattern.reset)) {
             this.pattern.reset.call(this, this.engine.game);
         }
 

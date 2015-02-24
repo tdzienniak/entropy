@@ -41,8 +41,11 @@
                                 <li><a href="../classes/Engine.html">Engine</a></li>
                                 <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
+                                <li><a href="../classes/Game.html">Game</a></li>
                                 <li><a href="../classes/Pool.html">Pool</a></li>
                                 <li><a href="../classes/Query.html">Query</a></li>
+                                <li><a href="../classes/State.html">State</a></li>
+                                <li><a href="../classes/Ticker.html">Ticker</a></li>
                             </ul>
                 
                             <ul id="api-modules" class="apis modules">
@@ -97,7 +100,8 @@
 
 
 <div class="box intro">
-    
+    <p>Engine class. Class is used internaly. User should not instatiate this class.</p>
+
 </div>
 
     <div class="constructor">
@@ -151,6 +155,10 @@
 
                     <ul class="index-list methods extends">
                             <li class="index-item method">
+                                <a href="#method_addSystem">addSystem</a>
+
+                            </li>
+                            <li class="index-item method">
                                 <a href="#method_Component">Component</a>
 
                                     <span class="flag static">static</span>
@@ -165,9 +173,17 @@
                                     <span class="flag static">static</span>
                             </li>
                             <li class="index-item method">
+                                <a href="#method_getEntities">getEntities</a>
+
+                            </li>
+                            <li class="index-item method">
                                 <a href="#method_Query">Query</a>
 
                                     <span class="flag static">static</span>
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_remove">remove</a>
+
                             </li>
                             <li class="index-item method">
                                 <a href="#method_System">System</a>
@@ -197,6 +213,10 @@
                                 <a href="#property__systems">_systems</a>
 
                             </li>
+                            <li class="index-item property">
+                                <a href="#property_game">game</a>
+
+                            </li>
                     </ul>
                 </div>
 
@@ -206,6 +226,90 @@
             <div id="methods" class="api-class-tabpanel">
                 <h2 class="off-left">Methods</h2>
 
+<div id="method_addSystem" class="method item">
+    <h3 class="name"><code>addSystem</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>name</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/Engine.html" class="crosslink">Engine</a></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_engine.js.html#l317"><code>src\core\engine.js:317</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Creates new system object and adds it to the engine. System patterns <code>initialize</code> method is called (if present).
+It can be called in two ways - with first argument being either:</p>
+<ul>
+<li>system name - then system has priority as defined by patterns <code>priority</code> property or 0.</li>
+<li>array with two elements - system name and its desired priority. In this case patterns <code>priority</code> property is simply skiped.</li>
+</ul>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">name</code>
+                        <span class="type">String | Array</span>
+
+                        <span class="flag multiple" title="This argument may occur one or more times.">multiple</span>
+
+                    <div class="param-description">
+                        <p>name of a system or array with two elements - name of a system and desired priority (see example). Additional arguments are applied to patterns <code>initialize</code> method.</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"><a href="../classes/Engine.html" class="crosslink">Engine</a></span>:
+                    <p>engine instance</p>
+
+            </div>
+        </div>
+
+
+        <div class="example">
+            <h4>Example:</h4>
+
+            <div class="example-content">
+                <pre class="code prettyprint"><code>game.engine.addSystem(&quot;Renderer&quot;, rendererObject);
+
+//or
+
+game.engine.addSystem([&quot;Renderer&quot;, 1], rendererObject);
+</code></pre>
+            </div>
+        </div>
+</div>
 <div id="method_Component" class="method item">
     <h3 class="name"><code>Component</code></h3>
 
@@ -228,7 +332,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l95"><code>src\core\engine.js:95</code></a>
+        <a href="../files/src_core_engine.js.html#l100"><code>src\core\engine.js:100</code></a>
         </p>
 
 
@@ -307,7 +411,7 @@ reference to newly created component object.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l220"><code>src\core\engine.js:220</code></a>
+        <a href="../files/src_core_engine.js.html#l226"><code>src\core\engine.js:226</code></a>
         </p>
 
 
@@ -382,7 +486,7 @@ Patterns <code>create</code> method is called imediatelly after calling this met
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l123"><code>src\core\engine.js:123</code></a>
+        <a href="../files/src_core_engine.js.html#l128"><code>src\core\engine.js:128</code></a>
         </p>
 
 
@@ -448,6 +552,91 @@ First and only argument is a <code>game</code> object.</li>
             </div>
         </div>
 </div>
+<div id="method_getEntities" class="method item">
+    <h3 class="name"><code>getEntities</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>query</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Array</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_engine.js.html#l289"><code>src\core\engine.js:289</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Returns array of entities satisfying given <a href="../classes/Query.html" class="crosslink">query</a> conditions.
+Returned arrays length does not correspond with matched entities quantity.
+To loop over entities start from 0 index, and then check if element is different than 0.
+This method guaranties, that entities will be arranged as subsequent array slice, starting from 0 index and ending on element equal to 0.
+The array is in this form for performance reasons.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">query</code>
+                        <span class="type"><a href="../classes/Query.html" class="crosslink">Query</a></span>
+
+
+                    <div class="param-description">
+                        <p>query object</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Array</span>:
+                    <p>array of matched entities</p>
+
+            </div>
+        </div>
+
+
+        <div class="example">
+            <h4>Example:</h4>
+
+            <div class="example-content">
+                <pre class="code prettyprint"><code>//in systems &#39;initialize&#39; method...
+this.query = new Entropy.Engine.Query([&quot;Position&quot;, &quot;Velocity&quot;]);
+
+//in systems &#39;update&#39; method
+var movingEntities = this.engine.getEntities(this.query);
+
+//here do something with entities in loop
+...
+</code></pre>
+            </div>
+        </div>
+</div>
 <div id="method_Query" class="method item">
     <h3 class="name"><code>Query</code></h3>
 
@@ -473,7 +662,7 @@ First and only argument is a <code>game</code> object.</li>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l199"><code>src\core\engine.js:199</code></a>
+        <a href="../files/src_core_engine.js.html#l205"><code>src\core\engine.js:205</code></a>
         </p>
 
 
@@ -529,10 +718,94 @@ var q2 = new Entropy.Engine.Query({
             </div>
         </div>
 </div>
+<div id="method_remove" class="method item">
+    <h3 class="name"><code>remove</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>entity</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/Engine.html" class="crosslink">Engine</a></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_engine.js.html#l263"><code>src\core\engine.js:263</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Removes entity from engine.
+Entity removal does not happen imediatelly, but after current update cycle.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">entity</code>
+                        <span class="type"><a href="../classes/Entity.html" class="crosslink">Entity</a></span>
+
+
+                    <div class="param-description">
+                        <p>Entity instance</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"><a href="../classes/Engine.html" class="crosslink">Engine</a></span>:
+                    <p>Engine instance</p>
+
+            </div>
+        </div>
+
+
+        <div class="example">
+            <h4>Example:</h4>
+
+            <div class="example-content">
+                <pre class="code prettyprint"><code>//somwhere in the system &#39;update&#39; method
+if (entity.components.hp.quantity &lt;= 0) { //entity is dead, remove
+    game.engine.remove(entity);
+}
+</code></pre>
+            </div>
+        </div>
+</div>
 <div id="method_System" class="method item">
     <h3 class="name"><code>System</code></h3>
 
-        <span class="paren">()</span>
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>system</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
 
 
 
@@ -545,7 +818,7 @@ var q2 = new Entropy.Engine.Query({
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l161"><code>src\core\engine.js:161</code></a>
+        <a href="../files/src_core_engine.js.html#l166"><code>src\core\engine.js:166</code></a>
         </p>
 
 
@@ -557,6 +830,23 @@ var q2 = new Entropy.Engine.Query({
 
     </div>
 
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">system</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>system pattern object</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
 
 
 
@@ -611,7 +901,7 @@ var q2 = new Entropy.Engine.Query({
                         <div class="meta">
                                     <p>
                                     Defined in
-                            <a href="../files/src_core_engine.js.html#l58"><code>src\core\engine.js:58</code></a>
+                            <a href="../files/src_core_engine.js.html#l62"><code>src\core\engine.js:62</code></a>
                             </p>
                     
                     
@@ -637,7 +927,7 @@ var q2 = new Entropy.Engine.Query({
                         <div class="meta">
                                     <p>
                                     Defined in
-                            <a href="../files/src_core_engine.js.html#l30"><code>src\core\engine.js:30</code></a>
+                            <a href="../files/src_core_engine.js.html#l34"><code>src\core\engine.js:34</code></a>
                             </p>
                     
                     
@@ -664,7 +954,7 @@ var q2 = new Entropy.Engine.Query({
                         <div class="meta">
                                     <p>
                                     Defined in
-                            <a href="../files/src_core_engine.js.html#l40"><code>src\core\engine.js:40</code></a>
+                            <a href="../files/src_core_engine.js.html#l44"><code>src\core\engine.js:44</code></a>
                             </p>
                     
                     
@@ -690,7 +980,7 @@ var q2 = new Entropy.Engine.Query({
                         <div class="meta">
                                     <p>
                                     Defined in
-                            <a href="../files/src_core_engine.js.html#l49"><code>src\core\engine.js:49</code></a>
+                            <a href="../files/src_core_engine.js.html#l53"><code>src\core\engine.js:53</code></a>
                             </p>
                     
                     
@@ -698,6 +988,31 @@ var q2 = new Entropy.Engine.Query({
                     
                         <div class="description">
                             <p>Systems that are processed every tick.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="property_game" class="property item">
+                        <h3 class="name"><code>game</code></h3>
+                        <span class="type"><a href="../classes/Game.html" class="crosslink">Game</a></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_engine.js.html#l26"><code>src\core\engine.js:26</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Instance of <a href="../classes/Game.html" class="crosslink">Game</a> class.</p>
                     
                         </div>
                     
