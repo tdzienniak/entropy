@@ -28,6 +28,18 @@ function Ticker (game, variant) {
     this._debug = false;
 }
 
+/**
+ * Fires when ticker starts ticking.
+ * 
+ * @event start
+ */
+
+/**
+ * Fires when ticker stops ticking.
+ * 
+ * @event stop
+ */
+
 extend(Ticker.prototype, EventEmitter.prototype);
 extend(Ticker.prototype, {
     getCurrentFPS: function () {
@@ -41,7 +53,7 @@ extend(Ticker.prototype, {
     },
     /**
      * @method pause
-     * @return {[type]} [description]
+     * @return {Boolean} `true` if paused succesfuly, `false` otherwise
      */
     pause: function () {
         if (!this.isRunning() || this.isPaused()) {
@@ -55,7 +67,7 @@ extend(Ticker.prototype, {
     },
     /**
      * @method resume
-     * @return {[type]} [description]
+     * @return {Boolean} `true` if resumed succesfuly, `false` otherwise
      */
     resume: function () {
         if (!this.isRunning() || !this.isPaused()) {
@@ -68,8 +80,10 @@ extend(Ticker.prototype, {
         return true;
     },
     /**
+     *
+     * 
      * @method start
-     * @return {[type]} [description]
+     * @return {Boolean} `true` if starded succesfuly, `false` otherwise
      */
     start: function () {
         var self = this;
@@ -123,7 +137,7 @@ extend(Ticker.prototype, {
     },
     /**
      * @method stop
-     * @return {[type]} [description]
+     * @return {Boolean} `true` if stopped succesfuly, `false` otherwise
      */
     stop: function () {
         if (this._rafID === 0) {
@@ -136,12 +150,29 @@ extend(Ticker.prototype, {
 
         return true;
     },
+    /**
+     * @method isPaused
+     * @return {Boolean} `true` if paused, `false` otherwise
+     */
     isPaused: function () {
         return this._paused;
     },
+    /**
+     * Running ticker is a ticker that constantly calls its timer function.
+     * Paused ticker is also running.
+     * 
+     * @method isRunning
+     * @return {Boolean} `true` if running, `false` otherwise
+     */
     isRunning: function () {
         return this._running;
     },
+    /**
+     * Turns __on__ or __off__ debugging features (FPS meter, frame time meter etc.).
+     *
+     * @method debug
+     * @param  {Boolean} debug start or stop debugging
+     */
     debug: function (debug) {
         if (this._stats == null) {
             this._stats = new Stats();

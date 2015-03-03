@@ -3143,32 +3143,11 @@ function Game (initialState) {
 }
 
 /**
+ * Registers new state. This method simply calls State's {{#crossLink "State/Register:method"}}Register{{/crossLink}} static method.
+ *
  * @example
  *     Entropy.Game.State({
- *         name: "initialize",
- *         initialize: function (game, done) {
- *             console.log('State initialized.');
- *             
- *             return done();
- *         },
- *         enter: function (game, done) {
- *             console.log('State entered.');
- *             
- *             return done();
- *         },
- *         exit: function (game, done) {
- *             console.log('State exited.');
- *             
- *             return done();
- *         },
- *         trnsitions: {
- *             menu: "toMenu"
- *         },
- *         toMenu: function (game, nextState, done) {
- *             console.log('Transitioning from `initialize` to `menu`.');
- *             
- *             return done();
- *         }
+ *         //state object here
  *     });
  * 
  * @static
@@ -3644,9 +3623,17 @@ function State(game) {
      * Changes state to one identified by `name` parameter.
      * Changing state process looks roughly like this:
      *  1. calling current state's `exit` method (if present)
-     *  2. calling next state's `initialize` method (if present)
+     *  2. calling next state's `initialize` method (if present and state wasn't initialized)
      *  3. calling transition function (if present)
      *  4. calling next state's `enter` method (if present)
+     *
+     * Transition functions are called when transitionig from one state to another. They are called after current state
+     * `exit` method and before next state's `enter` method. If the next state is not initailizes, its `initialize` method is
+     * called after `exit` and before transition method. Transition arguments are (in order):
+     *  - Game instance
+     *  - next state object
+     *  - [here come arguments given after `name`]
+     *  - done callback
      * 
      * @method change
      * @chainable
@@ -3745,8 +3732,38 @@ function State(game) {
 }
 
 /**
- * Registers new state.
- * 
+ * Registers new state. Registered states are shared between State instances.
+ * State methods are asynchronous. Their last argument is always a callback function, that must be called
+ * when the function finishes. This is handy when you want implement smooth transitions
+ * between states using animations (for example, jQuery animations), that are very often asynchronous.
+ *
+ * @example
+ *     State.Register({
+ *         name: "initialize",
+ *         initialize: function (game, done) {
+ *             console.log('State initialized.');
+ *             
+ *             return done();
+ *         },
+ *         enter: function (game, done) {
+ *             console.log('State entered.');
+ *             
+ *             return done();
+ *         },
+ *         exit: function (game, done) {
+ *             console.log('State exited.');
+ *             
+ *             return done();
+ *         },
+ *         trnsitions: {
+ *             menu: "toMenu"
+ *         },
+ *         toMenu: function (game, nextState, done) {
+ *             console.log('Transitioning from `initialize` to `menu`.');
+ *             
+ *             return done();
+ *         }
+ *     });
  * @static
  * @method Register
  * @param {Object} state state object (see example)
@@ -3797,6 +3814,18 @@ function Ticker (game, variant) {
     this._debug = false;
 }
 
+/**
+ * Fires when ticker starts ticking.
+ * 
+ * @event start
+ */
+
+/**
+ * Fires when ticker stops ticking.
+ * 
+ * @event stop
+ */
+
 extend(Ticker.prototype, EventEmitter.prototype);
 extend(Ticker.prototype, {
     getCurrentFPS: function () {
@@ -3810,7 +3839,7 @@ extend(Ticker.prototype, {
     },
     /**
      * @method pause
-     * @return {[type]} [description]
+     * @return {Boolean} `true` if paused succesfuly, `false` otherwise
      */
     pause: function () {
         if (!this.isRunning() || this.isPaused()) {
@@ -3824,7 +3853,7 @@ extend(Ticker.prototype, {
     },
     /**
      * @method resume
-     * @return {[type]} [description]
+     * @return {Boolean} `true` if resumed succesfuly, `false` otherwise
      */
     resume: function () {
         if (!this.isRunning() || !this.isPaused()) {
@@ -3837,8 +3866,10 @@ extend(Ticker.prototype, {
         return true;
     },
     /**
+     *
+     * 
      * @method start
-     * @return {[type]} [description]
+     * @return {Boolean} `true` if starded succesfuly, `false` otherwise
      */
     start: function () {
         var self = this;
@@ -3892,7 +3923,7 @@ extend(Ticker.prototype, {
     },
     /**
      * @method stop
-     * @return {[type]} [description]
+     * @return {Boolean} `true` if stopped succesfuly, `false` otherwise
      */
     stop: function () {
         if (this._rafID === 0) {
@@ -3905,12 +3936,29 @@ extend(Ticker.prototype, {
 
         return true;
     },
+    /**
+     * @method isPaused
+     * @return {Boolean} `true` if paused, `false` otherwise
+     */
     isPaused: function () {
         return this._paused;
     },
+    /**
+     * Running ticker is a ticker that constantly calls its timer function.
+     * Paused ticker is also running.
+     * 
+     * @method isRunning
+     * @return {Boolean} `true` if running, `false` otherwise
+     */
     isRunning: function () {
         return this._running;
     },
+    /**
+     * Turns __on__ or __off__ debugging features (FPS meter, frame time meter etc.).
+     *
+     * @method debug
+     * @param  {Boolean} debug start or stop debugging
+     */
     debug: function (debug) {
         if (this._stats == null) {
             this._stats = new Stats();

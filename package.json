@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "author": "Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>",
   "description": "Framework for making games and not only games in entity system manner.",
+  "keywords": ["gamedev", "es", "entity system", "game engine"],
   "license": "MIT",
   "repository": "https://github.com/RainPhilosopher/entropy",
   "devDependencies": {

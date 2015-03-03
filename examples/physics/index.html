@@ -27,21 +27,21 @@
                 var stage = new PIXI.Stage(0xffffff, interactive);
                 var renderer = new PIXI.autoDetectRenderer(Entropy.WIDTH, Entropy.HEIGHT, null, false, true);
 
-                game.setRenderer(renderer);
-                game.setStage(stage);
+                game.container.register("renderer", renderer);
+                game.container.register("stage", stage);
 
                 var world = new p2.World();
 
                 world.defaultContactMaterial.friction = 0.5;
                 world.setGlobalStiffness(1e5);
 
-                game.world = world;
+                game.container.register("world", world);
 
                 document.body.appendChild(renderer.view);
 
                 done();
             },
-            onEnter: function (game, done) {
+            enter: function (game, done) {
                 //Init materials
                 var groundMaterial = new p2.Material(),
                     characterMaterial = new p2.Material(),
@@ -59,10 +59,11 @@
                 var boxGroundCM = new p2.ContactMaterial(boxMaterial, groundMaterial,{
                     friction : 0.6, // Between boxes and ground
                 });
+                var world = game.container.make("world");
 
-                game.world.addContactMaterial(groundCharacterCM);
-                game.world.addContactMaterial(boxCharacterCM);
-                game.world.addContactMaterial(boxGroundCM);
+                world.addContactMaterial(groundCharacterCM);
+                world.addContactMaterial(boxCharacterCM);
+                world.addContactMaterial(boxGroundCM);
 
                 //Add player entity
                 game.engine.create("Player", characterMaterial);
@@ -83,16 +84,15 @@
                     game.engine.create("Box", boxPositions[i][0], boxPositions[i][1], boxMaterial);
                 }
 
-                game.engine.addSystems(
-                    ["PlatformsMovement", 0],
-                    ["PlayerMovement", 0],
-                    ["RenderBodies", 1],
-                    ["StepWorld", 2],
-                    ["Render", 2]
-                );
+                game.engine.addSystems(["PlatformsMovement", 0]);
+                game.engine.addSystems(["PlayerMovement", 0]);
+                game.engine.addSystems(["RenderBodies", 1]);
+                game.engine.addSystems(["StepWorld", 2]);
+                game.engine.addSystems(["Render", 2]);
 
                 game.start();
-                done();
+
+                return done();
             }
         });
     </script>
@@ -114,6 +114,11 @@
                 this.color = color;
             }
         });
+
+        Entrop.Engine.Component({
+            name: "Platform",
+            initialize: function () {}
+        })
     </script>
     <script>
         /*
@@ -122,7 +127,6 @@
         
         Entropy.Engine.Entity({
             name: "Player",
-            family: "Player|Bodies",
             create: function (game, material) {
                 var characterShape = new p2.Rectangle(0.5,1);
                 var characterBody = new p2.Body({
@@ -145,8 +149,8 @@
 
         Entropy.Engine.Entity({
             name: "Ground",
-            family: "Ground",
             create: function (game, material) {
+                var world = game.container.make("world");
                 var planeShape = new p2.Plane();
                 var planeBody = new p2.Body({
                   position:[0,-1]
@@ -154,7 +158,7 @@
 
                 planeBody.addShape(planeShape);
 
-                game.world.addBody(planeBody);
+                world.addBody(planeBody);
 
                 planeShape.material = material;
 
@@ -165,8 +169,8 @@
 
         Entropy.Engine.Entity({
             name: "Box",
-            family: "Boxes|Bodies",
             create: function (game, x, y, material) {
+                var world = game.container.make("world");
                 var boxShape = new p2.Rectangle(0.8,0.8);
                 var boxBody = new p2.Body({
                     mass: 1,
@@ -175,7 +179,7 @@
 
                 boxBody.addShape(boxShape);
 
-                game.world.addBody(boxBody);
+                world.addBody(boxBody);
 
                 boxShape.material = material;
 
@@ -186,8 +190,8 @@
 
         Entropy.Engine.Entity({
             name: "Platform",
-            family: "Platforms|Bodies",
             create: function (game, x, y, material) {
+                var world = game.container.make("world");
                 var platformBody = new p2.Body({
                     mass: 0, // Static
                     position: [x, y],
@@ -198,11 +202,12 @@
                 platformBody.motionState = p2.Body.KINEMATIC;
                 platformBody.addShape(platformShape);
 
-                game.world.addBody(platformBody);
+                world.addBody(platformBody);
 
                 platformShape.material = material;
 
-                this.add("Body", platformBody)
+                this.add("Platform")
+                    .add("Body", platformBody)
                     .add("Color", 0x4e7326);
             }
         });
@@ -214,8 +219,8 @@
         Entropy.Engine.System({
             name: "Render",
             initialize: function () {
-                this.stage = this.game.stage;
-                this.renderer = this.game.renderer;
+                this.stage = this.game.container.make("stage");
+                this.renderer = this.game.container.make("renderer");
             },
             update: function (delta, event) {
                 this.renderer.render(this.stage);
@@ -225,17 +230,21 @@
         Entropy.Engine.System({
             name: "StepWorld",
             initialize: function () {
-                this.stepInterval = 1/60;
+                //this.stepInterval = 1/60;
+                this.world = this.game.container.make("world");
             },
             update: function (delta) {
-                this.game.world.step(delta / 1000);
+                this.world.step(delta / 1000);
             }
         });
 
          Entropy.Engine.System({
             name: "PlatformsMovement",
+            initialize: function () {
+                this.platforms = new Entropy.Engine.Query(["Platform"])
+            }
             update: function (delta, event) {
-                var platforms = this.engine.getFamily("Platforms");
+                var platforms = this.engine.getEntities(this.platforms);
                 platforms.iterate(function (p, pe, pc) {
                    // debugger;
 

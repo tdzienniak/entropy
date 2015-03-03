@@ -106,6 +106,7 @@
         <li class="api-class-tab index"><a href="#index">Index</a></li>
 
             <li class="api-class-tab methods"><a href="#methods">Methods</a></li>
+            <li class="api-class-tab events"><a href="#events">Events</a></li>
     </ul>
 
     <div>
@@ -116,6 +117,18 @@
                     <h3>Methods</h3>
 
                     <ul class="index-list methods">
+                            <li class="index-item method">
+                                <a href="#method_debug">debug</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_isPaused">isPaused</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_isRunning">isRunning</a>
+
+                            </li>
                             <li class="index-item method">
                                 <a href="#method_pause">pause</a>
 
@@ -137,18 +150,86 @@
 
 
 
+                <div class="index-section events">
+                    <h3>Events</h3>
+
+                    <ul class="index-list events">
+                            <li class="index-item event">
+                                <a href="#event_start">start</a>
+
+                            </li>
+                            <li class="index-item event">
+                                <a href="#event_stop">stop</a>
+
+                            </li>
+                    </ul>
+                </div>
         </div>
 
             <div id="methods" class="api-class-tabpanel">
                 <h2 class="off-left">Methods</h2>
 
-<div id="method_pause" class="method item">
-    <h3 class="name"><code>pause</code></h3>
+<div id="method_debug" class="method item">
+    <h3 class="name"><code>debug</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>debug</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_ticker.js.html#l170"><code>src\core\ticker.js:170</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Turns <strong>on</strong> or <strong>off</strong> debugging features (FPS meter, frame time meter etc.).</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">debug</code>
+                        <span class="type">Boolean</span>
+
+
+                    <div class="param-description">
+                        <p>start or stop debugging</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_isPaused" class="method item">
+    <h3 class="name"><code>isPaused</code></h3>
 
         <span class="paren">()</span>
 
         <span class="returns-inline">
-            <span class="type">type</span>
+            <span class="type">Boolean</span>
         </span>
 
 
@@ -160,7 +241,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_ticker.js.html#l42"><code>src\core\ticker.js:42</code></a>
+        <a href="../files/src_core_ticker.js.html#l153"><code>src\core\ticker.js:153</code></a>
         </p>
 
 
@@ -176,8 +257,94 @@
             <h4>Returns:</h4>
 
             <div class="returns-description">
-                        <span class="type">type</span>:
-                    <p>[description]</p>
+                        <span class="type">Boolean</span>:
+                    <p><code>true</code> if paused, <code>false</code> otherwise</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_isRunning" class="method item">
+    <h3 class="name"><code>isRunning</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">Boolean</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_ticker.js.html#l160"><code>src\core\ticker.js:160</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Running ticker is a ticker that constantly calls its timer function.
+Paused ticker is also running.</p>
+
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Boolean</span>:
+                    <p><code>true</code> if running, <code>false</code> otherwise</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_pause" class="method item">
+    <h3 class="name"><code>pause</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">Boolean</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_ticker.js.html#l54"><code>src\core\ticker.js:54</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Boolean</span>:
+                    <p><code>true</code> if paused succesfuly, <code>false</code> otherwise</p>
 
             </div>
         </div>
@@ -190,7 +357,7 @@
         <span class="paren">()</span>
 
         <span class="returns-inline">
-            <span class="type">type</span>
+            <span class="type">Boolean</span>
         </span>
 
 
@@ -202,7 +369,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_ticker.js.html#l56"><code>src\core\ticker.js:56</code></a>
+        <a href="../files/src_core_ticker.js.html#l68"><code>src\core\ticker.js:68</code></a>
         </p>
 
 
@@ -218,8 +385,8 @@
             <h4>Returns:</h4>
 
             <div class="returns-description">
-                        <span class="type">type</span>:
-                    <p>[description]</p>
+                        <span class="type">Boolean</span>:
+                    <p><code>true</code> if resumed succesfuly, <code>false</code> otherwise</p>
 
             </div>
         </div>
@@ -232,7 +399,7 @@
         <span class="paren">()</span>
 
         <span class="returns-inline">
-            <span class="type">type</span>
+            <span class="type">Boolean</span>
         </span>
 
 
@@ -244,7 +411,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_ticker.js.html#l70"><code>src\core\ticker.js:70</code></a>
+        <a href="../files/src_core_ticker.js.html#l82"><code>src\core\ticker.js:82</code></a>
         </p>
 
 
@@ -260,8 +427,8 @@
             <h4>Returns:</h4>
 
             <div class="returns-description">
-                        <span class="type">type</span>:
-                    <p>[description]</p>
+                        <span class="type">Boolean</span>:
+                    <p><code>true</code> if starded succesfuly, <code>false</code> otherwise</p>
 
             </div>
         </div>
@@ -274,7 +441,7 @@
         <span class="paren">()</span>
 
         <span class="returns-inline">
-            <span class="type">type</span>
+            <span class="type">Boolean</span>
         </span>
 
 
@@ -286,7 +453,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_ticker.js.html#l124"><code>src\core\ticker.js:124</code></a>
+        <a href="../files/src_core_ticker.js.html#l138"><code>src\core\ticker.js:138</code></a>
         </p>
 
 
@@ -302,8 +469,8 @@
             <h4>Returns:</h4>
 
             <div class="returns-description">
-                        <span class="type">type</span>:
-                    <p>[description]</p>
+                        <span class="type">Boolean</span>:
+                    <p><code>true</code> if stopped succesfuly, <code>false</code> otherwise</p>
 
             </div>
         </div>
@@ -314,6 +481,60 @@
 
 
 
+            <div id="events" class="api-class-tabpanel">
+                <h2 class="off-left">Events</h2>
+
+                    <div id="event_start" class="events item">
+                        <h3 class="name"><code>start</code></h3>
+                        <span class="type"></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_ticker.js.html#l31"><code>src\core\ticker.js:31</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Fires when ticker starts ticking.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="event_stop" class="events item">
+                        <h3 class="name"><code>stop</code></h3>
+                        <span class="type"></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_ticker.js.html#l37"><code>src\core\ticker.js:37</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Fires when ticker stops ticking.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+            </div>
     </div>
 </div>
                     </div>

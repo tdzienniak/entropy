@@ -46,32 +46,11 @@ function Game (initialState) {
 }
 
 /**
+ * Registers new state. This method simply calls State's {{#crossLink "State/Register:method"}}Register{{/crossLink}} static method.
+ *
  * @example
  *     Entropy.Game.State({
- *         name: "initialize",
- *         initialize: function (game, done) {
- *             console.log('State initialized.');
- *             
- *             return done();
- *         },
- *         enter: function (game, done) {
- *             console.log('State entered.');
- *             
- *             return done();
- *         },
- *         exit: function (game, done) {
- *             console.log('State exited.');
- *             
- *             return done();
- *         },
- *         trnsitions: {
- *             menu: "toMenu"
- *         },
- *         toMenu: function (game, nextState, done) {
- *             console.log('Transitioning from `initialize` to `menu`.');
- *             
- *             return done();
- *         }
+ *         //state object here
  *     });
  * 
  * @static

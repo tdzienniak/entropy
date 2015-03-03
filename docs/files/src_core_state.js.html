@@ -283,8 +283,35 @@ function State(game) {
 }
 
 /**
- * Registers new state.
+ * Registers new state. Registered states are shared between State instances.
  * 
+ * @example
+ *     State.Register({
+ *         name: &quot;initialize&quot;,
+ *         initialize: function (game, done) {
+ *             console.log(&#x27;State initialized.&#x27;);
+ *             
+ *             return done();
+ *         },
+ *         enter: function (game, done) {
+ *             console.log(&#x27;State entered.&#x27;);
+ *             
+ *             return done();
+ *         },
+ *         exit: function (game, done) {
+ *             console.log(&#x27;State exited.&#x27;);
+ *             
+ *             return done();
+ *         },
+ *         trnsitions: {
+ *             menu: &quot;toMenu&quot;
+ *         },
+ *         toMenu: function (game, nextState, done) {
+ *             console.log(&#x27;Transitioning from &#x60;initialize&#x60; to &#x60;menu&#x60;.&#x27;);
+ *             
+ *             return done();
+ *         }
+ *     });
  * @static
  * @method Register
  * @param {Object} state state object (see example)

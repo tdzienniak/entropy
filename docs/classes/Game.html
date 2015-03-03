@@ -181,7 +181,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l107"><code>src\core\game.js:107</code></a>
+        <a href="../files/src_core_game.js.html#l86"><code>src\core\game.js:86</code></a>
         </p>
 
 
@@ -224,7 +224,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l117"><code>src\core\game.js:117</code></a>
+        <a href="../files/src_core_game.js.html#l96"><code>src\core\game.js:96</code></a>
         </p>
 
 
@@ -267,7 +267,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l87"><code>src\core\game.js:87</code></a>
+        <a href="../files/src_core_game.js.html#l66"><code>src\core\game.js:66</code></a>
         </p>
 
 
@@ -322,7 +322,8 @@
     </div>
 
     <div class="description">
-        
+        <p>Registers new state. This method simply calls State&#39;s <a href="../classes/State.html#method_Register" class="crosslink">Register</a> static method.</p>
+
     </div>
 
         <div class="params">
@@ -350,30 +351,7 @@
 
             <div class="example-content">
                 <pre class="code prettyprint"><code>Entropy.Game.State({
-    name: &quot;initialize&quot;,
-    initialize: function (game, done) {
-        console.log(&#39;State initialized.&#39;);
-
-        return done();
-    },
-    enter: function (game, done) {
-        console.log(&#39;State entered.&#39;);
-
-        return done();
-    },
-    exit: function (game, done) {
-        console.log(&#39;State exited.&#39;);
-
-        return done();
-    },
-    trnsitions: {
-        menu: &quot;toMenu&quot;
-    },
-    toMenu: function (game, nextState, done) {
-        console.log(&#39;Transitioning from <code>initialize</code> to <code>menu</code>.&#39;);
-
-        return done();
-    }
+    //state object here
 });
 </code></pre>
             </div>
@@ -397,7 +375,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l97"><code>src\core\game.js:97</code></a>
+        <a href="../files/src_core_game.js.html#l76"><code>src\core\game.js:76</code></a>
         </p>
 
 

@@ -356,7 +356,7 @@ Changing state process looks roughly like this:</p>
     </div>
 
     <div class="description">
-        <p>Registers new state.</p>
+        <p>Registers new state. Registered states are shared between State instances.</p>
 
     </div>
 
@@ -380,6 +380,39 @@ Changing state process looks roughly like this:</p>
 
 
 
+        <div class="example">
+            <h4>Example:</h4>
+
+            <div class="example-content">
+                <pre class="code prettyprint"><code>State.Register({
+    name: &quot;initialize&quot;,
+    initialize: function (game, done) {
+        console.log(&#39;State initialized.&#39;);
+
+        return done();
+    },
+    enter: function (game, done) {
+        console.log(&#39;State entered.&#39;);
+
+        return done();
+    },
+    exit: function (game, done) {
+        console.log(&#39;State exited.&#39;);
+
+        return done();
+    },
+    trnsitions: {
+        menu: &quot;toMenu&quot;
+    },
+    toMenu: function (game, nextState, done) {
+        console.log(&#39;Transitioning from <code>initialize</code> to <code>menu</code>.&#39;);
+
+        return done();
+    }
+});
+</code></pre>
+            </div>
+        </div>
 </div>
             </div>
 

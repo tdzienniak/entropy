@@ -600,8 +600,9 @@
         {
             "file": "src\\core\\game.js",
             "line": 48,
+            "description": "Registers new state. This method simply calls State's {{#crossLink \"State/Register:method\"}}Register{{/crossLink}} static method.",
             "example": [
-                "\n    Entropy.Game.State({\n        name: \"initialize\",\n        initialize: function (game, done) {\n            console.log('State initialized.');\n            \n            return done();\n        },\n        enter: function (game, done) {\n            console.log('State entered.');\n            \n            return done();\n        },\n        exit: function (game, done) {\n            console.log('State exited.');\n            \n            return done();\n        },\n        trnsitions: {\n            menu: \"toMenu\"\n        },\n        toMenu: function (game, nextState, done) {\n            console.log('Transitioning from `initialize` to `menu`.');\n            \n            return done();\n        }\n    });"
+                "\n    Entropy.Game.State({\n        //state object here\n    });"
             ],
             "static": 1,
             "itemtype": "method",
@@ -617,7 +618,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 87,
+            "line": 66,
             "description": "Starts the game. See Ticker's {{#crossLink \"Ticker/start:method\"}}start{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "start",
@@ -629,7 +630,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 97,
+            "line": 76,
             "description": "Stops the game. See Ticker's {{#crossLink \"Ticker/stop:method\"}}stop{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "stop",
@@ -641,7 +642,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 107,
+            "line": 86,
             "description": "Pauses the game. See Ticker's {{#crossLink \"Ticker/pause:method\"}}pause{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "pause",
@@ -653,7 +654,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 117,
+            "line": 96,
             "description": "Resumes the game. See Ticker's {{#crossLink \"Ticker/resume:method\"}}resume{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "resume",
@@ -757,7 +758,10 @@
         {
             "file": "src\\core\\state.js",
             "line": 196,
-            "description": "Registers new state.",
+            "description": "Registers new state. Registered states are shared between State instances.",
+            "example": [
+                "\n    State.Register({\n        name: \"initialize\",\n        initialize: function (game, done) {\n            console.log('State initialized.');\n            \n            return done();\n        },\n        enter: function (game, done) {\n            console.log('State entered.');\n            \n            return done();\n        },\n        exit: function (game, done) {\n            console.log('State exited.');\n            \n            return done();\n        },\n        trnsitions: {\n            menu: \"toMenu\"\n        },\n        toMenu: function (game, nextState, done) {\n            console.log('Transitioning from `initialize` to `menu`.');\n            \n            return done();\n        }\n    });"
+            ],
             "static": 1,
             "itemtype": "method",
             "name": "Register",
@@ -772,46 +776,100 @@
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 42,
+            "line": 31,
+            "description": "Fires when ticker starts ticking.",
+            "itemtype": "event",
+            "name": "start",
+            "class": "Ticker"
+        },
+        {
+            "file": "src\\core\\ticker.js",
+            "line": 37,
+            "description": "Fires when ticker stops ticking.",
+            "itemtype": "event",
+            "name": "stop",
+            "class": "Ticker"
+        },
+        {
+            "file": "src\\core\\ticker.js",
+            "line": 54,
             "itemtype": "method",
             "name": "pause",
             "return": {
-                "description": "[description]",
-                "type": "[type]"
+                "description": "`true` if paused succesfuly, `false` otherwise",
+                "type": "Boolean"
             },
             "class": "Ticker"
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 56,
+            "line": 68,
             "itemtype": "method",
             "name": "resume",
             "return": {
-                "description": "[description]",
-                "type": "[type]"
+                "description": "`true` if resumed succesfuly, `false` otherwise",
+                "type": "Boolean"
             },
             "class": "Ticker"
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 70,
+            "line": 82,
             "itemtype": "method",
             "name": "start",
             "return": {
-                "description": "[description]",
-                "type": "[type]"
+                "description": "`true` if starded succesfuly, `false` otherwise",
+                "type": "Boolean"
             },
             "class": "Ticker"
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 124,
+            "line": 138,
             "itemtype": "method",
             "name": "stop",
             "return": {
-                "description": "[description]",
-                "type": "[type]"
+                "description": "`true` if stopped succesfuly, `false` otherwise",
+                "type": "Boolean"
             },
+            "class": "Ticker"
+        },
+        {
+            "file": "src\\core\\ticker.js",
+            "line": 153,
+            "itemtype": "method",
+            "name": "isPaused",
+            "return": {
+                "description": "`true` if paused, `false` otherwise",
+                "type": "Boolean"
+            },
+            "class": "Ticker"
+        },
+        {
+            "file": "src\\core\\ticker.js",
+            "line": 160,
+            "description": "Running ticker is a ticker that constantly calls its timer function.\nPaused ticker is also running.",
+            "itemtype": "method",
+            "name": "isRunning",
+            "return": {
+                "description": "`true` if running, `false` otherwise",
+                "type": "Boolean"
+            },
+            "class": "Ticker"
+        },
+        {
+            "file": "src\\core\\ticker.js",
+            "line": 170,
+            "description": "Turns __on__ or __off__ debugging features (FPS meter, frame time meter etc.).",
+            "itemtype": "method",
+            "name": "debug",
+            "params": [
+                {
+                    "name": "debug",
+                    "description": "start or stop debugging",
+                    "type": "Boolean"
+                }
+            ],
             "class": "Ticker"
         },
         {
