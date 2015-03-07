@@ -50,7 +50,7 @@ module.exports = function(grunt) {
         },
 
         qunit: {
-            all: ['tests/*.html']
+            all: ['test/*.html']
         }
     });
 

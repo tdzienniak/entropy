@@ -13,12 +13,12 @@ To start using Entropy just put the reference to `entropy.min.js` file in the sc
 
 To get started read these tutorials:
 
-1. [Basics](tutorials/basics.md)
+1. [Basics](tutorial/basics.md)
 
 and check out examples:
 
-1. [Bunnies (benchmark and PIXI.js rendering)](http://rainphilosopher.github.io/entropy/examples/bunnies/)
-2. [Physics (integration with p2.js)](http://rainphilosopher.github.io/entropy/examples/physics/)
+1. [Bunnies (benchmark and PIXI.js rendering)](http://rainphilosopher.github.io/entropy/example/bunnies/)
+2. [Physics (integration with p2.js)](http://rainphilosopher.github.io/entropy/example/physics/)
 
 ##Building##
 

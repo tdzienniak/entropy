@@ -1,5 +1,5 @@
 #Exclude folders
-test/
+tests/
 node_modules/
 oldSrc/
 
