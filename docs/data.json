@@ -1,8 +1,8 @@
 {
     "project": {
         "name": "Entropy",
-        "description": "JavaScript entity system for writing games.",
-        "version": "0.3.0"
+        "description": "Framework for making games and not only games in entity system manner.",
+        "version": "0.1.0"
     },
     "files": {
         "src\\core\\engine.js": {
@@ -200,7 +200,7 @@
             "module": "Entropy",
             "file": "src\\core\\query.js",
             "line": 11,
-            "description": "Used to perform matching of entities.\nOnly parameter is an array of component names to include or object with `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
+            "description": "Used to perform matching of entities.\nOnly parameter is an array of component names to include or object with `name` and/or `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
             "is_constructor": 1,
             "params": [
                 {
@@ -381,7 +381,7 @@
             "line": 205,
             "description": "Used to perform matching of entities.\nOnly parameter is an array of component names to include or object with `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
             "example": [
-                "\n    var q1 = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n    var q2 = new Entropy.Engine.Query({\n        include: [\"Position\", \"Velocity\"],\n        exclude: [\"Sprite\"]\n    });"
+                "\n    var q1 = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n    var q2 = new Entropy.Engine.Query({\n        include: [\"Position\", \"Velocity\"],\n        exclude: [\"Sprite\"]\n    });\n    var q3 = new Entropy.Engine.Query({\n        name: \"Ball\"\n    });"
             ],
             "itemtype": "method",
             "name": "Query",
@@ -401,7 +401,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 226,
+            "line": 229,
             "description": "Creates new entity using pattern identified by `name` parameter.\nEvery additional parameter will be applied to patterns `create` method.\nPatterns `create` method is called imediatelly after calling this method.",
             "example": [
                 "\n    game.engine.create(\"Ball\", 5, 5, 5); //x, y, radius"
@@ -424,7 +424,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 263,
+            "line": 266,
             "description": "Removes entity from engine.\nEntity removal does not happen imediatelly, but after current update cycle.",
             "example": [
                 "\n    //somwhere in the system 'update' method\n    if (entity.components.hp.quantity <= 0) { //entity is dead, remove\n        game.engine.remove(entity);\n    }"
@@ -446,7 +446,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 289,
+            "line": 292,
             "description": "Returns array of entities satisfying given {{#crossLink \"Query\"}}query{{/crossLink}} conditions.\nReturned arrays length does not correspond with matched entities quantity.\nTo loop over entities start from 0 index, and then check if element is different than 0.\nThis method guaranties, that entities will be arranged as subsequent array slice, starting from 0 index and ending on element equal to 0.\nThe array is in this form for performance reasons.",
             "example": [
                 "\n    //in systems 'initialize' method...\n    this.query = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n\n    //in systems 'update' method\n    var movingEntities = this.engine.getEntities(this.query);\n\n    //here do something with entities in loop\n    ..."
@@ -468,7 +468,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 317,
+            "line": 320,
             "description": "Creates new system object and adds it to the engine. System patterns `initialize` method is called (if present).\nIt can be called in two ways - with first argument being either:\n- system name - then system has priority as defined by patterns `priority` property or 0.\n- array with two elements - system name and its desired priority. In this case patterns `priority` property is simply skiped.",
             "example": [
                 "\n    game.engine.addSystem(\"Renderer\", rendererObject);\n    \n    //or\n\n    game.engine.addSystem([\"Renderer\", 1], rendererObject);"
@@ -491,7 +491,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 661,
+            "line": 664,
             "description": "Returns ID for an entity. Reuses old IDs or creates new.",
             "access": "private",
             "tagname": "",
@@ -505,7 +505,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 677,
+            "line": 680,
             "description": "Initializes new query. Performs initial entity search.",
             "access": "private",
             "tagname": "",

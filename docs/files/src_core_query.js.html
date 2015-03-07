@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="Entropy" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.3.0</em>
+            <em>API Docs for: 0.1.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -99,7 +99,7 @@ var BitSet = require(&#x27;bitset.js&#x27;).BitSet;
 
 /**
  * Used to perform matching of entities.
- * Only parameter is an array of component names to include or object with &#x60;include&#x60; and/or &#x60;exclude&#x60; properties,
+ * Only parameter is an array of component names to include or object with &#x60;name&#x60; and/or &#x60;include&#x60; and/or &#x60;exclude&#x60; properties,
  * witch are arrays of component names to respectively include and/or exclude.
  * 
  * @class Query
@@ -107,15 +107,20 @@ var BitSet = require(&#x27;bitset.js&#x27;).BitSet;
  * @param {Object|Array} query query conditions
  */
 function Query (query) {
-    var include = [], exclude = [];
+    var include = [], exclude = [], name;
     var includeBS, excludeBS;
 
     if (is.array(query)) {
         include = query;
     } else if (is.object(query)) {
+        if (is.unemptyString(query.name)) {
+            name = query.name;
+        }
+
         if (is.array(query.include)) {
            include = query.include; 
         }
+
         if (is.array(query.exclude)) {
             exclude = query.exclude;
         }
@@ -125,7 +130,6 @@ function Query (query) {
         debug.warn(&#x27;You want to create empty query. If your intention is to get all entities, use getAllEntities() instead.&#x27;);
         return;
     }
-
 
     if (include.lenght &gt; 0) {
         includeBS = new BitSet(config(&#x27;max_component_count&#x27;));
@@ -141,6 +145,7 @@ function Query (query) {
         }
     }
 
+    this.matchName = name;
     this.include = includeBS;
     this.excludes = excludeBS;
 }
@@ -150,9 +155,14 @@ extend(Query.prototype, {
         var satisfies = true;
         var includes = this.includes;
         var excludes = this.excludes;
+        var name = this.matchName;
+
+        if (name != null) {
+            satisfies = entity.pattern.name === name;
+        }
 
         if (includes != null) {
-            satisfies = includes.subsetOf(entity.bitset);
+            satisfies = satisfies &amp;&amp; includes.subsetOf(entity.bitset);
         }
 
         if (excludes != null) {

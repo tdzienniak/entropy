@@ -10,7 +10,7 @@ var BitSet = require('bitset.js').BitSet;
 
 /**
  * Used to perform matching of entities.
- * Only parameter is an array of component names to include or object with `include` and/or `exclude` properties,
+ * Only parameter is an array of component names to include or object with `name` and/or `include` and/or `exclude` properties,
  * witch are arrays of component names to respectively include and/or exclude.
  * 
  * @class Query
@@ -18,15 +18,20 @@ var BitSet = require('bitset.js').BitSet;
  * @param {Object|Array} query query conditions
  */
 function Query (query) {
-    var include = [], exclude = [];
+    var include = [], exclude = [], name;
     var includeBS, excludeBS;
 
     if (is.array(query)) {
         include = query;
     } else if (is.object(query)) {
+        if (is.unemptyString(query.name)) {
+            name = query.name;
+        }
+
         if (is.array(query.include)) {
            include = query.include; 
         }
+
         if (is.array(query.exclude)) {
             exclude = query.exclude;
         }
@@ -36,7 +41,6 @@ function Query (query) {
         debug.warn('You want to create empty query. If your intention is to get all entities, use getAllEntities() instead.');
         return;
     }
-
 
     if (include.lenght > 0) {
         includeBS = new BitSet(config('max_component_count'));
@@ -52,6 +56,7 @@ function Query (query) {
         }
     }
 
+    this.matchName = name;
     this.include = includeBS;
     this.excludes = excludeBS;
 }
@@ -61,9 +66,14 @@ extend(Query.prototype, {
         var satisfies = true;
         var includes = this.includes;
         var excludes = this.excludes;
+        var name = this.matchName;
+
+        if (name != null) {
+            satisfies = entity.pattern.name === name;
+        }
 
         if (includes != null) {
-            satisfies = includes.subsetOf(entity.bitset);
+            satisfies = satisfies && includes.subsetOf(entity.bitset);
         }
 
         if (excludes != null) {

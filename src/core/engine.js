@@ -213,6 +213,9 @@ Engine.System = function (system) {
  *         include: ["Position", "Velocity"],
  *         exclude: ["Sprite"]
  *     });
+ *     var q3 = new Entropy.Engine.Query({
+ *         name: "Ball"
+ *     });
  * 
  * @method Query
  * @static
