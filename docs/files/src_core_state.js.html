@@ -182,9 +182,17 @@ function State(game) {
      * Changes state to one identified by &#x60;name&#x60; parameter.
      * Changing state process looks roughly like this:
      *  1. calling current state&#x27;s &#x60;exit&#x60; method (if present)
-     *  2. calling next state&#x27;s &#x60;initialize&#x60; method (if present)
+     *  2. calling next state&#x27;s &#x60;initialize&#x60; method (if present and state wasn&#x27;t initialized)
      *  3. calling transition function (if present)
      *  4. calling next state&#x27;s &#x60;enter&#x60; method (if present)
+     *
+     * Transition functions are called when transitionig from one state to another. They are called after current state
+     * &#x60;exit&#x60; method and before next state&#x27;s &#x60;enter&#x60; method. If the next state is not initailizes, its &#x60;initialize&#x60; method is
+     * called after &#x60;exit&#x60; and before transition method. Transition arguments are (in order):
+     *  - Game instance
+     *  - next state object
+     *  - [here come arguments given after &#x60;name&#x60;]
+     *  - done callback
      * 
      * @method change
      * @chainable
@@ -284,7 +292,10 @@ function State(game) {
 
 /**
  * Registers new state. Registered states are shared between State instances.
- * 
+ * State methods are asynchronous. Their last argument is always a callback function, that must be called
+ * when the function finishes. This is handy when you want implement smooth transitions
+ * between states using animations (for example, jQuery animations), that are very often asynchronous.
+ *
  * @example
  *     State.Register({
  *         name: &quot;initialize&quot;,

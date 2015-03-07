@@ -77,9 +77,18 @@ extend(Game.prototype, {
      * Stops the game. See Ticker's {{#crossLink "Ticker/stop:method"}}stop{{/crossLink}} method for more details.
      * 
      * @method stop
-     * @return {Boolean} [description]
+     * @param {Boolean} clearEngine if `true`, engine will be cleared before ticker stop
+     * @return {Boolean|Undefined} stop succesfuly stoped or not. If `clearEngine` is `true`, return value will be `undefined`
      */
-    stop: function () {
+    stop: function (clearEngine) {
+        if (clearEngine) {
+            this.engine.once('clear', function () {
+                this.engine.stop();
+            }, this);
+            
+            return;
+        }
+
         return this.ticker.stop();
     },
 

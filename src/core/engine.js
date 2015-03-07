@@ -35,7 +35,7 @@ function Engine (game) {
      * Indicates the greatest entity ID present in the system.
      * Used to generate new IDs.
      * 
-     * @property _gratestEntityID
+     * @property _greatestEntityID
      * @private
      * @type Number
      */
@@ -83,11 +83,11 @@ function Engine (game) {
 
     this._entitiesCount = 0;
 
+    this._performClearing = false;
+
     register.setCannotModify();
 
-    /**
-     * Initialize components and entities pools.
-     */
+    //Initialize components and entities pools.
     register.listComponentsNames().forEach(function (name) {
         this._componentsPool[name] = new Pool(config('initial_components_pool_size'));
     }, this);
@@ -123,7 +123,7 @@ function Engine (game) {
  */
 Engine.Component = function (component) {
     register.registerComponent(component);
-}
+};
 
 /**
  * Registers new entity pattern.
@@ -161,7 +161,7 @@ Engine.Component = function (component) {
  */
 Engine.Entity = function (entity) {
     register.registerEntity(entity);
-}
+};
 
 /**
  * Registers new system pattern.
@@ -200,7 +200,7 @@ Engine.Entity = function (entity) {
  */
 Engine.System = function (system) {
     register.registerSystem(system);
-}
+};
 
 /**
  * Used to perform matching of entities.
@@ -423,18 +423,30 @@ extend(Engine.prototype, {
         array.push(this._modifiedEntities, this._modifiedEntitiesLength++, entity.id);
     },
     clear: function () {
+        var entity;
+        for (var i = 0; i <= this._greatestEntityID; i++) {
+            entity = this._entities[i];
 
+            if (entity == null || entity.id === 0) {
+                continue;
+            }
 
+            this._entitiesToRemove.put(entity);
+        }
 
+        for (var i = 0, len = this._systems.length; i < len; i++) {
+            this._systemsToRemove(this._systems[i]);
+        }
+
+        this._performClearing = true;
+
+        return this;
     },
     update: function (event) {
         var delta = event.delta;
-        var i, j, len, system, id, name, index, indexOfEntity, indexLength;
-        var query, queries = this._queries;
-        var systemEntities = this._entities;
-        var modifiedEntities = this._modifiedEntities;
+        var system;
 
-        for (i = 0, len = this._systems.length; i < len; i++) {
+        for (var i = 0, len = this._systems.length; i < len; i++) {
             system = this._systems[i];
             
             if (system._disabled) {
@@ -444,11 +456,32 @@ extend(Engine.prototype, {
             system.update(delta);
         }
 
-        /**
-         * Removing entities.
-         */
-        var entityToRemove;
+        this._removeEntities();
+        this._addEntities();
+        this._modifyEntities();
+        this._removeSystems();
+        this._addSystems();
+        this._fetchQueries();
+
+        if (this._performClearing) {
+            this.emit('clear');
+            this._performClearing = false;
+        }
+    },
+    _removeEntities: function () {
+        var entityToRemove, i, len,
+            index,
+            indexOfEntity,
+            name,
+            query,
+            queries = this._queries,
+            systemEntities = this._entities;
+
         while (entityToRemove = this._entitiesToRemove.get()) {
+            if (entityToRemove.id === 0) {
+                continue;
+            }
+
             for (i = 0, len = this._queries.length; i < len; i++) {
                 query = queries[i];
 
@@ -477,11 +510,14 @@ extend(Engine.prototype, {
             this._entitiesPool[name].put(entityToRemove);
             this._entitiesCount -= 1;
         }
+    },
+    _addEntities: function () {
+        var id, i, len,
+            entityToAdd,
+            query,
+            queries = this._queries,
+            systemEntities = this._entities;
 
-        /**
-         * Adding entities.
-         */
-        var entityToAdd;
         while (entityToAdd = this._entitiesToAdd.get()) {
 
             id = this._generateEntityID();
@@ -506,12 +542,15 @@ extend(Engine.prototype, {
 
             this._entitiesCount += 1;
         }
+    },
+    _modifyEntities: function () {
+         var i = 0, j, index, indexLength, len,
+            query,
+            queries = this._queries,
+            modifiedEntity,
+            systemEntities = this._entities,
+            modifiedEntities = this._modifiedEntities;
 
-        /**
-         * Modifying entities.
-         */
-        i = 0;
-        var modifiedEntity;
         while (modifiedEntity = systemEntities[modifiedEntities[i]]) {
 
             modifiedEntity.applyModifications();
@@ -538,16 +577,14 @@ extend(Engine.prototype, {
         }
         array.clear(this._modifiedEntities, this._modifiedEntitiesLength);
         this._modifiedEntitiesLength = 0;
-
-        /**
-         * Removing systems.
-         */
+    },
+    _removeSystems: function () {
         var systemToRemove;
         while (systemToRemove = this._systemsToRemove.get()) {
              var indexOfSystem = this._systems.indexOf(systemToRemove);
 
             if (indexOfSystem === -1) {
-                debug.warn('Nothing to remove.');
+                //debug.warn('Nothing to remove.');
                 continue;
             }
 
@@ -557,11 +594,9 @@ extend(Engine.prototype, {
 
             array.removeAtIndex(this._systems, indexOfSystem);
         }
-
-        /**
-         * Adding systems.
-         */
-        var systemToAdd;
+    },
+    _addSystems: function () {
+        var systemToAdd, len;
         while (systemToAdd = this._systemsToAdd.get()) {
             var insertionIndex = 0;
             var priority = systemToAdd.priority;
@@ -573,17 +608,20 @@ extend(Engine.prototype, {
 
             this._systems.splice(insertionIndex, 0, systemToAdd);            
         }
+    },
+    _fetchQueries: function () {
+        var i, id, index, len,
+            query,
+            systemEntities = this._entities,
+            queries = this._queries;
 
-        /**
-         * Fetching query indexes.
-         */
         for (i = 0, len = this._queries.length; i < len; i++) {
             query = queries[i];
             if (!query.touched) {
                 continue;
             }
 
-            var index = query.index;
+            index = query.index;
             var entities = query.entities;
             var entitiesLength = 0;
             i = 0;
@@ -624,6 +662,7 @@ extend(Engine.prototype, {
      * Returns ID for an entity. Reuses old IDs or creates new.
      * 
      * @private
+     * @method _generateEntityID
      * @return {Number} new ID
      */
     _generateEntityID: function () {
@@ -637,7 +676,9 @@ extend(Engine.prototype, {
     },
     /**
      * Initializes new query. Performs initial entity search.
-     * 
+     *
+     * @private
+     * @method  _initializeQuery
      * @param {Object} query query object
      */
     _initializeQuery: function (query) {

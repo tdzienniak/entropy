@@ -59,10 +59,16 @@ extend(Entity.prototype, {
 
         var lowercaseName = name.toLowerCase();
 
-        var component = this.engine._getNewComponent(lowercaseName);
+        var component = this.components[lowercaseName];
         if (component == null) {
-            debug.warn('there is no component pattern with name %s', name);
-            return this;
+            component = this.engine._getNewComponent(lowercaseName);
+
+            if (component == null) {
+                debug.warn('there is no component pattern with name %s', name);
+                return this;
+            }
+        } else if (is.function(component._pattern.reset)) {
+            component._pattern.reset.call(component);
         }
 
         var args = slice.call(arguments, 1);
@@ -87,8 +93,9 @@ extend(Entity.prototype, {
         }
 
         var lowercaseName = name.toLowerCase();
+        var componentId = register.getComponentID(lowercaseName);
 
-        if (!(lowercaseName in this.components)) {
+        if (!this.bitset.get(componentId)) {
             debug.warn('this entity does not have such component "%s" - nothing to remove', name);
             return this;
         }
@@ -98,7 +105,7 @@ extend(Entity.prototype, {
                 this.engine._addComponentToPool(this.components[lowercaseName]);
 
                 this.components[lowercaseName] = null;
-                this.bitset.clear(register.getComponentID(lowercaseName));
+                this.bitset.clear(componentId);
             }
         });
 
@@ -134,6 +141,7 @@ extend(Entity.prototype, {
         while (this._modifications.shift());
     },
     _setDefaults: function () {
+        this.bitset.clear();
         this._inFinalState = false;
         this._remainingStateChanges = [];
         this._stateObject = {};

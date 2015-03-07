@@ -280,7 +280,7 @@
             "line": 34,
             "description": "Indicates the greatest entity ID present in the system.\nUsed to generate new IDs.",
             "itemtype": "property",
-            "name": "_gratestEntityID",
+            "name": "_greatestEntityID",
             "access": "private",
             "tagname": "",
             "type": "Number",
@@ -317,12 +317,6 @@
             "access": "private",
             "tagname": "",
             "type": "Array",
-            "class": "Engine"
-        },
-        {
-            "file": "src\\core\\engine.js",
-            "line": 88,
-            "description": "Initialize components and entities pools.",
             "class": "Engine"
         },
         {
@@ -497,46 +491,12 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 447,
-            "description": "Removing entities.",
-            "class": "Engine"
-        },
-        {
-            "file": "src\\core\\engine.js",
-            "line": 481,
-            "description": "Adding entities.",
-            "class": "Engine"
-        },
-        {
-            "file": "src\\core\\engine.js",
-            "line": 510,
-            "description": "Modifying entities.",
-            "class": "Engine"
-        },
-        {
-            "file": "src\\core\\engine.js",
-            "line": 542,
-            "description": "Removing systems.",
-            "class": "Engine"
-        },
-        {
-            "file": "src\\core\\engine.js",
-            "line": 561,
-            "description": "Adding systems.",
-            "class": "Engine"
-        },
-        {
-            "file": "src\\core\\engine.js",
-            "line": 577,
-            "description": "Fetching query indexes.",
-            "class": "Engine"
-        },
-        {
-            "file": "src\\core\\engine.js",
-            "line": 623,
+            "line": 661,
             "description": "Returns ID for an entity. Reuses old IDs or creates new.",
             "access": "private",
             "tagname": "",
+            "itemtype": "method",
+            "name": "_generateEntityID",
             "return": {
                 "description": "new ID",
                 "type": "Number"
@@ -545,8 +505,12 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 638,
+            "line": 677,
             "description": "Initializes new query. Performs initial entity search.",
+            "access": "private",
+            "tagname": "",
+            "itemtype": "method",
+            "name": "_initializeQuery",
             "params": [
                 {
                     "name": "query",
@@ -634,15 +598,22 @@
             "description": "Stops the game. See Ticker's {{#crossLink \"Ticker/stop:method\"}}stop{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "stop",
+            "params": [
+                {
+                    "name": "clearEngine",
+                    "description": "if `true`, engine will be cleared before ticker stop",
+                    "type": "Boolean"
+                }
+            ],
             "return": {
-                "description": "[description]",
-                "type": "Boolean"
+                "description": "stop succesfuly stoped or not. If `clearEngine` is `true`, return value will be `undefined`",
+                "type": "Boolean|Undefined"
             },
             "class": "Game"
         },
         {
             "file": "src\\core\\game.js",
-            "line": 86,
+            "line": 95,
             "description": "Pauses the game. See Ticker's {{#crossLink \"Ticker/pause:method\"}}pause{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "pause",
@@ -654,7 +625,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 96,
+            "line": 105,
             "description": "Resumes the game. See Ticker's {{#crossLink \"Ticker/resume:method\"}}resume{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "resume",
@@ -706,7 +677,7 @@
         {
             "file": "src\\core\\state.js",
             "line": 92,
-            "description": "Changes state to one identified by `name` parameter.\nChanging state process looks roughly like this:\n 1. calling current state's `exit` method (if present)\n 2. calling next state's `initialize` method (if present)\n 3. calling transition function (if present)\n 4. calling next state's `enter` method (if present)",
+            "description": "Changes state to one identified by `name` parameter.\nChanging state process looks roughly like this:\n 1. calling current state's `exit` method (if present)\n 2. calling next state's `initialize` method (if present and state wasn't initialized)\n 3. calling transition function (if present)\n 4. calling next state's `enter` method (if present)\n\nTransition functions are called when transitionig from one state to another. They are called after current state\n`exit` method and before next state's `enter` method. If the next state is not initailizes, its `initialize` method is\ncalled after `exit` and before transition method. Transition arguments are (in order):\n - Game instance\n - next state object\n - [here come arguments given after `name`]\n - done callback",
             "itemtype": "method",
             "name": "change",
             "chainable": 1,
@@ -726,7 +697,7 @@
         },
         {
             "file": "src\\core\\state.js",
-            "line": 154,
+            "line": 162,
             "description": "Returns name of the current state.",
             "itemtype": "method",
             "name": "current",
@@ -738,7 +709,7 @@
         },
         {
             "file": "src\\core\\state.js",
-            "line": 164,
+            "line": 172,
             "description": "Checks whether state machine is in state identified by name.",
             "itemtype": "method",
             "name": "isIn",
@@ -757,8 +728,8 @@
         },
         {
             "file": "src\\core\\state.js",
-            "line": 196,
-            "description": "Registers new state. Registered states are shared between State instances.",
+            "line": 204,
+            "description": "Registers new state. Registered states are shared between State instances.\nState methods are asynchronous. Their last argument is always a callback function, that must be called\nwhen the function finishes. This is handy when you want implement smooth transitions\nbetween states using animations (for example, jQuery animations), that are very often asynchronous.",
             "example": [
                 "\n    State.Register({\n        name: \"initialize\",\n        initialize: function (game, done) {\n            console.log('State initialized.');\n            \n            return done();\n        },\n        enter: function (game, done) {\n            console.log('State entered.');\n            \n            return done();\n        },\n        exit: function (game, done) {\n            console.log('State exited.');\n            \n            return done();\n        },\n        trnsitions: {\n            menu: \"toMenu\"\n        },\n        toMenu: function (game, nextState, done) {\n            console.log('Transitioning from `initialize` to `menu`.');\n            \n            return done();\n        }\n    });"
             ],
@@ -920,42 +891,5 @@
             "module": "Entropy"
         }
     ],
-    "warnings": [
-        {
-            "message": "Missing item type\nInitialize components and entities pools.",
-            "line": " src\\core\\engine.js:88"
-        },
-        {
-            "message": "Missing item type\nRemoving entities.",
-            "line": " src\\core\\engine.js:447"
-        },
-        {
-            "message": "Missing item type\nAdding entities.",
-            "line": " src\\core\\engine.js:481"
-        },
-        {
-            "message": "Missing item type\nModifying entities.",
-            "line": " src\\core\\engine.js:510"
-        },
-        {
-            "message": "Missing item type\nRemoving systems.",
-            "line": " src\\core\\engine.js:542"
-        },
-        {
-            "message": "Missing item type\nAdding systems.",
-            "line": " src\\core\\engine.js:561"
-        },
-        {
-            "message": "Missing item type\nFetching query indexes.",
-            "line": " src\\core\\engine.js:577"
-        },
-        {
-            "message": "Missing item type\nReturns ID for an entity. Reuses old IDs or creates new.",
-            "line": " src\\core\\engine.js:623"
-        },
-        {
-            "message": "Missing item type\nInitializes new query. Performs initial entity search.",
-            "line": " src\\core\\engine.js:638"
-        }
-    ]
+    "warnings": []
 }

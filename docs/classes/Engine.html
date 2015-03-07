@@ -154,6 +154,14 @@
                     <h3>Methods</h3>
 
                     <ul class="index-list methods extends">
+                            <li class="index-item method private">
+                                <a href="#method__generateEntityID">_generateEntityID</a>
+
+                            </li>
+                            <li class="index-item method private">
+                                <a href="#method__initializeQuery">_initializeQuery</a>
+
+                            </li>
                             <li class="index-item method">
                                 <a href="#method_addSystem">addSystem</a>
 
@@ -202,7 +210,7 @@
 
                             </li>
                             <li class="index-item property private">
-                                <a href="#property__gratestEntityID">_gratestEntityID</a>
+                                <a href="#property__greatestEntityID">_greatestEntityID</a>
 
                             </li>
                             <li class="index-item property private">
@@ -226,6 +234,105 @@
             <div id="methods" class="api-class-tabpanel">
                 <h2 class="off-left">Methods</h2>
 
+<div id="method__generateEntityID" class="method item private">
+    <h3 class="name"><code>_generateEntityID</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">Number</span>
+        </span>
+
+
+        <span class="flag private">private</span>
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_engine.js.html#l661"><code>src\core\engine.js:661</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Returns ID for an entity. Reuses old IDs or creates new.</p>
+
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Number</span>:
+                    <p>new ID</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method__initializeQuery" class="method item private">
+    <h3 class="name"><code>_initializeQuery</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>query</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+        <span class="flag private">private</span>
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_engine.js.html#l677"><code>src\core\engine.js:677</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Initializes new query. Performs initial entity search.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">query</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>query object</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
 <div id="method_addSystem" class="method item">
     <h3 class="name"><code>addSystem</code></h3>
 
@@ -915,8 +1022,8 @@ if (entity.components.hp.quantity &lt;= 0) { //entity is dead, remove
                     
                     
                     </div>
-                    <div id="property__gratestEntityID" class="property item private">
-                        <h3 class="name"><code>_gratestEntityID</code></h3>
+                    <div id="property__greatestEntityID" class="property item private">
+                        <h3 class="name"><code>_greatestEntityID</code></h3>
                         <span class="type">Number</span>
                     
                     

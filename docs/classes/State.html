@@ -181,10 +181,19 @@
 Changing state process looks roughly like this:</p>
 <ol>
 <li>calling current state&#39;s <code>exit</code> method (if present)</li>
-<li>calling next state&#39;s <code>initialize</code> method (if present)</li>
+<li>calling next state&#39;s <code>initialize</code> method (if present and state wasn&#39;t initialized)</li>
 <li>calling transition function (if present)</li>
 <li>calling next state&#39;s <code>enter</code> method (if present)</li>
 </ol>
+<p>Transition functions are called when transitionig from one state to another. They are called after current state
+<code>exit</code> method and before next state&#39;s <code>enter</code> method. If the next state is not initailizes, its <code>initialize</code> method is
+called after <code>exit</code> and before transition method. Transition arguments are (in order):</p>
+<ul>
+<li>Game instance</li>
+<li>next state object</li>
+<li>[here come arguments given after <code>name</code>]</li>
+<li>done callback</li>
+</ul>
 
     </div>
 
@@ -237,7 +246,7 @@ Changing state process looks roughly like this:</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_state.js.html#l154"><code>src\core\state.js:154</code></a>
+        <a href="../files/src_core_state.js.html#l162"><code>src\core\state.js:162</code></a>
         </p>
 
 
@@ -286,7 +295,7 @@ Changing state process looks roughly like this:</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_state.js.html#l164"><code>src\core\state.js:164</code></a>
+        <a href="../files/src_core_state.js.html#l172"><code>src\core\state.js:172</code></a>
         </p>
 
 
@@ -348,7 +357,7 @@ Changing state process looks roughly like this:</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_state.js.html#l196"><code>src\core\state.js:196</code></a>
+        <a href="../files/src_core_state.js.html#l204"><code>src\core\state.js:204</code></a>
         </p>
 
 
@@ -356,7 +365,10 @@ Changing state process looks roughly like this:</p>
     </div>
 
     <div class="description">
-        <p>Registers new state. Registered states are shared between State instances.</p>
+        <p>Registers new state. Registered states are shared between State instances.
+State methods are asynchronous. Their last argument is always a callback function, that must be called
+when the function finishes. This is handy when you want implement smooth transitions
+between states using animations (for example, jQuery animations), that are very often asynchronous.</p>
 
     </div>
 
