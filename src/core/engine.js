@@ -380,13 +380,13 @@ extend(Engine.prototype, {
 
         var newSystem = extend(true, {}, pattern);
         newSystem.priority = priority;
+        newSystem.engine = this;
+        newSystem.game = this.game;
 
         if (is.function(newSystem.initialize)) {
             newSystem.initialize.apply(newSystem, args);
         }
 
-        newSystem.engine = this;
-        newSystem.game = this.game;
 
         this._systemsToAdd.put(newSystem);
 
