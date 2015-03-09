@@ -98,7 +98,8 @@ var EventEmitter = require(&#x27;./event&#x27;);
 
 /**
  * @class Ticker
- * @param {Game} game    Game instance
+ * @extends {EventEmitter}
+ * @param {Game} game Game instance
  */
 function Ticker (game, variant) {
     EventEmitter.call(this);

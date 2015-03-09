@@ -2536,18 +2536,29 @@ extend(Engine.prototype, {
         this._systemsToRemove.put(system);
     },
     enableSystem: function (system) {
-        if (system == null) {
-            return;
-        }
-
-        system._disabled = false;
+        this._toggleSystem(system, false);
     },
     disableSystem: function (system) {
+        this._toggleSystem(system, true);
+    },
+    _toggleSystem: function (system, onOff) {
         if (system == null) {
             return;
         }
 
-        system._disabled = true;
+        if (is.object(system)) {
+            system._disabled = onOff;
+        } else if (is.unemptyString(system)) {
+            var systemObject;
+            for (var i = 0; i < this._systems.length; i++) {
+                systemObject = this._systems[i];
+                if (systemObject.name === system) {
+                    systemObject._disabled = onOff;
+                    
+                    return;
+                }
+            }
+        }
     },
     markModifiedEntity: function (entity) {
         if (entity.id === 0) {
@@ -4079,7 +4090,8 @@ var EventEmitter = require('./event');
 
 /**
  * @class Ticker
- * @param {Game} game    Game instance
+ * @extends {EventEmitter}
+ * @param {Game} game Game instance
  */
 function Ticker (game, variant) {
     EventEmitter.call(this);

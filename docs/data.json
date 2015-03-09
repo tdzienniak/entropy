@@ -242,6 +242,7 @@
             "module": "Entropy",
             "file": "src\\core\\ticker.js",
             "line": 10,
+            "extends": "{EventEmitter}",
             "params": [
                 {
                     "name": "game",
@@ -492,7 +493,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 664,
+            "line": 675,
             "description": "Returns ID for an entity. Reuses old IDs or creates new.",
             "access": "private",
             "tagname": "",
@@ -506,7 +507,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 680,
+            "line": 691,
             "description": "Initializes new query. Performs initial entity search.",
             "access": "private",
             "tagname": "",
@@ -748,7 +749,7 @@
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 31,
+            "line": 32,
             "description": "Fires when ticker starts ticking.",
             "itemtype": "event",
             "name": "start",
@@ -756,7 +757,7 @@
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 37,
+            "line": 38,
             "description": "Fires when ticker stops ticking.",
             "itemtype": "event",
             "name": "stop",
@@ -764,7 +765,7 @@
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 54,
+            "line": 55,
             "itemtype": "method",
             "name": "pause",
             "return": {
@@ -775,7 +776,7 @@
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 68,
+            "line": 69,
             "itemtype": "method",
             "name": "resume",
             "return": {
@@ -786,7 +787,7 @@
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 82,
+            "line": 83,
             "itemtype": "method",
             "name": "start",
             "return": {
@@ -797,7 +798,7 @@
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 138,
+            "line": 139,
             "itemtype": "method",
             "name": "stop",
             "return": {
@@ -808,7 +809,7 @@
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 153,
+            "line": 154,
             "itemtype": "method",
             "name": "isPaused",
             "return": {
@@ -819,7 +820,7 @@
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 160,
+            "line": 161,
             "description": "Running ticker is a ticker that constantly calls its timer function.\nPaused ticker is also running.",
             "itemtype": "method",
             "name": "isRunning",
@@ -831,7 +832,7 @@
         },
         {
             "file": "src\\core\\ticker.js",
-            "line": 170,
+            "line": 171,
             "description": "Turns __on__ or __off__ debugging features (FPS meter, frame time meter etc.).",
             "itemtype": "method",
             "name": "debug",
