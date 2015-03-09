@@ -104,7 +104,7 @@ function State(game) {
      *  - next state object
      *  - [here come arguments given after `name`]
      *  - done callback
-     * 
+     *
      * @method change
      * @chainable
      * @param  {String} ...name state to change into. Any addidtional parameter will be applied to transition method.
@@ -161,7 +161,7 @@ function State(game) {
 
     /**
      * Returns name of the current state.
-     * 
+     *
      * @method current
      * @return {String} name of the current state
      */
@@ -171,7 +171,7 @@ function State(game) {
 
     /**
      * Checks whether state machine is in state identified by name.
-     * 
+     *
      * @method isIn
      * @param  {String}  state states name
      * @return {Boolean}
@@ -212,17 +212,17 @@ function State(game) {
  *         name: "initialize",
  *         initialize: function (game, done) {
  *             console.log('State initialized.');
- *             
+ *
  *             return done();
  *         },
  *         enter: function (game, done) {
  *             console.log('State entered.');
- *             
+ *
  *             return done();
  *         },
  *         exit: function (game, done) {
  *             console.log('State exited.');
- *             
+ *
  *             return done();
  *         },
  *         trnsitions: {
@@ -230,7 +230,7 @@ function State(game) {
  *         },
  *         toMenu: function (game, nextState, done) {
  *             console.log('Transitioning from `initialize` to `menu`.');
- *             
+ *
  *             return done();
  *         }
  *     });

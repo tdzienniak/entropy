@@ -17,19 +17,19 @@ module.exports = {
             arr[i] = 0;
         }
 
-        return arr;     
+        return arr;
     },
     removeAtIndex: function (arr, index) {
         var len = arr.length;
-        
-        if (len === 0) { 
+
+        if (len === 0) {
             return;
         }
-        
-        while (index < len) { 
+
+        while (index < len) {
             arr[index] = arr[++index];
         }
-        
+
         arr.length--;
     },
     removeAtIndexConst: function (arr, arrayLength, index) {

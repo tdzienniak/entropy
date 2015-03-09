@@ -105,9 +105,11 @@ var KEYS = {
     "SINGLE_QUOTE": 222
 };
 
+var KEY_NAMES = Object.keys(KEYS);
+
 function Input(game) {
     var self = this;
-    
+
     this.game = game;
 
     this._pressedKeys = [];
@@ -143,55 +145,61 @@ function Input(game) {
 
             return;
         });
-
-
-
     }
 }
 
 extend(Input.prototype, {
     isPressed: function (keyName) {
-        return this._pressedKeys[KEYS[keyName]]
+        return this._pressedKeys[KEYS[keyName]];
     },
     getPressedKeys: function () {
-        keys = {}
+        var keys = {}, keyName;
 
-        for keyName in Object.keys(KEYS)
-            keys[keyName] = this._pressedKeys[KEYS[keyName]]
+        for (var i = 0; i < KEY_NAMES.length; i++) {
+            keyName = KEY_NAMES[i];
 
-        return keys
+            keys[keyName] = this._pressedKeys[KEYS[keyName]];
+        }
+
+        return keys;
     },
     getKeysPressedLessThan: function (time) {
-        keys = {}
+        var keys = {}, keyName, keyCode;
 
-        for keyName in Object.keys(KEYS)
-            keyCode = KEYS[keyName]
+        for (var i = 0; i < KEY_NAMES.length; i++) {
+            keyName = KEY_NAMES[i];
+            keyCode = KEYS[keyName];
 
-            if this._pressedKeysTime[keyCode] < time && this._oncePressedKeys[keyCode]
-                keys[keyName] = true
+            if (this._pressedKeysTime[keyCode] < time && this._oncePressedKeys[keyCode]) {
+                keys[keyName] = true;
+            }
+        }
 
-        return keys
+        return keys;
     },
     getKeysPressedMoreThan: function (time) {
-        keys = {}
+        var keys = {}, keyName, keyCode;
 
-        for keyName in Object.keys(KEYS)
-            keyCode = KEYS[keyName]
+        for (var i = 0; i < KEY_NAMES.length; i++) {
+            keyName = KEY_NAMES[i];
+            keyCode = KEYS[keyName];
 
-            if this._pressedKeysTime[keyCode] > time && this._oncePressedKeys[keyCode]
-                keys[keyName] = true
+            if (this._pressedKeysTime[keyCode] > time && this._oncePressedKeys[keyCode]) {
+                keys[keyName] = true;
+            }
+        }
 
-        return keys
+        return keys;
     },
     setMouseStagePosition: function (position) {
-        this._mousePosition = position
+        this._mousePosition = position;
     },
     getMouseStagePosition: function () {
-        return this._mousePosition
+        return this._mousePosition;
     },
     clearKeyTimes: function () {
-        this._pressedKeysTime = []
-        this._oncePressedKeys = []
+        this._pressedKeysTime = [];
+        this._oncePressedKeys = [];
     }
 });
 

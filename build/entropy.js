@@ -2150,14 +2150,14 @@ var Entity = require('./entity');
 
 /**
  * Engine class. Class is used internaly. User should not instatiate this class.
- * 
+ *
  * @class Engine
  * @extends EventEmitter
  * @constructor
  */
 function Engine (game) {
     EventEmitter.call(this);
-    
+
     /**
      * Instance of {{#crossLink "Game"}}Game{{/crossLink}} class.
      *
@@ -2169,7 +2169,7 @@ function Engine (game) {
     /**
      * Indicates the greatest entity ID present in the system.
      * Used to generate new IDs.
-     * 
+     *
      * @property _greatestEntityID
      * @private
      * @type Number
@@ -2178,7 +2178,7 @@ function Engine (game) {
 
     /**
      * Pool of currently not used entity IDs. Will be reused.
-     * 
+     *
      * @property _idsToReuse
      * @private
      * @type Pool
@@ -2196,7 +2196,7 @@ function Engine (game) {
 
     /**
      * Array with entities. Array index corresponds to ID of an entity.
-     * 
+     *
      * @property _entities
      * @private
      * @type Array
@@ -2213,7 +2213,7 @@ function Engine (game) {
 
     this._entitiesPool = {};
     this._componentsPool = {};
-    
+
     this._queries = [];
 
     this._entitiesCount = 0;
@@ -2251,7 +2251,7 @@ function Engine (game) {
  *             this.y = 0;
  *         }
  *     });
- * 
+ *
  * @method Component
  * @static
  * @param {Object} component component pattern
@@ -2276,9 +2276,9 @@ Engine.Component = function (component) {
  *         name: "Ball",
  *         create: function (game, x, y, radius) {
  *             var sprite = new Sprite("Ball");
- * 
+ *
  *             game.container.make("renderer").addSprite(sprite);
- * 
+ *
  *             this.add("Position", x, y)
  *                 .add("Radius", radius)
  *                 .add("Velocity", 5, 5)
@@ -2289,7 +2289,7 @@ Engine.Component = function (component) {
  *             game.container.make("renderer").removeSprite(this.components.sprite.sprite);
  *         }
  *     });
- * 
+ *
  * @method Entity
  * @static
  * @param {Object} entity entity pattern
@@ -2319,16 +2319,16 @@ Engine.Entity = function (entity) {
  *
  *                 position.x += delta / 1000 * velocity.vx;
  *                 position.y += delta / 1000 * velocity.vy;
- * 
+ *
  *                 i++;
- *             }     
+ *             }
  *         },
  *         //not obligatory
  *         remove: function () {
- *         
+ *
  *         }
  *     });
- * 
+ *
  * @method System
  * @static
  * @param {Object} system system pattern object
@@ -2351,7 +2351,7 @@ Engine.System = function (system) {
  *     var q3 = new Entropy.Engine.Query({
  *         name: "Ball"
  *     });
- * 
+ *
  * @method Query
  * @static
  * @param {Array|Object} criterions query matching criterions
@@ -2393,7 +2393,7 @@ extend(Engine.prototype, {
         entity = entity || new Entity(name, entityPattern, this);
 
         entityPattern.create.apply(entity, args);
-        
+
         this._entitiesToAdd.put(entity);
 
         return this;
@@ -2407,7 +2407,7 @@ extend(Engine.prototype, {
      *     if (entity.components.hp.quantity <= 0) { //entity is dead, remove
      *         game.engine.remove(entity);
      *     }
-     * 
+     *
      * @method remove
      * @param  {Entity} entity Entity instance
      * @return {Engine}        Engine instance
@@ -2460,11 +2460,11 @@ extend(Engine.prototype, {
      *
      * @example
      *     game.engine.addSystem("Renderer", rendererObject);
-     *     
+     *
      *     //or
      *
      *     game.engine.addSystem(["Renderer", 1], rendererObject);
-     *     
+     *
      * @method addSystem
      * @param {String|Array} ...name name of a system or array with two elements - name of a system and desired priority (see example). Additional arguments are applied to patterns `initialize` method.
      * @return {Engine} engine instance
@@ -2586,7 +2586,7 @@ extend(Engine.prototype, {
 
         for (var i = 0, len = this._systems.length; i < len; i++) {
             system = this._systems[i];
-            
+
             if (system._disabled) {
                 continue;
             }
@@ -2666,7 +2666,7 @@ extend(Engine.prototype, {
 
             entityToAdd.id = id;
             systemEntities[id] = entityToAdd;
-            
+
             for (i = 0, len = this._queries.length; i < len; i++) {
                 query = queries[i];
 
@@ -2744,7 +2744,7 @@ extend(Engine.prototype, {
                 }
             }
 
-            this._systems.splice(insertionIndex, 0, systemToAdd);            
+            this._systems.splice(insertionIndex, 0, systemToAdd);
         }
     },
     _fetchQueries: function () {
@@ -2790,7 +2790,7 @@ extend(Engine.prototype, {
         } else if (is.function(component._pattern.reset)) {
             component._pattern.reset.call(component);
         }
-        
+
         return component;
     },
     _addComponentToPool: function (component) {
@@ -2798,7 +2798,7 @@ extend(Engine.prototype, {
     },
     /**
      * Returns ID for an entity. Reuses old IDs or creates new.
-     * 
+     *
      * @private
      * @method _generateEntityID
      * @return {Number} new ID
@@ -2853,7 +2853,7 @@ extend(Engine.prototype, {
 });
 
 module.exports = Engine;
-},{"./config":7,"./debug":9,"./entity":11,"./event":12,"./fastarray":13,"./pool":16,"./query":17,"./register":18,"check-types":2,"node.extend":4}],11:[function(require,module,exports){
+},{"./config":7,"./debug":9,"./entity":11,"./event":12,"./fastarray":13,"./pool":17,"./query":18,"./register":19,"check-types":2,"node.extend":4}],11:[function(require,module,exports){
 'use strict';
 
 var is = require('check-types');
@@ -2902,7 +2902,7 @@ extend(Entity.prototype, {
      *     //`this` is a reference to Entity instance
      *     //code like this often can be seen in entity pattern `create` method
      *     this.add("Position", 1, 1);
-     * 
+     *
      * @method add
      * @param {String} ...name name of component to add. Addidtional parameters are applied to component patterns `initialize` method.
      * @return {Entity} Entity instance
@@ -3007,7 +3007,7 @@ extend(Entity.prototype, {
 });
 
 module.exports = Entity;
-},{"./config":7,"./debug":9,"./event":12,"./register":18,"bitset.js":1,"check-types":2,"node.extend":4}],12:[function(require,module,exports){
+},{"./config":7,"./debug":9,"./event":12,"./register":19,"bitset.js":1,"check-types":2,"node.extend":4}],12:[function(require,module,exports){
 'use strict';
 
 var is = require('check-types');
@@ -3097,19 +3097,19 @@ module.exports = {
             arr[i] = 0;
         }
 
-        return arr;     
+        return arr;
     },
     removeAtIndex: function (arr, index) {
         var len = arr.length;
-        
-        if (len === 0) { 
+
+        if (len === 0) {
             return;
         }
-        
-        while (index < len) { 
+
+        while (index < len) {
             arr[index] = arr[++index];
         }
-        
+
         arr.length--;
     },
     removeAtIndexConst: function (arr, arrayLength, index) {
@@ -3158,18 +3158,21 @@ var State = require('./state');
 var Engine = require('./engine');
 var Inverse = require('inverse');
 var Ticker = require('./ticker');
+var Input = require('./input');
 
 /**
  * Main framework class. This is the only class, that needs to be instatiated by user.
- * 
+ *
  * @class Game
- * @param {String} initialState initial state
+ * @param {String} [initialState] initial state
  */
 function Game (initialState) {
     EventEmitter.call(this);
 
     this.engine = new Engine(this);
     this.state = new State(this);
+
+    this.input = new Input(this);
 
     /**
      * Instance of Inverse class.
@@ -3190,8 +3193,11 @@ function Game (initialState) {
     this.ticker = new Ticker(this);
 
     this.ticker.on('tick', this.engine.update, this.engine);
+    this.ticker.on('tick', this.input.clearKeyTimes, this.input);
 
-    this.state.change(initialState);
+    if (is.unemptyString(initialState)) {
+        this.state.change(initialState);
+    }
 }
 
 /**
@@ -3201,7 +3207,7 @@ function Game (initialState) {
  *     Entropy.Game.State({
  *         //state object here
  *     });
- * 
+ *
  * @static
  * @method State
  * @param {Object} state state object
@@ -3214,7 +3220,7 @@ extend(Game.prototype, EventEmitter.prototype);
 extend(Game.prototype, {
     /**
      * Starts the game. See Ticker's {{#crossLink "Ticker/start:method"}}start{{/crossLink}} method for more details.
-     * 
+     *
      * @method start
      * @return {Boolean} succesfuly started or not
      */
@@ -3224,7 +3230,7 @@ extend(Game.prototype, {
 
     /**
      * Stops the game. See Ticker's {{#crossLink "Ticker/stop:method"}}stop{{/crossLink}} method for more details.
-     * 
+     *
      * @method stop
      * @param {Boolean} clearEngine if `true`, engine will be cleared before ticker stop
      * @return {Boolean|Undefined} stop succesfuly stoped or not. If `clearEngine` is `true`, return value will be `undefined`
@@ -3234,7 +3240,7 @@ extend(Game.prototype, {
             this.engine.once('clear', function () {
                 this.engine.stop();
             }, this);
-            
+
             return;
         }
 
@@ -3243,7 +3249,7 @@ extend(Game.prototype, {
 
     /**
      * Pauses the game. See Ticker's {{#crossLink "Ticker/pause:method"}}pause{{/crossLink}} method for more details.
-     * 
+     *
      * @method pause
      * @return {Boolean} [description]
      */
@@ -3253,7 +3259,7 @@ extend(Game.prototype, {
 
     /**
      * Resumes the game. See Ticker's {{#crossLink "Ticker/resume:method"}}resume{{/crossLink}} method for more details.
-     * 
+     *
      * @method resume
      * @return {Boolean} [description]
      */
@@ -3263,33 +3269,240 @@ extend(Game.prototype, {
 });
 
 module.exports = Game;
-},{"./debug":9,"./engine":10,"./event":12,"./state":19,"./ticker":20,"check-types":2,"inverse":3,"node.extend":4}],15:[function(require,module,exports){
+},{"./debug":9,"./engine":10,"./event":12,"./input":15,"./state":20,"./ticker":21,"check-types":2,"inverse":3,"node.extend":4}],15:[function(require,module,exports){
+'use strict'
+
+var extend = require('node.extend');
+var is = require('check-types');
+
+var KEYS = {
+    "BACKSPACE": 8,
+    "TAB": 9,
+    "ENTER": 13,
+    "SHIFT": 16,
+    "CTRL": 17,
+    "ALT": 18,
+    "PAUSE_BREAK": 19,
+    "CAPS_LOCK ": 20,
+    "ESCAPE": 27,
+    "SPACE": 32,
+    "PAGE_UP": 33,
+    "PAGE_DOWN": 34,
+    "END": 35,
+    "HOME": 36,
+    "LEFT_ARROW": 37,
+    "UP_ARROW": 38,
+    "RIGHT_ARROW": 39,
+    "DOWN_ARROW": 40,
+    "INSERT": 45,
+    "DELETE": 46,
+    "0": 48,
+    "1": 49,
+    "2": 50,
+    "3": 51,
+    "4": 52,
+    "5": 53,
+    "6": 54,
+    "7": 55,
+    "8": 56,
+    "9": 57,
+    "A": 65,
+    "B": 66,
+    "C": 67,
+    "D": 68,
+    "E": 69,
+    "F": 70,
+    "G": 71,
+    "H": 72,
+    "I": 73,
+    "J": 74,
+    "K": 75,
+    "L": 76,
+    "M": 77,
+    "N": 78,
+    "O": 79,
+    "P": 80,
+    "Q": 81,
+    "R": 82,
+    "S": 83,
+    "T": 84,
+    "U": 85,
+    "V": 86,
+    "W": 87,
+    "X": 88,
+    "Y": 89,
+    "Z": 90,
+    "LEFT_WINDOW_KEY": 91,
+    "RIGHT_WINDOW_KEY": 92,
+    "SELECT_KEY": 93,
+    "NUMPAD_0": 96,
+    "NUMPAD_1": 97,
+    "NUMPAD_2": 98,
+    "NUMPAD_3": 99,
+    "NUMPAD_4": 100,
+    "NUMPAD_5": 101,
+    "NUMPAD_6": 102,
+    "NUMPAD_7": 103,
+    "NUMPAD_8": 104,
+    "NUMPAD_9": 105,
+    "MULTIPLY": 106,
+    "ADD": 107,
+    "SUBTRACT": 109,
+    "DECIMAL_POINT": 110,
+    "DIVIDE": 111,
+    "F1": 112,
+    "F2": 113,
+    "F3": 114,
+    "F4": 115,
+    "F5": 116,
+    "F6": 117,
+    "F7": 118,
+    "F8": 119,
+    "F9": 120,
+    "F10": 121,
+    "F11": 122,
+    "F12": 123,
+    "NUM_LOCK": 144,
+    "SCROLL_LOCK": 145,
+    "SEMI_COLON": 186,
+    "EQUAL_SIGN": 187,
+    "COMMA": 188,
+    "DASH": 189,
+    "PERIOD": 190,
+    "FORWARD_SLASH": 191,
+    "GRAVE_ACCENT": 192,
+    "OPEN_BRACKET": 219,
+    "BACK_SLASH": 220,
+    "CLOSE_BRACKET": 221,
+    "SINGLE_QUOTE": 222
+};
+
+var KEY_NAMES = Object.keys(KEYS);
+
+function Input(game) {
+    var self = this;
+
+    this.game = game;
+
+    this._pressedKeys = [];
+    this._pressedKeysTime = [];
+    this._oncePressedKeys = [];
+    this._mousePosition = {
+        x: 0,
+        y: 0
+    };
+
+    if (window) {
+        window.addEventListener("keydown", function (e) {
+            var keyCode = e.keyCode;
+
+            self._pressedKeys[keyCode] = true;
+
+            if (!self._pressedKeysTime[keyCode]) {
+                self._pressedKeysTime[keyCode] = performance.now();
+            }
+
+            return;
+        });
+
+        window.addEventListener("keyup", function (e) {
+            var keyCode = e.keyCode;
+
+            self._pressedKeys[keyCode] = false;
+
+            if (self._pressedKeysTime[keyCode] != null && self._oncePressedKeys[keyCode] == null) {
+                self._pressedKeysTime[keyCode] = performance.now() - self._pressedKeysTime[keyCode];
+                self._oncePressedKeys[keyCode] = true;
+            }
+
+            return;
+        });
+    }
+}
+
+extend(Input.prototype, {
+    isPressed: function (keyName) {
+        return this._pressedKeys[KEYS[keyName]];
+    },
+    getPressedKeys: function () {
+        var keys = {}, keyName;
+
+        for (var i = 0; i < KEY_NAMES.length; i++) {
+            keyName = KEY_NAMES[i];
+
+            keys[keyName] = this._pressedKeys[KEYS[keyName]];
+        }
+
+        return keys;
+    },
+    getKeysPressedLessThan: function (time) {
+        var keys = {}, keyName, keyCode;
+
+        for (var i = 0; i < KEY_NAMES.length; i++) {
+            keyName = KEY_NAMES[i];
+            keyCode = KEYS[keyName];
+
+            if (this._pressedKeysTime[keyCode] < time && this._oncePressedKeys[keyCode]) {
+                keys[keyName] = true;
+            }
+        }
+
+        return keys;
+    },
+    getKeysPressedMoreThan: function (time) {
+        var keys = {}, keyName, keyCode;
+
+        for (var i = 0; i < KEY_NAMES.length; i++) {
+            keyName = KEY_NAMES[i];
+            keyCode = KEYS[keyName];
+
+            if (this._pressedKeysTime[keyCode] > time && this._oncePressedKeys[keyCode]) {
+                keys[keyName] = true;
+            }
+        }
+
+        return keys;
+    },
+    setMouseStagePosition: function (position) {
+        this._mousePosition = position;
+    },
+    getMouseStagePosition: function () {
+        return this._mousePosition;
+    },
+    clearKeyTimes: function () {
+        this._pressedKeysTime = [];
+        this._oncePressedKeys = [];
+    }
+});
+
+module.exports = Input;
+},{"check-types":2,"node.extend":4}],16:[function(require,module,exports){
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
- 
+
 // requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
- 
+
 // MIT license
- 
+
 (function() {
     var lastTime = 0;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
     for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
         window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] 
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
                                    || window[vendors[x]+'CancelRequestAnimationFrame'];
     }
- 
+
     if (!window.requestAnimationFrame)
         window.requestAnimationFrame = function(callback, element) {
             var currTime = new Date().getTime();
             var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
               timeToCall);
             lastTime = currTime + timeToCall;
             return id;
         };
- 
+
     if (!window.cancelAnimationFrame)
         window.cancelAnimationFrame = function(id) {
             clearTimeout(id);
@@ -3298,46 +3511,46 @@ module.exports = Game;
 
 // @license http://opensource.org/licenses/MIT
 // copyright Paul Irish 2015
- 
- 
+
+
 // Date.now() is supported everywhere except IE8. For IE8 we use the Date.now polyfill
 //   github.com/Financial-Times/polyfill-service/blob/master/polyfills/Date.now/polyfill.js
 // as Safari 6 doesn't have support for NavigationTiming, we use a Date.now() timestamp for relative values
- 
+
 // if you want values similar to what you'd get with real perf.now, place this towards the head of the page
 // but in reality, you're just getting the delta between now() calls, so it's not terribly important where it's placed
- 
- 
+
+
 (function(){
- 
+
   if ("performance" in window == false) {
       window.performance = {};
   }
-  
+
   Date.now = (Date.now || function () {  // thanks IE8
       return new Date().getTime();
   });
- 
+
   if ("now" in window.performance == false){
-    
+
     var nowOffset = Date.now();
-    
+
     if (performance.timing && performance.timing.navigationStart){
       nowOffset = performance.timing.navigationStart
     }
- 
+
     window.performance.now = function now(){
       return Date.now() - nowOffset;
     }
   }
- 
+
 })();
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var extend = require('node.extend');
 
 /**
- * Simple implemenation of stack. 
- * 
+ * Simple implemenation of stack.
+ *
  * @class Pool
  * @param {Number} initialSize initial pool size
  */
@@ -3354,7 +3567,7 @@ function Pool(initialSize) {
 extend(Pool.prototype, {
     /**
      * Puts value in the pool. Named pool, because it is used to implement pooling of various object in engine.
-     * 
+     *
      * @method put
      * @param  {Any} thing value to put in pool
      */
@@ -3395,7 +3608,7 @@ extend(Pool.prototype, {
 });
 
 module.exports = Pool;
-},{"node.extend":4}],17:[function(require,module,exports){
+},{"node.extend":4}],18:[function(require,module,exports){
 'use strict';
 
 var is = require('check-types');
@@ -3410,7 +3623,7 @@ var BitSet = require('bitset.js').BitSet;
  * Used to perform matching of entities.
  * Only parameter is an array of component names to include or object with `name` and/or `include` and/or `exclude` properties,
  * witch are arrays of component names to respectively include and/or exclude.
- * 
+ *
  * @class Query
  * @constructor
  * @param {Object|Array} query query conditions
@@ -3427,7 +3640,7 @@ function Query (query) {
         }
 
         if (is.array(query.include)) {
-           include = query.include; 
+           include = query.include;
         }
 
         if (is.array(query.exclude)) {
@@ -3483,7 +3696,7 @@ extend(Query.prototype, {
 });
 
 module.exports = Query;
-},{"./config":7,"./debug":9,"./register":18,"bitset.js":1,"check-types":2,"node.extend":4}],18:[function(require,module,exports){
+},{"./config":7,"./debug":9,"./register":19,"bitset.js":1,"check-types":2,"node.extend":4}],19:[function(require,module,exports){
 'use strict';
 
 var is = require('check-types');
@@ -3502,7 +3715,7 @@ module.exports = {
             debug.error('you can\'t define new component during system work')
             return false;
         }
-            
+
         if (is.not.object(component)) {
             debug.error('component pattern must be an object');
             return false;
@@ -3528,10 +3741,10 @@ module.exports = {
             debug.error('you can\'t define new system during system work');
             return false;
         }
-            
+
         if (!is.object(system)) {
             debug.error('system pattern must be an object');
-            return false;            
+            return false;
         }
 
         if (!('name' in system) || !('update' in system)) {
@@ -3553,7 +3766,7 @@ module.exports = {
             debug.error('you can\'t define new system during system work');
             return false;
         }
-            
+
         if (is.not.object(entity)) {
             debug.error('entity pattern must be an object');
             return false;
@@ -3598,7 +3811,7 @@ module.exports = {
         canModify = false;
     }
 }
-},{"./config":7,"./debug":9,"check-types":2}],19:[function(require,module,exports){
+},{"./config":7,"./debug":9,"check-types":2}],20:[function(require,module,exports){
 'use strict';
 
 var is = require('check-types');
@@ -3705,7 +3918,7 @@ function State(game) {
      *  - next state object
      *  - [here come arguments given after `name`]
      *  - done callback
-     * 
+     *
      * @method change
      * @chainable
      * @param  {String} ...name state to change into. Any addidtional parameter will be applied to transition method.
@@ -3762,7 +3975,7 @@ function State(game) {
 
     /**
      * Returns name of the current state.
-     * 
+     *
      * @method current
      * @return {String} name of the current state
      */
@@ -3772,7 +3985,7 @@ function State(game) {
 
     /**
      * Checks whether state machine is in state identified by name.
-     * 
+     *
      * @method isIn
      * @param  {String}  state states name
      * @return {Boolean}
@@ -3813,17 +4026,17 @@ function State(game) {
  *         name: "initialize",
  *         initialize: function (game, done) {
  *             console.log('State initialized.');
- *             
+ *
  *             return done();
  *         },
  *         enter: function (game, done) {
  *             console.log('State entered.');
- *             
+ *
  *             return done();
  *         },
  *         exit: function (game, done) {
  *             console.log('State exited.');
- *             
+ *
  *             return done();
  *         },
  *         trnsitions: {
@@ -3831,7 +4044,7 @@ function State(game) {
  *         },
  *         toMenu: function (game, nextState, done) {
  *             console.log('Transitioning from `initialize` to `menu`.');
- *             
+ *
  *             return done();
  *         }
  *     });
@@ -3853,7 +4066,7 @@ State.Register = function (state) {
 }
 
 module.exports = State;
-},{"check-types":2}],20:[function(require,module,exports){
+},{"check-types":2}],21:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -3887,13 +4100,13 @@ function Ticker (game, variant) {
 
 /**
  * Fires when ticker starts ticking.
- * 
+ *
  * @event start
  */
 
 /**
  * Fires when ticker stops ticking.
- * 
+ *
  * @event stop
  */
 
@@ -3938,7 +4151,7 @@ extend(Ticker.prototype, {
     },
     /**
      *
-     * 
+     *
      * @method start
      * @return {Boolean} `true` if starded succesfuly, `false` otherwise
      */
@@ -3955,7 +4168,7 @@ extend(Ticker.prototype, {
 
         var last = performance.now();
         var event = {};
-        
+
         this._rafID = raf(tick);
         this._running = true;
 
@@ -3986,7 +4199,7 @@ extend(Ticker.prototype, {
 
             //self.game.engine.update(event);
             self.emit('tick', event);
- 
+
             if (self._debug) {
                 self._stats.end();
             }
@@ -4017,7 +4230,7 @@ extend(Ticker.prototype, {
     /**
      * Running ticker is a ticker that constantly calls its timer function.
      * Paused ticker is also running.
-     * 
+     *
      * @method isRunning
      * @return {Boolean} `true` if running, `false` otherwise
      */
@@ -4053,7 +4266,7 @@ extend(Ticker.prototype, {
 
 module.exports = Ticker;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../lib/stats":22,"./config":7,"./event":12,"node.extend":4}],21:[function(require,module,exports){
+},{"../lib/stats":23,"./config":7,"./event":12,"node.extend":4}],22:[function(require,module,exports){
 /**
  * Main Entropy module and top namespace.
  * 
@@ -4130,7 +4343,7 @@ Entropy.Game = Game;
 Entropy.Engine = Engine;
 
 module.exports = Entropy;
-},{"./core/config":7,"./core/const":8,"./core/debug":9,"./core/engine":10,"./core/game":14,"./core/polyfill":15}],22:[function(require,module,exports){
+},{"./core/config":7,"./core/const":8,"./core/debug":9,"./core/engine":10,"./core/game":14,"./core/polyfill":16}],23:[function(require,module,exports){
 // stats.js - http://github.com/mrdoob/stats.js
 var Stats=function(){var l=Date.now(),m=l,g=0,n=Infinity,o=0,h=0,p=Infinity,q=0,r=0,s=0,f=document.createElement("div");f.id="stats";f.addEventListener("mousedown",function(b){b.preventDefault();t(++s%2)},!1);f.style.cssText="width:80px;opacity:0.9;cursor:pointer";var a=document.createElement("div");a.id="fps";a.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#002";f.appendChild(a);var i=document.createElement("div");i.id="fpsText";i.style.cssText="color:#0ff;font-family:Helvetica,Arial,sans-serif;font-size:9px;font-weight:bold;line-height:15px";
 i.innerHTML="FPS";a.appendChild(i);var c=document.createElement("div");c.id="fpsGraph";c.style.cssText="position:relative;width:74px;height:30px;background-color:#0ff";for(a.appendChild(c);74>c.children.length;){var j=document.createElement("span");j.style.cssText="width:1px;height:30px;float:left;background-color:#113";c.appendChild(j)}var d=document.createElement("div");d.id="ms";d.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#020;display:none";f.appendChild(d);var k=document.createElement("div");
@@ -4138,5 +4351,5 @@ k.id="msText";k.style.cssText="color:#0f0;font-family:Helvetica,Arial,sans-serif
 "block";d.style.display="none";break;case 1:a.style.display="none",d.style.display="block"}};return{REVISION:11,domElement:f,setMode:t,begin:function(){l=Date.now()},end:function(){var b=Date.now();g=b-l;n=Math.min(n,g);o=Math.max(o,g);k.textContent=g+" MS ("+n+"-"+o+")";var a=Math.min(30,30-30*(g/200));e.appendChild(e.firstChild).style.height=a+"px";r++;b>m+1E3&&(h=Math.round(1E3*r/(b-m)),p=Math.min(p,h),q=Math.max(q,h),i.textContent=h+" FPS ("+p+"-"+q+")",a=Math.min(30,30-30*(h/100)),c.appendChild(c.firstChild).style.height=
 a+"px",m=b,r=0);return b},update:function(){l=this.end()}}};"object"===typeof module&&(module.exports=Stats);
 
-},{}]},{},[21])(21)
+},{}]},{},[22])(22)
 });

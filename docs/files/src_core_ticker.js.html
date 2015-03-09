@@ -119,13 +119,13 @@ function Ticker (game, variant) {
 
 /**
  * Fires when ticker starts ticking.
- * 
+ *
  * @event start
  */
 
 /**
  * Fires when ticker stops ticking.
- * 
+ *
  * @event stop
  */
 
@@ -170,7 +170,7 @@ extend(Ticker.prototype, {
     },
     /**
      *
-     * 
+     *
      * @method start
      * @return {Boolean} &#x60;true&#x60; if starded succesfuly, &#x60;false&#x60; otherwise
      */
@@ -187,7 +187,7 @@ extend(Ticker.prototype, {
 
         var last = performance.now();
         var event = {};
-        
+
         this._rafID = raf(tick);
         this._running = true;
 
@@ -218,7 +218,7 @@ extend(Ticker.prototype, {
 
             //self.game.engine.update(event);
             self.emit(&#x27;tick&#x27;, event);
- 
+
             if (self._debug) {
                 self._stats.end();
             }
@@ -249,7 +249,7 @@ extend(Ticker.prototype, {
     /**
      * Running ticker is a ticker that constantly calls its timer function.
      * Paused ticker is also running.
-     * 
+     *
      * @method isRunning
      * @return {Boolean} &#x60;true&#x60; if running, &#x60;false&#x60; otherwise
      */

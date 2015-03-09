@@ -9,18 +9,21 @@ var State = require('./state');
 var Engine = require('./engine');
 var Inverse = require('inverse');
 var Ticker = require('./ticker');
+var Input = require('./input');
 
 /**
  * Main framework class. This is the only class, that needs to be instatiated by user.
- * 
+ *
  * @class Game
- * @param {String} initialState initial state
+ * @param {String} [initialState] initial state
  */
 function Game (initialState) {
     EventEmitter.call(this);
 
     this.engine = new Engine(this);
     this.state = new State(this);
+
+    this.input = new Input(this);
 
     /**
      * Instance of Inverse class.
@@ -41,8 +44,11 @@ function Game (initialState) {
     this.ticker = new Ticker(this);
 
     this.ticker.on('tick', this.engine.update, this.engine);
+    this.ticker.on('tick', this.input.clearKeyTimes, this.input);
 
-    this.state.change(initialState);
+    if (is.unemptyString(initialState)) {
+        this.state.change(initialState);
+    }
 }
 
 /**
@@ -52,7 +58,7 @@ function Game (initialState) {
  *     Entropy.Game.State({
  *         //state object here
  *     });
- * 
+ *
  * @static
  * @method State
  * @param {Object} state state object
@@ -65,7 +71,7 @@ extend(Game.prototype, EventEmitter.prototype);
 extend(Game.prototype, {
     /**
      * Starts the game. See Ticker's {{#crossLink "Ticker/start:method"}}start{{/crossLink}} method for more details.
-     * 
+     *
      * @method start
      * @return {Boolean} succesfuly started or not
      */
@@ -75,7 +81,7 @@ extend(Game.prototype, {
 
     /**
      * Stops the game. See Ticker's {{#crossLink "Ticker/stop:method"}}stop{{/crossLink}} method for more details.
-     * 
+     *
      * @method stop
      * @param {Boolean} clearEngine if `true`, engine will be cleared before ticker stop
      * @return {Boolean|Undefined} stop succesfuly stoped or not. If `clearEngine` is `true`, return value will be `undefined`
@@ -85,7 +91,7 @@ extend(Game.prototype, {
             this.engine.once('clear', function () {
                 this.engine.stop();
             }, this);
-            
+
             return;
         }
 
@@ -94,7 +100,7 @@ extend(Game.prototype, {
 
     /**
      * Pauses the game. See Ticker's {{#crossLink "Ticker/pause:method"}}pause{{/crossLink}} method for more details.
-     * 
+     *
      * @method pause
      * @return {Boolean} [description]
      */
@@ -104,7 +110,7 @@ extend(Game.prototype, {
 
     /**
      * Resumes the game. See Ticker's {{#crossLink "Ticker/resume:method"}}resume{{/crossLink}} method for more details.
-     * 
+     *
      * @method resume
      * @return {Boolean} [description]
      */

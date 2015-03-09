@@ -15,14 +15,14 @@ var Entity = require('./entity');
 
 /**
  * Engine class. Class is used internaly. User should not instatiate this class.
- * 
+ *
  * @class Engine
  * @extends EventEmitter
  * @constructor
  */
 function Engine (game) {
     EventEmitter.call(this);
-    
+
     /**
      * Instance of {{#crossLink "Game"}}Game{{/crossLink}} class.
      *
@@ -34,7 +34,7 @@ function Engine (game) {
     /**
      * Indicates the greatest entity ID present in the system.
      * Used to generate new IDs.
-     * 
+     *
      * @property _greatestEntityID
      * @private
      * @type Number
@@ -43,7 +43,7 @@ function Engine (game) {
 
     /**
      * Pool of currently not used entity IDs. Will be reused.
-     * 
+     *
      * @property _idsToReuse
      * @private
      * @type Pool
@@ -61,7 +61,7 @@ function Engine (game) {
 
     /**
      * Array with entities. Array index corresponds to ID of an entity.
-     * 
+     *
      * @property _entities
      * @private
      * @type Array
@@ -78,7 +78,7 @@ function Engine (game) {
 
     this._entitiesPool = {};
     this._componentsPool = {};
-    
+
     this._queries = [];
 
     this._entitiesCount = 0;
@@ -116,7 +116,7 @@ function Engine (game) {
  *             this.y = 0;
  *         }
  *     });
- * 
+ *
  * @method Component
  * @static
  * @param {Object} component component pattern
@@ -141,9 +141,9 @@ Engine.Component = function (component) {
  *         name: "Ball",
  *         create: function (game, x, y, radius) {
  *             var sprite = new Sprite("Ball");
- * 
+ *
  *             game.container.make("renderer").addSprite(sprite);
- * 
+ *
  *             this.add("Position", x, y)
  *                 .add("Radius", radius)
  *                 .add("Velocity", 5, 5)
@@ -154,7 +154,7 @@ Engine.Component = function (component) {
  *             game.container.make("renderer").removeSprite(this.components.sprite.sprite);
  *         }
  *     });
- * 
+ *
  * @method Entity
  * @static
  * @param {Object} entity entity pattern
@@ -184,16 +184,16 @@ Engine.Entity = function (entity) {
  *
  *                 position.x += delta / 1000 * velocity.vx;
  *                 position.y += delta / 1000 * velocity.vy;
- * 
+ *
  *                 i++;
- *             }     
+ *             }
  *         },
  *         //not obligatory
  *         remove: function () {
- *         
+ *
  *         }
  *     });
- * 
+ *
  * @method System
  * @static
  * @param {Object} system system pattern object
@@ -216,7 +216,7 @@ Engine.System = function (system) {
  *     var q3 = new Entropy.Engine.Query({
  *         name: "Ball"
  *     });
- * 
+ *
  * @method Query
  * @static
  * @param {Array|Object} criterions query matching criterions
@@ -258,7 +258,7 @@ extend(Engine.prototype, {
         entity = entity || new Entity(name, entityPattern, this);
 
         entityPattern.create.apply(entity, args);
-        
+
         this._entitiesToAdd.put(entity);
 
         return this;
@@ -272,7 +272,7 @@ extend(Engine.prototype, {
      *     if (entity.components.hp.quantity <= 0) { //entity is dead, remove
      *         game.engine.remove(entity);
      *     }
-     * 
+     *
      * @method remove
      * @param  {Entity} entity Entity instance
      * @return {Engine}        Engine instance
@@ -325,11 +325,11 @@ extend(Engine.prototype, {
      *
      * @example
      *     game.engine.addSystem("Renderer", rendererObject);
-     *     
+     *
      *     //or
      *
      *     game.engine.addSystem(["Renderer", 1], rendererObject);
-     *     
+     *
      * @method addSystem
      * @param {String|Array} ...name name of a system or array with two elements - name of a system and desired priority (see example). Additional arguments are applied to patterns `initialize` method.
      * @return {Engine} engine instance
@@ -451,7 +451,7 @@ extend(Engine.prototype, {
 
         for (var i = 0, len = this._systems.length; i < len; i++) {
             system = this._systems[i];
-            
+
             if (system._disabled) {
                 continue;
             }
@@ -531,7 +531,7 @@ extend(Engine.prototype, {
 
             entityToAdd.id = id;
             systemEntities[id] = entityToAdd;
-            
+
             for (i = 0, len = this._queries.length; i < len; i++) {
                 query = queries[i];
 
@@ -609,7 +609,7 @@ extend(Engine.prototype, {
                 }
             }
 
-            this._systems.splice(insertionIndex, 0, systemToAdd);            
+            this._systems.splice(insertionIndex, 0, systemToAdd);
         }
     },
     _fetchQueries: function () {
@@ -655,7 +655,7 @@ extend(Engine.prototype, {
         } else if (is.function(component._pattern.reset)) {
             component._pattern.reset.call(component);
         }
-        
+
         return component;
     },
     _addComponentToPool: function (component) {
@@ -663,7 +663,7 @@ extend(Engine.prototype, {
     },
     /**
      * Returns ID for an entity. Reuses old IDs or creates new.
-     * 
+     *
      * @private
      * @method _generateEntityID
      * @return {Number} new ID

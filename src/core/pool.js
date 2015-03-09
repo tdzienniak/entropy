@@ -1,8 +1,8 @@
 var extend = require('node.extend');
 
 /**
- * Simple implemenation of stack. 
- * 
+ * Simple implemenation of stack.
+ *
  * @class Pool
  * @param {Number} initialSize initial pool size
  */
@@ -19,7 +19,7 @@ function Pool(initialSize) {
 extend(Pool.prototype, {
     /**
      * Puts value in the pool. Named pool, because it is used to implement pooling of various object in engine.
-     * 
+     *
      * @method put
      * @param  {Any} thing value to put in pool
      */

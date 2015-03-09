@@ -12,7 +12,7 @@ var BitSet = require('bitset.js').BitSet;
  * Used to perform matching of entities.
  * Only parameter is an array of component names to include or object with `name` and/or `include` and/or `exclude` properties,
  * witch are arrays of component names to respectively include and/or exclude.
- * 
+ *
  * @class Query
  * @constructor
  * @param {Object|Array} query query conditions
@@ -29,7 +29,7 @@ function Query (query) {
         }
 
         if (is.array(query.include)) {
-           include = query.include; 
+           include = query.include;
         }
 
         if (is.array(query.exclude)) {

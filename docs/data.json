@@ -159,13 +159,14 @@
             "extension_for": [],
             "module": "Entropy",
             "file": "src\\core\\game.js",
-            "line": 13,
+            "line": 14,
             "description": "Main framework class. This is the only class, that needs to be instatiated by user.",
             "params": [
                 {
                     "name": "initialState",
                     "description": "initial state",
-                    "type": "String"
+                    "type": "String",
+                    "optional": true
                 }
             ]
         },
@@ -362,7 +363,7 @@
             "line": 166,
             "description": "Registers new system pattern.",
             "example": [
-                "\n    Entropy.Engine.System({\n        name: \"MovementSystem\",\n        priority: 1, //not obligatory\n        initialize: function () {\n            this.query = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n        },\n        update: function (delta) {\n            var entities = this.engine.getEntities(this.query);\n            var e;\n\n            var i = 0;\n            while (e = entities[i]) {\n                var position = e.components.position;\n                var velocity = e.components.velocity;\n\n                position.x += delta / 1000 * velocity.vx;\n                position.y += delta / 1000 * velocity.vy;\n\n                i++;\n            }     \n        },\n        //not obligatory\n        remove: function () {\n        \n        }\n    });"
+                "\n    Entropy.Engine.System({\n        name: \"MovementSystem\",\n        priority: 1, //not obligatory\n        initialize: function () {\n            this.query = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n        },\n        update: function (delta) {\n            var entities = this.engine.getEntities(this.query);\n            var e;\n\n            var i = 0;\n            while (e = entities[i]) {\n                var position = e.components.position;\n                var velocity = e.components.velocity;\n\n                position.x += delta / 1000 * velocity.vx;\n                position.y += delta / 1000 * velocity.vy;\n\n                i++;\n            }\n        },\n        //not obligatory\n        remove: function () {\n\n        }\n    });"
             ],
             "itemtype": "method",
             "name": "System",
@@ -471,7 +472,7 @@
             "line": 320,
             "description": "Creates new system object and adds it to the engine. System patterns `initialize` method is called (if present).\nIt can be called in two ways - with first argument being either:\n- system name - then system has priority as defined by patterns `priority` property or 0.\n- array with two elements - system name and its desired priority. In this case patterns `priority` property is simply skiped.",
             "example": [
-                "\n    game.engine.addSystem(\"Renderer\", rendererObject);\n    \n    //or\n\n    game.engine.addSystem([\"Renderer\", 1], rendererObject);"
+                "\n    game.engine.addSystem(\"Renderer\", rendererObject);\n\n    //or\n\n    game.engine.addSystem([\"Renderer\", 1], rendererObject);"
             ],
             "itemtype": "method",
             "name": "addSystem",
@@ -545,7 +546,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 25,
+            "line": 28,
             "description": "Instance of Inverse class.\nHow to use:\n[https://github.com/mcordingley/Inverse.js](https://github.com/mcordingley/Inverse.js)",
             "itemtype": "property",
             "name": "container",
@@ -554,7 +555,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 35,
+            "line": 38,
             "description": "Instance of Ticker class.",
             "itemtype": "property",
             "name": "ticker",
@@ -563,7 +564,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 48,
+            "line": 54,
             "description": "Registers new state. This method simply calls State's {{#crossLink \"State/Register:method\"}}Register{{/crossLink}} static method.",
             "example": [
                 "\n    Entropy.Game.State({\n        //state object here\n    });"
@@ -582,7 +583,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 66,
+            "line": 72,
             "description": "Starts the game. See Ticker's {{#crossLink \"Ticker/start:method\"}}start{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "start",
@@ -594,7 +595,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 76,
+            "line": 82,
             "description": "Stops the game. See Ticker's {{#crossLink \"Ticker/stop:method\"}}stop{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "stop",
@@ -613,7 +614,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 95,
+            "line": 101,
             "description": "Pauses the game. See Ticker's {{#crossLink \"Ticker/pause:method\"}}pause{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "pause",
@@ -625,7 +626,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 105,
+            "line": 111,
             "description": "Resumes the game. See Ticker's {{#crossLink \"Ticker/resume:method\"}}resume{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "resume",
@@ -731,7 +732,7 @@
             "line": 204,
             "description": "Registers new state. Registered states are shared between State instances.\nState methods are asynchronous. Their last argument is always a callback function, that must be called\nwhen the function finishes. This is handy when you want implement smooth transitions\nbetween states using animations (for example, jQuery animations), that are very often asynchronous.",
             "example": [
-                "\n    State.Register({\n        name: \"initialize\",\n        initialize: function (game, done) {\n            console.log('State initialized.');\n            \n            return done();\n        },\n        enter: function (game, done) {\n            console.log('State entered.');\n            \n            return done();\n        },\n        exit: function (game, done) {\n            console.log('State exited.');\n            \n            return done();\n        },\n        trnsitions: {\n            menu: \"toMenu\"\n        },\n        toMenu: function (game, nextState, done) {\n            console.log('Transitioning from `initialize` to `menu`.');\n            \n            return done();\n        }\n    });"
+                "\n    State.Register({\n        name: \"initialize\",\n        initialize: function (game, done) {\n            console.log('State initialized.');\n\n            return done();\n        },\n        enter: function (game, done) {\n            console.log('State entered.');\n\n            return done();\n        },\n        exit: function (game, done) {\n            console.log('State exited.');\n\n            return done();\n        },\n        trnsitions: {\n            menu: \"toMenu\"\n        },\n        toMenu: function (game, nextState, done) {\n            console.log('Transitioning from `initialize` to `menu`.');\n\n            return done();\n        }\n    });"
             ],
             "static": 1,
             "itemtype": "method",

@@ -98,18 +98,21 @@ var State = require(&#x27;./state&#x27;);
 var Engine = require(&#x27;./engine&#x27;);
 var Inverse = require(&#x27;inverse&#x27;);
 var Ticker = require(&#x27;./ticker&#x27;);
+var Input = require(&#x27;./input&#x27;);
 
 /**
  * Main framework class. This is the only class, that needs to be instatiated by user.
- * 
+ *
  * @class Game
- * @param {String} initialState initial state
+ * @param {String} [initialState] initial state
  */
 function Game (initialState) {
     EventEmitter.call(this);
 
     this.engine = new Engine(this);
     this.state = new State(this);
+
+    this.input = new Input(this);
 
     /**
      * Instance of Inverse class.
@@ -130,8 +133,11 @@ function Game (initialState) {
     this.ticker = new Ticker(this);
 
     this.ticker.on(&#x27;tick&#x27;, this.engine.update, this.engine);
+    this.ticker.on(&#x27;tick&#x27;, this.input.clearKeyTimes, this.input);
 
-    this.state.change(initialState);
+    if (is.unemptyString(initialState)) {
+        this.state.change(initialState);
+    }
 }
 
 /**
@@ -141,7 +147,7 @@ function Game (initialState) {
  *     Entropy.Game.State({
  *         //state object here
  *     });
- * 
+ *
  * @static
  * @method State
  * @param {Object} state state object
@@ -154,7 +160,7 @@ extend(Game.prototype, EventEmitter.prototype);
 extend(Game.prototype, {
     /**
      * Starts the game. See Ticker&#x27;s {{#crossLink &quot;Ticker/start:method&quot;}}start{{/crossLink}} method for more details.
-     * 
+     *
      * @method start
      * @return {Boolean} succesfuly started or not
      */
@@ -164,7 +170,7 @@ extend(Game.prototype, {
 
     /**
      * Stops the game. See Ticker&#x27;s {{#crossLink &quot;Ticker/stop:method&quot;}}stop{{/crossLink}} method for more details.
-     * 
+     *
      * @method stop
      * @param {Boolean} clearEngine if &#x60;true&#x60;, engine will be cleared before ticker stop
      * @return {Boolean|Undefined} stop succesfuly stoped or not. If &#x60;clearEngine&#x60; is &#x60;true&#x60;, return value will be &#x60;undefined&#x60;
@@ -174,7 +180,7 @@ extend(Game.prototype, {
             this.engine.once(&#x27;clear&#x27;, function () {
                 this.engine.stop();
             }, this);
-            
+
             return;
         }
 
@@ -183,7 +189,7 @@ extend(Game.prototype, {
 
     /**
      * Pauses the game. See Ticker&#x27;s {{#crossLink &quot;Ticker/pause:method&quot;}}pause{{/crossLink}} method for more details.
-     * 
+     *
      * @method pause
      * @return {Boolean} [description]
      */
@@ -193,7 +199,7 @@ extend(Game.prototype, {
 
     /**
      * Resumes the game. See Ticker&#x27;s {{#crossLink &quot;Ticker/resume:method&quot;}}resume{{/crossLink}} method for more details.
-     * 
+     *
      * @method resume
      * @return {Boolean} [description]
      */

@@ -16,7 +16,7 @@ module.exports = {
             debug.error('you can\'t define new component during system work')
             return false;
         }
-            
+
         if (is.not.object(component)) {
             debug.error('component pattern must be an object');
             return false;
@@ -42,10 +42,10 @@ module.exports = {
             debug.error('you can\'t define new system during system work');
             return false;
         }
-            
+
         if (!is.object(system)) {
             debug.error('system pattern must be an object');
-            return false;            
+            return false;
         }
 
         if (!('name' in system) || !('update' in system)) {
@@ -67,7 +67,7 @@ module.exports = {
             debug.error('you can\'t define new system during system work');
             return false;
         }
-            
+
         if (is.not.object(entity)) {
             debug.error('entity pattern must be an object');
             return false;

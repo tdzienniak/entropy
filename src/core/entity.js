@@ -46,7 +46,7 @@ extend(Entity.prototype, {
      *     //`this` is a reference to Entity instance
      *     //code like this often can be seen in entity pattern `create` method
      *     this.add("Position", 1, 1);
-     * 
+     *
      * @method add
      * @param {String} ...name name of component to add. Addidtional parameters are applied to component patterns `initialize` method.
      * @return {Entity} Entity instance

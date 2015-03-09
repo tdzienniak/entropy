@@ -9,7 +9,8 @@ var EventEmitter = require('./event');
 
 /**
  * @class Ticker
- * @param {Game} game    Game instance
+ * @extends {EventEmitter}
+ * @param {Game} game Game instance
  */
 function Ticker (game, variant) {
     EventEmitter.call(this);
@@ -30,13 +31,13 @@ function Ticker (game, variant) {
 
 /**
  * Fires when ticker starts ticking.
- * 
+ *
  * @event start
  */
 
 /**
  * Fires when ticker stops ticking.
- * 
+ *
  * @event stop
  */
 
@@ -81,7 +82,7 @@ extend(Ticker.prototype, {
     },
     /**
      *
-     * 
+     *
      * @method start
      * @return {Boolean} `true` if starded succesfuly, `false` otherwise
      */
@@ -98,7 +99,7 @@ extend(Ticker.prototype, {
 
         var last = performance.now();
         var event = {};
-        
+
         this._rafID = raf(tick);
         this._running = true;
 
@@ -129,7 +130,7 @@ extend(Ticker.prototype, {
 
             //self.game.engine.update(event);
             self.emit('tick', event);
- 
+
             if (self._debug) {
                 self._stats.end();
             }
@@ -160,7 +161,7 @@ extend(Ticker.prototype, {
     /**
      * Running ticker is a ticker that constantly calls its timer function.
      * Paused ticker is also running.
-     * 
+     *
      * @method isRunning
      * @return {Boolean} `true` if running, `false` otherwise
      */
