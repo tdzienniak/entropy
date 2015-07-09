@@ -10,8 +10,18 @@ var BitSet = require('bitset.js').BitSet;
 
 /**
  * Used to perform matching of entities.
- * Only parameter is an array of component names to include or object with `name` and/or `include` and/or `exclude` properties,
+ * Only parameter is an array of component names to include or object with `include` and/or `exclude` properties,
  * witch are arrays of component names to respectively include and/or exclude.
+ *
+ * @example
+ *     var q1 = new Entropy.Engine.Query(["Position", "Velocity"]);
+ *     var q2 = new Entropy.Engine.Query({
+ *         include: ["Position", "Velocity"],
+ *         exclude: ["Sprite"]
+ *     });
+ *     var q3 = new Entropy.Engine.Query({
+ *         name: "Ball"
+ *     });
  *
  * @class Query
  * @constructor

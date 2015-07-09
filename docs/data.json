@@ -237,7 +237,10 @@
             "module": "Entropy",
             "file": "src\\core\\query.js",
             "line": 11,
-            "description": "Used to perform matching of entities.\nOnly parameter is an array of component names to include or object with `name` and/or `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
+            "description": "Used to perform matching of entities.\nOnly parameter is an array of component names to include or object with `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
+            "example": [
+                "\n    var q1 = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n    var q2 = new Entropy.Engine.Query({\n        include: [\"Position\", \"Velocity\"],\n        exclude: [\"Sprite\"]\n    });\n    var q3 = new Entropy.Engine.Query({\n        name: \"Ball\"\n    });"
+            ],
             "is_constructor": 1,
             "params": [
                 {
@@ -545,7 +548,18 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 675,
+            "line": 453,
+            "itemtype": "method",
+            "name": "clear",
+            "return": {
+                "description": "[description]",
+                "type": "[type]"
+            },
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 693,
             "description": "Returns ID for an entity. Reuses old IDs or creates new.",
             "access": "private",
             "tagname": "",
@@ -559,7 +573,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 691,
+            "line": 709,
             "description": "Initializes new query. Performs initial entity search.",
             "access": "private",
             "tagname": "",
@@ -644,7 +658,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 70,
+            "line": 74,
             "description": "Registers new state. This method simply calls State's {{#crossLink \"State/Register:method\"}}Register{{/crossLink}} static method.",
             "example": [
                 "\n    Entropy.Game.State({\n        //state object here\n    });"
@@ -663,7 +677,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 88,
+            "line": 92,
             "description": "Starts the game. See Ticker's {{#crossLink \"Ticker/start:method\"}}start{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "start",
@@ -675,7 +689,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 104,
+            "line": 108,
             "description": "Stops the game. See Ticker's {{#crossLink \"Ticker/stop:method\"}}stop{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "stop",
@@ -694,7 +708,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 134,
+            "line": 138,
             "description": "Pauses the game. See Ticker's {{#crossLink \"Ticker/pause:method\"}}pause{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "pause",
@@ -706,7 +720,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 150,
+            "line": 154,
             "description": "Resumes the game. See Ticker's {{#crossLink \"Ticker/resume:method\"}}resume{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "resume",
@@ -763,6 +777,22 @@
                 "description": "`true` if removed succesfully, `false` otherwise",
                 "type": "Boolean"
             },
+            "class": "Plugin"
+        },
+        {
+            "file": "src\\core\\plugin.js",
+            "line": 134,
+            "description": "Fired, when plugin is succesfully added.",
+            "itemtype": "event",
+            "name": "pluginAddition",
+            "class": "Plugin"
+        },
+        {
+            "file": "src\\core\\plugin.js",
+            "line": 140,
+            "description": "Fired, when plugin is succesfully removed.",
+            "itemtype": "event",
+            "name": "pluginRemoval",
             "class": "Plugin"
         },
         {

@@ -129,6 +129,18 @@ extend(Plugin.prototype, {
             }
         }
     }
-})
+});
+
+/**
+ * Fired, when plugin is succesfully added.
+ *
+ * @event pluginAddition
+ */
+
+/**
+ * Fired, when plugin is succesfully removed.
+ *
+ * @event pluginRemoval
+ */
 
 module.exports = Plugin;

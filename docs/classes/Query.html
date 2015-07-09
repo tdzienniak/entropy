@@ -100,7 +100,7 @@
 
 <div class="box intro">
     <p>Used to perform matching of entities.
-Only parameter is an array of component names to include or object with <code>name</code> and/or <code>include</code> and/or <code>exclude</code> properties,
+Only parameter is an array of component names to include or object with <code>include</code> and/or <code>exclude</code> properties,
 witch are arrays of component names to respectively include and/or exclude.</p>
 
 </div>
@@ -159,6 +159,21 @@ witch are arrays of component names to respectively include and/or exclude.</p>
         
         
         
+                <div class="example">
+                    <h4>Example:</h4>
+        
+                    <div class="example-content">
+                        <pre class="code prettyprint"><code>var q1 = new Entropy.Engine.Query([&quot;Position&quot;, &quot;Velocity&quot;]);
+        var q2 = new Entropy.Engine.Query({
+            include: [&quot;Position&quot;, &quot;Velocity&quot;],
+            exclude: [&quot;Sprite&quot;]
+        });
+        var q3 = new Entropy.Engine.Query({
+            name: &quot;Ball&quot;
+        });
+        </code></pre>
+                    </div>
+                </div>
         </div>
     </div>
 

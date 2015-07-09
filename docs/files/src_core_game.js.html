@@ -109,7 +109,7 @@ var Plugin = require(&#x27;./plugin&#x27;);
  * @extends EventEmitter
  * @param {String} [initialState] initial state
  */
-function Game () {
+function Game (initialState) {
     EventEmitter.call(this);
 
     /**
@@ -156,6 +156,10 @@ function Game () {
     this.ticker = new Ticker(this);
 
     this.ticker.on(&#x27;tick&#x27;, this.engine.update, this.engine);
+
+    if (is.unemptyString(initialState)) {
+        this.state.change(initialState);
+    }
 }
 
 /**

@@ -2545,12 +2545,26 @@ extend(Engine.prototype, {
         return this;
     },
     removeSystem: function (system) {
-        if (system == null) {
-            debug.warn('System to remove has to be an object.');
+        var systemObject;
+        
+        if (is.object(system)) {
+            systemObject = system;
+        } else if (is.unemptyString(system)) {
+            for (var i = 0; i < this._systems.length; i++) {
+                systemObject = this._systems[i];
+                if (systemObject.name === system) {
+                    break;
+                }
+            }
+        } else {
+            debug.warn('System to remove has to be an object or a string (system name).');
+            
             return this;
         }
 
-        this._systemsToRemove.put(system);
+        this._systemsToRemove.put(systemObject);
+
+        return this;
     },
     enableSystem: function (system) {
         this._toggleSystem(system, false);
@@ -2588,6 +2602,10 @@ extend(Engine.prototype, {
 
         array.push(this._modifiedEntities, this._modifiedEntitiesLength++, entity.id);
     },
+    /**
+     * @method clear
+     * @return {[type]} [description]
+     */
     clear: function () {
         var entity;
         for (var i = 0; i <= this._greatestEntityID; i++) {
@@ -3195,7 +3213,7 @@ var Plugin = require('./plugin');
  * @extends EventEmitter
  * @param {String} [initialState] initial state
  */
-function Game () {
+function Game (initialState) {
     EventEmitter.call(this);
 
     /**
@@ -3242,6 +3260,10 @@ function Game () {
     this.ticker = new Ticker(this);
 
     this.ticker.on('tick', this.engine.update, this.engine);
+
+    if (is.unemptyString(initialState)) {
+        this.state.change(initialState);
+    }
 }
 
 /**
@@ -3474,7 +3496,19 @@ extend(Plugin.prototype, {
             }
         }
     }
-})
+});
+
+/**
+ * Fired, when plugin is succesfully added.
+ *
+ * @event pluginAddition
+ */
+
+/**
+ * Fired, when plugin is succesfully removed.
+ *
+ * @event pluginRemoval
+ */
 
 module.exports = Plugin;
 },{"./debug":9,"./event":12,"check-types":2,"node.extend":4}],16:[function(require,module,exports){
@@ -3622,8 +3656,18 @@ var BitSet = require('bitset.js').BitSet;
 
 /**
  * Used to perform matching of entities.
- * Only parameter is an array of component names to include or object with `name` and/or `include` and/or `exclude` properties,
+ * Only parameter is an array of component names to include or object with `include` and/or `exclude` properties,
  * witch are arrays of component names to respectively include and/or exclude.
+ *
+ * @example
+ *     var q1 = new Entropy.Engine.Query(["Position", "Velocity"]);
+ *     var q2 = new Entropy.Engine.Query({
+ *         include: ["Position", "Velocity"],
+ *         exclude: ["Sprite"]
+ *     });
+ *     var q3 = new Entropy.Engine.Query({
+ *         name: "Ball"
+ *     });
  *
  * @class Query
  * @constructor

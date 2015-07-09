@@ -393,12 +393,26 @@ extend(Engine.prototype, {
         return this;
     },
     removeSystem: function (system) {
-        if (system == null) {
-            debug.warn('System to remove has to be an object.');
+        var systemObject;
+        
+        if (is.object(system)) {
+            systemObject = system;
+        } else if (is.unemptyString(system)) {
+            for (var i = 0; i < this._systems.length; i++) {
+                systemObject = this._systems[i];
+                if (systemObject.name === system) {
+                    break;
+                }
+            }
+        } else {
+            debug.warn('System to remove has to be an object or a string (system name).');
+            
             return this;
         }
 
-        this._systemsToRemove.put(system);
+        this._systemsToRemove.put(systemObject);
+
+        return this;
     },
     enableSystem: function (system) {
         this._toggleSystem(system, false);
@@ -436,6 +450,10 @@ extend(Engine.prototype, {
 
         array.push(this._modifiedEntities, this._modifiedEntitiesLength++, entity.id);
     },
+    /**
+     * @method clear
+     * @return {[type]} [description]
+     */
     clear: function () {
         var entity;
         for (var i = 0; i <= this._greatestEntityID; i++) {
