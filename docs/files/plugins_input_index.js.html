@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>plugins\input\index.js - Entropy</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../assets/css/logo.png" title="Entropy" width="117" height="52"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.3.0</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Engine.html">Engine</a></li>
+                                <li><a href="../classes/Entity.html">Entity</a></li>
+                                <li><a href="../classes/Entropy.html">Entropy</a></li>
+                                <li><a href="../classes/Game.html">Game</a></li>
+                                <li><a href="../classes/Plugin.html">Plugin</a></li>
+                                <li><a href="../classes/Plugin.Input.html">Plugin.Input</a></li>
+                                <li><a href="../classes/Pool.html">Pool</a></li>
+                                <li><a href="../classes/Query.html">Query</a></li>
+                                <li><a href="../classes/State.html">State</a></li>
+                                <li><a href="../classes/Ticker.html">Ticker</a></li>
+                            </ul>
+                
+                            <ul id="api-modules" class="apis modules">
+                                <li><a href="../modules/Entropy.html">Entropy</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: plugins\input\index.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+&#x27;use strict&#x27;;
+
+var KEYS = {
+    &quot;BACKSPACE&quot;: 8,
+    &quot;TAB&quot;: 9,
+    &quot;ENTER&quot;: 13,
+    &quot;SHIFT&quot;: 16,
+    &quot;CTRL&quot;: 17,
+    &quot;ALT&quot;: 18,
+    &quot;PAUSE_BREAK&quot;: 19,
+    &quot;CAPS_LOCK &quot;: 20,
+    &quot;ESCAPE&quot;: 27,
+    &quot;SPACE&quot;: 32,
+    &quot;PAGE_UP&quot;: 33,
+    &quot;PAGE_DOWN&quot;: 34,
+    &quot;END&quot;: 35,
+    &quot;HOME&quot;: 36,
+    &quot;LEFT_ARROW&quot;: 37,
+    &quot;UP_ARROW&quot;: 38,
+    &quot;RIGHT_ARROW&quot;: 39,
+    &quot;DOWN_ARROW&quot;: 40,
+    &quot;INSERT&quot;: 45,
+    &quot;DELETE&quot;: 46,
+    &quot;0&quot;: 48,
+    &quot;1&quot;: 49,
+    &quot;2&quot;: 50,
+    &quot;3&quot;: 51,
+    &quot;4&quot;: 52,
+    &quot;5&quot;: 53,
+    &quot;6&quot;: 54,
+    &quot;7&quot;: 55,
+    &quot;8&quot;: 56,
+    &quot;9&quot;: 57,
+    &quot;A&quot;: 65,
+    &quot;B&quot;: 66,
+    &quot;C&quot;: 67,
+    &quot;D&quot;: 68,
+    &quot;E&quot;: 69,
+    &quot;F&quot;: 70,
+    &quot;G&quot;: 71,
+    &quot;H&quot;: 72,
+    &quot;I&quot;: 73,
+    &quot;J&quot;: 74,
+    &quot;K&quot;: 75,
+    &quot;L&quot;: 76,
+    &quot;M&quot;: 77,
+    &quot;N&quot;: 78,
+    &quot;O&quot;: 79,
+    &quot;P&quot;: 80,
+    &quot;Q&quot;: 81,
+    &quot;R&quot;: 82,
+    &quot;S&quot;: 83,
+    &quot;T&quot;: 84,
+    &quot;U&quot;: 85,
+    &quot;V&quot;: 86,
+    &quot;W&quot;: 87,
+    &quot;X&quot;: 88,
+    &quot;Y&quot;: 89,
+    &quot;Z&quot;: 90,
+    &quot;LEFT_WINDOW_KEY&quot;: 91,
+    &quot;RIGHT_WINDOW_KEY&quot;: 92,
+    &quot;SELECT_KEY&quot;: 93,
+    &quot;NUMPAD_0&quot;: 96,
+    &quot;NUMPAD_1&quot;: 97,
+    &quot;NUMPAD_2&quot;: 98,
+    &quot;NUMPAD_3&quot;: 99,
+    &quot;NUMPAD_4&quot;: 100,
+    &quot;NUMPAD_5&quot;: 101,
+    &quot;NUMPAD_6&quot;: 102,
+    &quot;NUMPAD_7&quot;: 103,
+    &quot;NUMPAD_8&quot;: 104,
+    &quot;NUMPAD_9&quot;: 105,
+    &quot;MULTIPLY&quot;: 106,
+    &quot;ADD&quot;: 107,
+    &quot;SUBTRACT&quot;: 109,
+    &quot;DECIMAL_POINT&quot;: 110,
+    &quot;DIVIDE&quot;: 111,
+    &quot;F1&quot;: 112,
+    &quot;F2&quot;: 113,
+    &quot;F3&quot;: 114,
+    &quot;F4&quot;: 115,
+    &quot;F5&quot;: 116,
+    &quot;F6&quot;: 117,
+    &quot;F7&quot;: 118,
+    &quot;F8&quot;: 119,
+    &quot;F9&quot;: 120,
+    &quot;F10&quot;: 121,
+    &quot;F11&quot;: 122,
+    &quot;F12&quot;: 123,
+    &quot;NUM_LOCK&quot;: 144,
+    &quot;SCROLL_LOCK&quot;: 145,
+    &quot;SEMI_COLON&quot;: 186,
+    &quot;EQUAL_SIGN&quot;: 187,
+    &quot;COMMA&quot;: 188,
+    &quot;DASH&quot;: 189,
+    &quot;PERIOD&quot;: 190,
+    &quot;FORWARD_SLASH&quot;: 191,
+    &quot;GRAVE_ACCENT&quot;: 192,
+    &quot;OPEN_BRACKET&quot;: 219,
+    &quot;BACK_SLASH&quot;: 220,
+    &quot;CLOSE_BRACKET&quot;: 221,
+    &quot;SINGLE_QUOTE&quot;: 222
+};
+
+var KEY_NAMES = Object.keys(KEYS);
+
+
+/**
+ * Input class.
+ *
+ * @class Plugin.Input
+ * @extends EventEmitter
+ * @constructor
+ */
+function Input(game) {
+    var self = this;
+
+    this.game = game;
+
+    this._pressedKeys = [];
+    this._pressedKeysTime = [];
+    this._oncePressedKeys = [];
+    this._mousePosition = {
+        x: 0,
+        y: 0
+    };
+
+    this._handleKeyDown = function (e) {
+        var keyCode = e.keyCode;
+
+        self._pressedKeys[keyCode] = true;
+
+        if (!self._pressedKeysTime[keyCode]) {
+            self._pressedKeysTime[keyCode] = performance.now();
+        }
+
+        return;
+    };
+
+    this._handleKeyUp = function (e) {
+        var keyCode = e.keyCode;
+
+        self._pressedKeys[keyCode] = false;
+
+        if (self._pressedKeysTime[keyCode] != null &amp;&amp; self._oncePressedKeys[keyCode] == null) {
+            self._pressedKeysTime[keyCode] = performance.now() - self._pressedKeysTime[keyCode];
+            self._oncePressedKeys[keyCode] = true;
+        }
+
+        return;
+    };
+
+    if (window !== undefined) {
+        window.addEventListener(&quot;keydown&quot;, this._handleKeyDown);
+        window.addEventListener(&quot;keyup&quot;, this._handleKeyUp);
+    }
+}
+
+Entropy.Utils.extend(Input.prototype, {
+    isPressed: function (keyName) {
+        return this._pressedKeys[KEYS[keyName]];
+    },
+    getPressedKeys: function () {
+        var keys = {}, keyName;
+
+        for (var i = 0; i &lt; KEY_NAMES.length; i++) {
+            keyName = KEY_NAMES[i];
+
+            keys[keyName] = this._pressedKeys[KEYS[keyName]];
+        }
+
+        return keys;
+    },
+    getKeysPressedLessThan: function (time) {
+        var keys = {}, keyName, keyCode;
+
+        for (var i = 0; i &lt; KEY_NAMES.length; i++) {
+            keyName = KEY_NAMES[i];
+            keyCode = KEYS[keyName];
+
+            if (this._pressedKeysTime[keyCode] &lt; time &amp;&amp; this._oncePressedKeys[keyCode]) {
+                keys[keyName] = true;
+            }
+        }
+
+        return keys;
+    },
+    getKeysPressedMoreThan: function (time) {
+        var keys = {}, keyName, keyCode;
+
+        for (var i = 0; i &lt; KEY_NAMES.length; i++) {
+            keyName = KEY_NAMES[i];
+            keyCode = KEYS[keyName];
+
+            if (this._pressedKeysTime[keyCode] &gt; time &amp;&amp; this._oncePressedKeys[keyCode]) {
+                keys[keyName] = true;
+            }
+        }
+
+        return keys;
+    },
+    setMouseStagePosition: function (position) {
+        this._mousePosition = position;
+    },
+    getMouseStagePosition: function () {
+        return this._mousePosition;
+    },
+    clearKeyTimes: function () {
+        this._pressedKeysTime = [];
+        this._oncePressedKeys = [];
+    },
+    update: function (delta) {
+        this.clearKeyTimes();
+    },
+    destroy: function () {
+        if (window !== undefined) {
+            window.removeEventListener(&quot;keydown&quot;, this._handleKeyDown);
+            window.removeEventListener(&quot;keyup&quot;, this._handleKeyUp);
+        }
+    }
+});
+
+module.exports = Input;
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

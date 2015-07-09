@@ -1,7 +1,4 @@
-'use strict'
-
-var extend = require('node.extend');
-var is = require('check-types');
+'use strict';
 
 var KEYS = {
     "BACKSPACE": 8,
@@ -107,6 +104,14 @@ var KEYS = {
 
 var KEY_NAMES = Object.keys(KEYS);
 
+
+/**
+ * Input class.
+ *
+ * @class Plugin.Input
+ * @extends EventEmitter
+ * @constructor
+ */
 function Input(game) {
     var self = this;
 
@@ -120,35 +125,38 @@ function Input(game) {
         y: 0
     };
 
-    if (window) {
-        window.addEventListener("keydown", function (e) {
-            var keyCode = e.keyCode;
+    this._handleKeyDown = function (e) {
+        var keyCode = e.keyCode;
 
-            self._pressedKeys[keyCode] = true;
+        self._pressedKeys[keyCode] = true;
 
-            if (!self._pressedKeysTime[keyCode]) {
-                self._pressedKeysTime[keyCode] = performance.now();
-            }
+        if (!self._pressedKeysTime[keyCode]) {
+            self._pressedKeysTime[keyCode] = performance.now();
+        }
 
-            return;
-        });
+        return;
+    };
 
-        window.addEventListener("keyup", function (e) {
-            var keyCode = e.keyCode;
+    this._handleKeyUp = function (e) {
+        var keyCode = e.keyCode;
 
-            self._pressedKeys[keyCode] = false;
+        self._pressedKeys[keyCode] = false;
 
-            if (self._pressedKeysTime[keyCode] != null && self._oncePressedKeys[keyCode] == null) {
-                self._pressedKeysTime[keyCode] = performance.now() - self._pressedKeysTime[keyCode];
-                self._oncePressedKeys[keyCode] = true;
-            }
+        if (self._pressedKeysTime[keyCode] != null && self._oncePressedKeys[keyCode] == null) {
+            self._pressedKeysTime[keyCode] = performance.now() - self._pressedKeysTime[keyCode];
+            self._oncePressedKeys[keyCode] = true;
+        }
 
-            return;
-        });
+        return;
+    };
+
+    if (window !== undefined) {
+        window.addEventListener("keydown", this._handleKeyDown);
+        window.addEventListener("keyup", this._handleKeyUp);
     }
 }
 
-extend(Input.prototype, {
+Entropy.Utils.extend(Input.prototype, {
     isPressed: function (keyName) {
         return this._pressedKeys[KEYS[keyName]];
     },
@@ -200,6 +208,15 @@ extend(Input.prototype, {
     clearKeyTimes: function () {
         this._pressedKeysTime = [];
         this._oncePressedKeys = [];
+    },
+    update: function (delta) {
+        this.clearKeyTimes();
+    },
+    destroy: function () {
+        if (window !== undefined) {
+            window.removeEventListener("keydown", this._handleKeyDown);
+            window.removeEventListener("keyup", this._handleKeyUp);
+        }
     }
 });
 

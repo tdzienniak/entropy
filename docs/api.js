@@ -5,6 +5,8 @@ YUI.add("yuidoc-meta", function(Y) {
         "Entity",
         "Entropy",
         "Game",
+        "Plugin",
+        "Plugin.Input",
         "Pool",
         "Query",
         "State",

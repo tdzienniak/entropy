@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="Entropy" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.0</em>
+            <em>API Docs for: 0.3.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -42,6 +42,8 @@
                                 <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
                                 <li><a href="../classes/Game.html">Game</a></li>
+                                <li><a href="../classes/Plugin.html">Plugin</a></li>
+                                <li><a href="../classes/Plugin.Input.html">Plugin.Input</a></li>
                                 <li><a href="../classes/Pool.html">Pool</a></li>
                                 <li><a href="../classes/Query.html">Query</a></li>
                                 <li><a href="../classes/State.html">State</a></li>
@@ -86,6 +88,9 @@
 <h1>Game Class</h1>
 <div class="box meta">
 
+        <div class="extends">
+            Extends EventEmitter
+        </div>
 
         <div class="foundat">
             Defined in: <a href="../files/src_core_game.js.html#l14"><code>src\core\game.js:14</code></a>
@@ -117,7 +122,7 @@
                 <div class="index-section methods">
                     <h3>Methods</h3>
 
-                    <ul class="index-list methods">
+                    <ul class="index-list methods extends">
                             <li class="index-item method">
                                 <a href="#method_pause">pause</a>
 
@@ -145,9 +150,21 @@
                 <div class="index-section properties">
                     <h3>Properties</h3>
 
-                    <ul class="index-list properties">
+                    <ul class="index-list properties extends">
                             <li class="index-item property">
                                 <a href="#property_container">container</a>
+
+                            </li>
+                            <li class="index-item property">
+                                <a href="#property_engine">engine</a>
+
+                            </li>
+                            <li class="index-item property">
+                                <a href="#property_plugin">plugin</a>
+
+                            </li>
+                            <li class="index-item property">
+                                <a href="#property_state">state</a>
 
                             </li>
                             <li class="index-item property">
@@ -181,7 +198,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l101"><code>src\core\game.js:101</code></a>
+        <a href="../files/src_core_game.js.html#l134"><code>src\core\game.js:134</code></a>
         </p>
 
 
@@ -224,7 +241,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l111"><code>src\core\game.js:111</code></a>
+        <a href="../files/src_core_game.js.html#l150"><code>src\core\game.js:150</code></a>
         </p>
 
 
@@ -267,7 +284,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l72"><code>src\core\game.js:72</code></a>
+        <a href="../files/src_core_game.js.html#l88"><code>src\core\game.js:88</code></a>
         </p>
 
 
@@ -314,7 +331,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l54"><code>src\core\game.js:54</code></a>
+        <a href="../files/src_core_game.js.html#l70"><code>src\core\game.js:70</code></a>
         </p>
 
 
@@ -381,7 +398,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l82"><code>src\core\game.js:82</code></a>
+        <a href="../files/src_core_game.js.html#l104"><code>src\core\game.js:104</code></a>
         </p>
 
 
@@ -439,7 +456,7 @@
                         <div class="meta">
                                     <p>
                                     Defined in
-                            <a href="../files/src_core_game.js.html#l28"><code>src\core\game.js:28</code></a>
+                            <a href="../files/src_core_game.js.html#l24"><code>src\core\game.js:24</code></a>
                             </p>
                     
                     
@@ -449,6 +466,81 @@
                             <p>Instance of Inverse class.
                     How to use:
                     <a href="https://github.com/mcordingley/Inverse.js">https://github.com/mcordingley/Inverse.js</a></p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="property_engine" class="property item">
+                        <h3 class="name"><code>engine</code></h3>
+                        <span class="type"><a href="../classes/Engine.html" class="crosslink">Engine</a></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_game.js.html#l34"><code>src\core\game.js:34</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Instance of <a href="../classes/Engine.html" class="crosslink">Engine</a> class.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="property_plugin" class="property item">
+                        <h3 class="name"><code>plugin</code></h3>
+                        <span class="type"><a href="../classes/Plugin.html" class="crosslink">Plugin</a></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_game.js.html#l50"><code>src\core\game.js:50</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Instance of <a href="../classes/Plugin.html" class="crosslink">Plugin</a> class.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="property_state" class="property item">
+                        <h3 class="name"><code>state</code></h3>
+                        <span class="type"><a href="../classes/State.html" class="crosslink">State</a></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_game.js.html#l42"><code>src\core\game.js:42</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Instance of <a href="../classes/State.html" class="crosslink">State</a> class.</p>
                     
                         </div>
                     
@@ -466,7 +558,7 @@
                         <div class="meta">
                                     <p>
                                     Defined in
-                            <a href="../files/src_core_game.js.html#l38"><code>src\core\game.js:38</code></a>
+                            <a href="../files/src_core_game.js.html#l59"><code>src\core\game.js:59</code></a>
                             </p>
                     
                     

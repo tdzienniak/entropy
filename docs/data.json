@@ -2,7 +2,7 @@
     "project": {
         "name": "Entropy",
         "description": "Framework for making games and not only games in entity system manner.",
-        "version": "0.1.0"
+        "version": "0.3.0"
     },
     "files": {
         "src\\core\\engine.js": {
@@ -28,6 +28,15 @@
             "modules": {},
             "classes": {
                 "Game": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\core\\plugin.js": {
+            "name": "src\\core\\plugin.js",
+            "modules": {},
+            "classes": {
+                "Plugin": 1
             },
             "fors": {},
             "namespaces": {}
@@ -78,6 +87,15 @@
             },
             "fors": {},
             "namespaces": {}
+        },
+        "plugins\\input\\index.js": {
+            "name": "plugins\\input\\index.js",
+            "modules": {},
+            "classes": {
+                "Plugin.Input": 1
+            },
+            "fors": {},
+            "namespaces": {}
         }
     },
     "modules": {
@@ -88,17 +106,19 @@
                 "Engine": 1,
                 "Entity": 1,
                 "Game": 1,
+                "Plugin": 1,
                 "Pool": 1,
                 "Query": 1,
                 "State": 1,
                 "Ticker": 1,
-                "Entropy": 1
+                "Entropy": 1,
+                "Plugin.Input": 1
             },
             "fors": {},
             "namespaces": {},
             "tag": "module",
-            "file": "src\\entropy.js",
-            "line": 28,
+            "file": "plugins\\input\\index.js",
+            "line": 108,
             "description": "Main Entropy module and top namespace."
         }
     },
@@ -161,6 +181,7 @@
             "file": "src\\core\\game.js",
             "line": 14,
             "description": "Main framework class. This is the only class, that needs to be instatiated by user.",
+            "extends": "EventEmitter",
             "params": [
                 {
                     "name": "initialState",
@@ -169,6 +190,21 @@
                     "optional": true
                 }
             ]
+        },
+        "Plugin": {
+            "name": "Plugin",
+            "shortname": "Plugin",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Entropy",
+            "file": "src\\core\\plugin.js",
+            "line": 10,
+            "description": "Plugin class. Class is used internaly. User should not instatiate this class.",
+            "extends": "EventEmitter",
+            "is_constructor": 1
         },
         "Pool": {
             "name": "Pool",
@@ -265,6 +301,22 @@
             "line": 28,
             "description": "Main static framework. Used as top namespace.",
             "static": 1
+        },
+        "Plugin.Input": {
+            "name": "Plugin.Input",
+            "shortname": "Plugin.Input",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Entropy",
+            "namespace": "",
+            "file": "plugins\\input\\index.js",
+            "line": 108,
+            "description": "Input class.",
+            "extends": "EventEmitter",
+            "is_constructor": 1
         }
     },
     "classitems": [
@@ -547,7 +599,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 28,
+            "line": 24,
             "description": "Instance of Inverse class.\nHow to use:\n[https://github.com/mcordingley/Inverse.js](https://github.com/mcordingley/Inverse.js)",
             "itemtype": "property",
             "name": "container",
@@ -556,7 +608,34 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 38,
+            "line": 34,
+            "description": "Instance of {{#crossLink \"Engine\"}}Engine{{/crossLink}} class.",
+            "itemtype": "property",
+            "name": "engine",
+            "type": "{Engine}",
+            "class": "Game"
+        },
+        {
+            "file": "src\\core\\game.js",
+            "line": 42,
+            "description": "Instance of {{#crossLink \"State\"}}State{{/crossLink}} class.",
+            "itemtype": "property",
+            "name": "state",
+            "type": "{State}",
+            "class": "Game"
+        },
+        {
+            "file": "src\\core\\game.js",
+            "line": 50,
+            "description": "Instance of {{#crossLink \"Plugin\"}}Plugin{{/crossLink}} class.",
+            "itemtype": "property",
+            "name": "plugin",
+            "type": "{Plugin}",
+            "class": "Game"
+        },
+        {
+            "file": "src\\core\\game.js",
+            "line": 59,
             "description": "Instance of Ticker class.",
             "itemtype": "property",
             "name": "ticker",
@@ -565,7 +644,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 54,
+            "line": 70,
             "description": "Registers new state. This method simply calls State's {{#crossLink \"State/Register:method\"}}Register{{/crossLink}} static method.",
             "example": [
                 "\n    Entropy.Game.State({\n        //state object here\n    });"
@@ -584,7 +663,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 72,
+            "line": 88,
             "description": "Starts the game. See Ticker's {{#crossLink \"Ticker/start:method\"}}start{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "start",
@@ -596,7 +675,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 82,
+            "line": 104,
             "description": "Stops the game. See Ticker's {{#crossLink \"Ticker/stop:method\"}}stop{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "stop",
@@ -615,7 +694,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 101,
+            "line": 134,
             "description": "Pauses the game. See Ticker's {{#crossLink \"Ticker/pause:method\"}}pause{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "pause",
@@ -627,7 +706,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 111,
+            "line": 150,
             "description": "Resumes the game. See Ticker's {{#crossLink \"Ticker/resume:method\"}}resume{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "resume",
@@ -636,6 +715,55 @@
                 "type": "Boolean"
             },
             "class": "Game"
+        },
+        {
+            "file": "src\\core\\plugin.js",
+            "line": 37,
+            "description": "This method should be used to add plugins to system.\nPlugin name and plugin object (can be instance of a \"class\" or plain object) must be provided.\nThese names are reserved: `game`, `engine`, `ticker`, `plugin`.\n\nPlugin instance can have lifecycle methods that are called automatically. These methods are:\n- __start__ - called when game starts\n- __stop__ - called when game stops\n- __update__ - called on every game loop tick, method gets `delta` argument\n- __pause__ - called when game pauses\n- __resune__ - called when game resumes\n- __destroy__ - called when plugin is destroyed, great place for freeing plugin resources, if some exist",
+            "example": [
+                "\n    //somwhere in state lifecycyle method or other method with `game` in context...\n    game.plugin.add('renderer', new Entropy.Plugin.Renderer(800, 600, 0xffffff));\n\n    //added plugin is now available as a property of `game` object\n    game.renderer.addSprite('ball.png');\n\n    //ups, `plugin` is reserved system name\n    game.plugin.add('plugin', new MyAwesomePlugin('hello world!')); //undefined returned and error in console, plugin not added\n\n    //plugin gets destroyed, its `destroy` method is called if present\n    game.plugin.remove('renderer');"
+            ],
+            "itemtype": "method",
+            "name": "add",
+            "params": [
+                {
+                    "name": "name",
+                    "description": "plugin name",
+                    "type": "String"
+                },
+                {
+                    "name": "obj",
+                    "description": "instance of plugin",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "provided plugin instance or `undefined` if plugin name is forbidden system name and plugin cannot be registered",
+                "type": "Object|undefined"
+            },
+            "class": "Plugin"
+        },
+        {
+            "file": "src\\core\\plugin.js",
+            "line": 83,
+            "description": "Removes plugin from game object. Plugin has to be {{#crossLink \"Plugin/add:method\"}}added{{/crossLink}} beforehand.",
+            "example": [
+                "\n    //plugin gets destroyed, its `destroy` method is called if present\n    game.plugin.remove('renderer');\n\n    game.renderer === undefined; //true"
+            ],
+            "itemtype": "method",
+            "name": "remove",
+            "params": [
+                {
+                    "name": "name",
+                    "description": "plugin name",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "`true` if removed succesfully, `false` otherwise",
+                "type": "Boolean"
+            },
+            "class": "Plugin"
         },
         {
             "file": "src\\core\\pool.js",

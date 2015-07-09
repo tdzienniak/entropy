@@ -73,4 +73,13 @@ Entropy.Game = Game;
  */
 Entropy.Engine = Engine;
 
+Entropy.Config = config;
+
+Entropy.Plugin = plugin.register;
+
+Entropy.Utils = {
+    is: is,
+    extend: extend
+}
+
 module.exports = Entropy;

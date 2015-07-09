@@ -1297,7 +1297,7 @@ function extend() {
 /**
  * @public
  */
-extend.version = '1.0.8';
+extend.version = '1.1.3';
 
 /**
  * Exports module.
@@ -1317,7 +1317,11 @@ module.exports = extend;
 
 var objProto = Object.prototype;
 var owns = objProto.hasOwnProperty;
-var toString = objProto.toString;
+var toStr = objProto.toString;
+var symbolValueOf;
+if (typeof Symbol === 'function') {
+  symbolValueOf = Symbol.prototype.valueOf;
+}
 var isActualNaN = function (value) {
   return value !== value;
 };
@@ -1378,7 +1382,7 @@ is.defined = function (value) {
  */
 
 is.empty = function (value) {
-  var type = toString.call(value);
+  var type = toStr.call(value);
   var key;
 
   if ('[object Array]' === type || '[object Arguments]' === type || '[object String]' === type) {
@@ -1392,7 +1396,7 @@ is.empty = function (value) {
     return true;
   }
 
-  return false;
+  return !value;
 };
 
 /**
@@ -1410,10 +1414,10 @@ is.equal = function (value, other) {
     return true;
   }
 
-  var type = toString.call(value);
+  var type = toStr.call(value);
   var key;
 
-  if (type !== toString.call(other)) {
+  if (type !== toStr.call(other)) {
     return false;
   }
 
@@ -1505,7 +1509,7 @@ is.nil = is['null'] = function (value) {
  * @api public
  */
 
-is.undef = is['undefined'] = function (value) {
+is.undef = is.undefined = function (value) {
   return typeof value === 'undefined';
 };
 
@@ -1522,8 +1526,8 @@ is.undef = is['undefined'] = function (value) {
  * @api public
  */
 
-is.args = is['arguments'] = function (value) {
-  var isStandardArguments = '[object Arguments]' === toString.call(value);
+is.args = is.arguments = function (value) {
+  var isStandardArguments = '[object Arguments]' === toStr.call(value);
   var isOldArguments = !is.array(value) && is.arraylike(value) && is.object(value) && is.fn(value.callee);
   return isStandardArguments || isOldArguments;
 };
@@ -1542,7 +1546,7 @@ is.args = is['arguments'] = function (value) {
  */
 
 is.array = function (value) {
-  return '[object Array]' === toString.call(value);
+  return '[object Array]' === toStr.call(value);
 };
 
 /**
@@ -1600,7 +1604,7 @@ is.arraylike = function (value) {
  */
 
 is.boolean = function (value) {
-  return '[object Boolean]' === toString.call(value);
+  return '[object Boolean]' === toStr.call(value);
 };
 
 /**
@@ -1643,7 +1647,7 @@ is['true'] = function (value) {
  */
 
 is.date = function (value) {
-  return '[object Date]' === toString.call(value);
+  return '[object Date]' === toStr.call(value);
 };
 
 /**
@@ -1680,7 +1684,7 @@ is.element = function (value) {
  */
 
 is.error = function (value) {
-  return '[object Error]' === toString.call(value);
+  return '[object Error]' === toStr.call(value);
 };
 
 /**
@@ -1698,7 +1702,7 @@ is.error = function (value) {
 
 is.fn = is['function'] = function (value) {
   var isAlert = typeof window !== 'undefined' && value === window.alert;
-  return isAlert || '[object Function]' === toString.call(value);
+  return isAlert || '[object Function]' === toStr.call(value);
 };
 
 /**
@@ -1715,7 +1719,7 @@ is.fn = is['function'] = function (value) {
  */
 
 is.number = function (value) {
-  return '[object Number]' === toString.call(value);
+  return '[object Number]' === toStr.call(value);
 };
 
 /**
@@ -1968,7 +1972,7 @@ is.within = function (value, start, finish) {
  */
 
 is.object = function (value) {
-  return '[object Object]' === toString.call(value);
+  return '[object Object]' === toStr.call(value);
 };
 
 /**
@@ -1998,7 +2002,7 @@ is.hash = function (value) {
  */
 
 is.regexp = function (value) {
-  return '[object RegExp]' === toString.call(value);
+  return '[object RegExp]' === toStr.call(value);
 };
 
 /**
@@ -2015,7 +2019,7 @@ is.regexp = function (value) {
  */
 
 is.string = function (value) {
-  return '[object String]' === toString.call(value);
+  return '[object String]' === toStr.call(value);
 };
 
 /**
@@ -2050,6 +2054,19 @@ is.base64 = function (value) {
 
 is.hex = function (value) {
   return is.string(value) && (!value.length || hexRegex.test(value));
+};
+
+/**
+ * is.symbol
+ * Test if `value` is an ES6 Symbol
+ *
+ * @param {Mixed} value value to test
+ * @return {Boolean} true if `value` is a Symbol, false otherise
+ * @api public
+ */
+
+is.symbol = function (value) {
+  return typeof Symbol === 'function' && toStr.call(value) === '[object Symbol]' && typeof symbolValueOf.call(value) === 'symbol';
 };
 
 },{}],7:[function(require,module,exports){
@@ -3169,21 +3186,17 @@ var State = require('./state');
 var Engine = require('./engine');
 var Inverse = require('inverse');
 var Ticker = require('./ticker');
-var Input = require('./input');
+var Plugin = require('./plugin');
 
 /**
  * Main framework class. This is the only class, that needs to be instatiated by user.
  *
  * @class Game
+ * @extends EventEmitter
  * @param {String} [initialState] initial state
  */
-function Game (initialState) {
+function Game () {
     EventEmitter.call(this);
-
-    this.engine = new Engine(this);
-    this.state = new State(this);
-
-    this.input = new Input(this);
 
     /**
      * Instance of Inverse class.
@@ -3194,6 +3207,31 @@ function Game (initialState) {
      * @type {Inverse}
      */
     this.container = new Inverse();
+    
+    /**
+     * Instance of {{#crossLink "Engine"}}Engine{{/crossLink}} class.
+     *
+     * @property engine
+     * @type {Engine}
+     */
+    this.engine = new Engine(this);
+    
+   /**
+     * Instance of {{#crossLink "State"}}State{{/crossLink}} class.
+     *
+     * @property state
+     * @type {State}
+     */
+    this.state = new State(this);
+    
+    /**
+     * Instance of {{#crossLink "Plugin"}}Plugin{{/crossLink}} class.
+     *
+     * @property plugin
+     * @type {Plugin}
+     */
+    this.plugin = new Plugin(this);
+
 
     /**
      * Instance of Ticker class.
@@ -3204,11 +3242,6 @@ function Game (initialState) {
     this.ticker = new Ticker(this);
 
     this.ticker.on('tick', this.engine.update, this.engine);
-    this.ticker.on('tick', this.input.clearKeyTimes, this.input);
-
-    if (is.unemptyString(initialState)) {
-        this.state.change(initialState);
-    }
 }
 
 /**
@@ -3236,7 +3269,13 @@ extend(Game.prototype, {
      * @return {Boolean} succesfuly started or not
      */
     start: function () {
-        return this.ticker.start();
+        var start = this.ticker.start();
+
+        if (start) {
+            this.emit('start');
+        }
+
+        return start;
     },
 
     /**
@@ -3249,15 +3288,26 @@ extend(Game.prototype, {
     stop: function (clearEngine) {
         if (clearEngine) {
             this.engine.once('clear', function () {
-                this.engine.stop();
+                return this._stopAndEmit();
             }, this);
+
+            //schedule engine clearing
+            this.engine.clear();
 
             return;
         }
 
-        return this.ticker.stop();
+        return this._stopAndEmit();
     },
+    _stopAndEmit: function () {
+        var stop = this.ticker.stop();
 
+        if (stop) {
+            this.emit('stop');
+        }
+
+        return stop;
+    },
     /**
      * Pauses the game. See Ticker's {{#crossLink "Ticker/pause:method"}}pause{{/crossLink}} method for more details.
      *
@@ -3265,7 +3315,13 @@ extend(Game.prototype, {
      * @return {Boolean} [description]
      */
     pause: function () {
-        return this.ticker.pause();
+        var pause = this.ticker.pause();
+    
+        if (pause) {
+            this.emit('pause');
+        }
+
+        return pause;
     },
 
     /**
@@ -3275,219 +3331,153 @@ extend(Game.prototype, {
      * @return {Boolean} [description]
      */
     resume: function () {
-        return this.ticker.resume();
+        var resume = this.ticker.resume();
+    
+        if (resume) {
+            this.emit('resume');
+        }
+
+        return resume;
     }
 });
 
 module.exports = Game;
-},{"./debug":9,"./engine":10,"./event":12,"./input":15,"./state":20,"./ticker":21,"check-types":2,"inverse":3,"node.extend":4}],15:[function(require,module,exports){
-'use strict'
+},{"./debug":9,"./engine":10,"./event":12,"./plugin":15,"./state":20,"./ticker":21,"check-types":2,"inverse":3,"node.extend":4}],15:[function(require,module,exports){
+'use strict';
 
-var extend = require('node.extend');
 var is = require('check-types');
+var debug = require('./debug');
+var extend = require('node.extend');
+var EventEmitter = require('./event');
 
-var KEYS = {
-    "BACKSPACE": 8,
-    "TAB": 9,
-    "ENTER": 13,
-    "SHIFT": 16,
-    "CTRL": 17,
-    "ALT": 18,
-    "PAUSE_BREAK": 19,
-    "CAPS_LOCK ": 20,
-    "ESCAPE": 27,
-    "SPACE": 32,
-    "PAGE_UP": 33,
-    "PAGE_DOWN": 34,
-    "END": 35,
-    "HOME": 36,
-    "LEFT_ARROW": 37,
-    "UP_ARROW": 38,
-    "RIGHT_ARROW": 39,
-    "DOWN_ARROW": 40,
-    "INSERT": 45,
-    "DELETE": 46,
-    "0": 48,
-    "1": 49,
-    "2": 50,
-    "3": 51,
-    "4": 52,
-    "5": 53,
-    "6": 54,
-    "7": 55,
-    "8": 56,
-    "9": 57,
-    "A": 65,
-    "B": 66,
-    "C": 67,
-    "D": 68,
-    "E": 69,
-    "F": 70,
-    "G": 71,
-    "H": 72,
-    "I": 73,
-    "J": 74,
-    "K": 75,
-    "L": 76,
-    "M": 77,
-    "N": 78,
-    "O": 79,
-    "P": 80,
-    "Q": 81,
-    "R": 82,
-    "S": 83,
-    "T": 84,
-    "U": 85,
-    "V": 86,
-    "W": 87,
-    "X": 88,
-    "Y": 89,
-    "Z": 90,
-    "LEFT_WINDOW_KEY": 91,
-    "RIGHT_WINDOW_KEY": 92,
-    "SELECT_KEY": 93,
-    "NUMPAD_0": 96,
-    "NUMPAD_1": 97,
-    "NUMPAD_2": 98,
-    "NUMPAD_3": 99,
-    "NUMPAD_4": 100,
-    "NUMPAD_5": 101,
-    "NUMPAD_6": 102,
-    "NUMPAD_7": 103,
-    "NUMPAD_8": 104,
-    "NUMPAD_9": 105,
-    "MULTIPLY": 106,
-    "ADD": 107,
-    "SUBTRACT": 109,
-    "DECIMAL_POINT": 110,
-    "DIVIDE": 111,
-    "F1": 112,
-    "F2": 113,
-    "F3": 114,
-    "F4": 115,
-    "F5": 116,
-    "F6": 117,
-    "F7": 118,
-    "F8": 119,
-    "F9": 120,
-    "F10": 121,
-    "F11": 122,
-    "F12": 123,
-    "NUM_LOCK": 144,
-    "SCROLL_LOCK": 145,
-    "SEMI_COLON": 186,
-    "EQUAL_SIGN": 187,
-    "COMMA": 188,
-    "DASH": 189,
-    "PERIOD": 190,
-    "FORWARD_SLASH": 191,
-    "GRAVE_ACCENT": 192,
-    "OPEN_BRACKET": 219,
-    "BACK_SLASH": 220,
-    "CLOSE_BRACKET": 221,
-    "SINGLE_QUOTE": 222
-};
+var RESERVED_NAMES = ['game', 'engine', 'ticker', 'plugin'];
 
-var KEY_NAMES = Object.keys(KEYS);
-
-function Input(game) {
-    var self = this;
+/**
+ * Plugin class. Class is used internaly. User should not instatiate this class.
+ *
+ * @class Plugin
+ * @extends EventEmitter
+ * @constructor
+ */
+function Plugin (game) {
+    EventEmitter.call(this);
 
     this.game = game;
+    this._actualPlugins = {};
+    this._actualPluginNames = [];
 
-    this._pressedKeys = [];
-    this._pressedKeysTime = [];
-    this._oncePressedKeys = [];
-    this._mousePosition = {
-        x: 0,
-        y: 0
-    };
+    ['start', 'stop', 'resume', 'pause'].forEach(function (eventName) {
+        this.game.on(eventName, function () {
+            this._runPluginMethod(eventName, arguments);
+        }, this)
+    }, this);
 
-    if (window) {
-        window.addEventListener("keydown", function (e) {
-            var keyCode = e.keyCode;
-
-            self._pressedKeys[keyCode] = true;
-
-            if (!self._pressedKeysTime[keyCode]) {
-                self._pressedKeysTime[keyCode] = performance.now();
-            }
-
-            return;
-        });
-
-        window.addEventListener("keyup", function (e) {
-            var keyCode = e.keyCode;
-
-            self._pressedKeys[keyCode] = false;
-
-            if (self._pressedKeysTime[keyCode] != null && self._oncePressedKeys[keyCode] == null) {
-                self._pressedKeysTime[keyCode] = performance.now() - self._pressedKeysTime[keyCode];
-                self._oncePressedKeys[keyCode] = true;
-            }
-
-            return;
-        });
-    }
+    this.game.ticker.on('tick', function () {
+        this._runPluginMethod('update', arguments);
+    }, this)
 }
 
-extend(Input.prototype, {
-    isPressed: function (keyName) {
-        return this._pressedKeys[KEYS[keyName]];
-    },
-    getPressedKeys: function () {
-        var keys = {}, keyName;
+extend(Plugin.prototype, EventEmitter.prototype);
+extend(Plugin.prototype, {
+    /**
+     * This method should be used to add plugins to system.
+     * Plugin name and plugin object (can be instance of a "class" or plain object) must be provided.
+     * These names are reserved: `game`, `engine`, `ticker`, `plugin`.
+     *
+     * Plugin instance can have lifecycle methods that are called automatically. These methods are:
+     * - __start__ - called when game starts
+     * - __stop__ - called when game stops
+     * - __update__ - called on every game loop tick, method gets `delta` argument
+     * - __pause__ - called when game pauses
+     * - __resune__ - called when game resumes
+     * - __destroy__ - called when plugin is destroyed, great place for freeing plugin resources, if some exist
+     * 
+     * @example
+     *     //somwhere in state lifecycyle method or other method with `game` in context...
+     *     game.plugin.add('renderer', new Entropy.Plugin.Renderer(800, 600, 0xffffff));
+     *
+     *     //added plugin is now available as a property of `game` object
+     *     game.renderer.addSprite('ball.png');
+     *
+     *     //ups, `plugin` is reserved system name
+     *     game.plugin.add('plugin', new MyAwesomePlugin('hello world!')); //undefined returned and error in console, plugin not added
+     *
+     *     //plugin gets destroyed, its `destroy` method is called if present
+     *     game.plugin.remove('renderer');
+     *
+     * @method add
+     * @param  {String} name    plugin name
+     * @param  {Object} obj     instance of plugin
+     * @return {Object|undefined}   provided plugin instance or `undefined` if plugin name is forbidden system name and plugin cannot be registered
+     */
+    add: function (name, obj) {
+        if (RESERVED_NAMES.indexOf(name) !== -1) {
+            debug.error('This plugin name is reserved for internal use: %s', name);
 
-        for (var i = 0; i < KEY_NAMES.length; i++) {
-            keyName = KEY_NAMES[i];
-
-            keys[keyName] = this._pressedKeys[KEYS[keyName]];
+            return;
         }
 
-        return keys;
+        this.game[name] = this._actualPlugins[name] = obj;
+
+        this._updateActualPluginNames()
+
+        this.emit('pluginAddition', obj);
+
+        return obj;
     },
-    getKeysPressedLessThan: function (time) {
-        var keys = {}, keyName, keyCode;
+    /**
+     * Removes plugin from game object. Plugin has to be {{#crossLink "Plugin/add:method"}}added{{/crossLink}} beforehand.
+     * 
+     * @example
+     *     //plugin gets destroyed, its `destroy` method is called if present
+     *     game.plugin.remove('renderer');
+     *
+     *     game.renderer === undefined; //true
+     *
+     * @method remove
+     * @param  {String} name    plugin name
+     * @return {Boolean}    `true` if removed succesfully, `false` otherwise 
+     */
+    remove: function (name) {
+        if (!(name in this._actualPlugins)) {
+            debug.error('Plugin `%s` is not initilized, cannoy be destroyed.', name)
+            
+            return false;
+        }
 
-        for (var i = 0; i < KEY_NAMES.length; i++) {
-            keyName = KEY_NAMES[i];
-            keyCode = KEYS[keyName];
+        var plugin = this._actualPlugins[name];
 
-            if (this._pressedKeysTime[keyCode] < time && this._oncePressedKeys[keyCode]) {
-                keys[keyName] = true;
+        if (is.function(plugin.destroy)) {
+            plugin.destroy();
+        }
+
+        delete this._actualPlugins[name];
+        delete this.game[name];
+
+        this._updateActualPluginNames();
+
+        this.emit('pluginRemoval', name);
+
+        return true;
+    },
+    _updateActualPluginNames: function () {
+        this._actualPluginNames = Object.keys(this._actualPlugins);
+    },
+    _runPluginMethod: function (methodName, methodArguments) {
+        var plugin;
+
+        for (var i = 0; i < this._actualPluginNames.length; i++) {
+            plugin = this._actualPlugins[this._actualPluginNames[i]];
+
+            if (is.function(plugin[methodName])) {
+                plugin[methodName].apply(plugin, methodArguments);
             }
         }
-
-        return keys;
-    },
-    getKeysPressedMoreThan: function (time) {
-        var keys = {}, keyName, keyCode;
-
-        for (var i = 0; i < KEY_NAMES.length; i++) {
-            keyName = KEY_NAMES[i];
-            keyCode = KEYS[keyName];
-
-            if (this._pressedKeysTime[keyCode] > time && this._oncePressedKeys[keyCode]) {
-                keys[keyName] = true;
-            }
-        }
-
-        return keys;
-    },
-    setMouseStagePosition: function (position) {
-        this._mousePosition = position;
-    },
-    getMouseStagePosition: function () {
-        return this._mousePosition;
-    },
-    clearKeyTimes: function () {
-        this._pressedKeysTime = [];
-        this._oncePressedKeys = [];
     }
-});
+})
 
-module.exports = Input;
-},{"check-types":2,"node.extend":4}],16:[function(require,module,exports){
+module.exports = Plugin;
+},{"./debug":9,"./event":12,"check-types":2,"node.extend":4}],16:[function(require,module,exports){
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
 
@@ -4353,6 +4343,15 @@ Entropy.Game = Game;
  * @type {Engine}
  */
 Entropy.Engine = Engine;
+
+Entropy.Config = config;
+
+Entropy.Plugin = plugin.register;
+
+Entropy.Utils = {
+    is: is,
+    extend: extend
+}
 
 module.exports = Entropy;
 },{"./core/config":7,"./core/const":8,"./core/debug":9,"./core/engine":10,"./core/game":14,"./core/polyfill":16}],23:[function(require,module,exports){

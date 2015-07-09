@@ -9,21 +9,17 @@ var State = require('./state');
 var Engine = require('./engine');
 var Inverse = require('inverse');
 var Ticker = require('./ticker');
-var Input = require('./input');
+var Plugin = require('./plugin');
 
 /**
  * Main framework class. This is the only class, that needs to be instatiated by user.
  *
  * @class Game
+ * @extends EventEmitter
  * @param {String} [initialState] initial state
  */
-function Game (initialState) {
+function Game () {
     EventEmitter.call(this);
-
-    this.engine = new Engine(this);
-    this.state = new State(this);
-
-    this.input = new Input(this);
 
     /**
      * Instance of Inverse class.
@@ -34,6 +30,31 @@ function Game (initialState) {
      * @type {Inverse}
      */
     this.container = new Inverse();
+    
+    /**
+     * Instance of {{#crossLink "Engine"}}Engine{{/crossLink}} class.
+     *
+     * @property engine
+     * @type {Engine}
+     */
+    this.engine = new Engine(this);
+    
+   /**
+     * Instance of {{#crossLink "State"}}State{{/crossLink}} class.
+     *
+     * @property state
+     * @type {State}
+     */
+    this.state = new State(this);
+    
+    /**
+     * Instance of {{#crossLink "Plugin"}}Plugin{{/crossLink}} class.
+     *
+     * @property plugin
+     * @type {Plugin}
+     */
+    this.plugin = new Plugin(this);
+
 
     /**
      * Instance of Ticker class.
@@ -44,11 +65,6 @@ function Game (initialState) {
     this.ticker = new Ticker(this);
 
     this.ticker.on('tick', this.engine.update, this.engine);
-    this.ticker.on('tick', this.input.clearKeyTimes, this.input);
-
-    if (is.unemptyString(initialState)) {
-        this.state.change(initialState);
-    }
 }
 
 /**
@@ -76,7 +92,13 @@ extend(Game.prototype, {
      * @return {Boolean} succesfuly started or not
      */
     start: function () {
-        return this.ticker.start();
+        var start = this.ticker.start();
+
+        if (start) {
+            this.emit('start');
+        }
+
+        return start;
     },
 
     /**
@@ -89,15 +111,26 @@ extend(Game.prototype, {
     stop: function (clearEngine) {
         if (clearEngine) {
             this.engine.once('clear', function () {
-                this.engine.stop();
+                return this._stopAndEmit();
             }, this);
+
+            //schedule engine clearing
+            this.engine.clear();
 
             return;
         }
 
-        return this.ticker.stop();
+        return this._stopAndEmit();
     },
+    _stopAndEmit: function () {
+        var stop = this.ticker.stop();
 
+        if (stop) {
+            this.emit('stop');
+        }
+
+        return stop;
+    },
     /**
      * Pauses the game. See Ticker's {{#crossLink "Ticker/pause:method"}}pause{{/crossLink}} method for more details.
      *
@@ -105,7 +138,13 @@ extend(Game.prototype, {
      * @return {Boolean} [description]
      */
     pause: function () {
-        return this.ticker.pause();
+        var pause = this.ticker.pause();
+    
+        if (pause) {
+            this.emit('pause');
+        }
+
+        return pause;
     },
 
     /**
@@ -115,7 +154,13 @@ extend(Game.prototype, {
      * @return {Boolean} [description]
      */
     resume: function () {
-        return this.ticker.resume();
+        var resume = this.ticker.resume();
+    
+        if (resume) {
+            this.emit('resume');
+        }
+
+        return resume;
     }
 });
 

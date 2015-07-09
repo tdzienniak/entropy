@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>State - Entropy</title>
+    <title>Plugin - Entropy</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -85,12 +85,15 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-<h1>State Class</h1>
+<h1>Plugin Class</h1>
 <div class="box meta">
 
+        <div class="extends">
+            Extends EventEmitter
+        </div>
 
         <div class="foundat">
-            Defined in: <a href="../files/src_core_state.js.html#l7"><code>src\core\state.js:7</code></a>
+            Defined in: <a href="../files/src_core_plugin.js.html#l10"><code>src\core\plugin.js:10</code></a>
         </div>
 
             Module: <a href="../modules/Entropy.html">Entropy</a>
@@ -99,10 +102,43 @@
 
 
 <div class="box intro">
-    <p>This class is an implementation of simple state manager.</p>
+    <p>Plugin class. Class is used internaly. User should not instatiate this class.</p>
 
 </div>
 
+    <div class="constructor">
+        <h2>Constructor</h2>
+        <div id="method_Plugin" class="method item">
+            <h3 class="name"><code>Plugin</code></h3>
+        
+                <span class="paren">()</span>
+        
+        
+        
+        
+        
+        
+        
+        
+            <div class="meta">
+                        <p>
+                        Defined in
+                <a href="../files/src_core_plugin.js.html#l10"><code>src\core\plugin.js:10</code></a>
+                </p>
+        
+        
+        
+            </div>
+        
+            <div class="description">
+                
+            </div>
+        
+        
+        
+        
+        </div>
+    </div>
 
 <div id="classdocs" class="tabview">
     <ul class="api-class-tabs">
@@ -118,23 +154,14 @@
                 <div class="index-section methods">
                     <h3>Methods</h3>
 
-                    <ul class="index-list methods">
+                    <ul class="index-list methods extends">
                             <li class="index-item method">
-                                <a href="#method_change">change</a>
+                                <a href="#method_add">add</a>
 
                             </li>
                             <li class="index-item method">
-                                <a href="#method_current">current</a>
+                                <a href="#method_remove">remove</a>
 
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_isIn">isIn</a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_Register">Register</a>
-
-                                    <span class="flag static">static</span>
                             </li>
                     </ul>
                 </div>
@@ -146,32 +173,34 @@
             <div id="methods" class="api-class-tabpanel">
                 <h2 class="off-left">Methods</h2>
 
-<div id="method_change" class="method item">
-    <h3 class="name"><code>change</code></h3>
+<div id="method_add" class="method item">
+    <h3 class="name"><code>add</code></h3>
 
         <div class="args">
             <span class="paren">(</span><ul class="args-list inline commas">
                 <li class="arg">
                         <code>name</code>
                 </li>
+                <li class="arg">
+                        <code>obj</code>
+                </li>
             </ul><span class="paren">)</span>
         </div>
 
         <span class="returns-inline">
-            <span class="type"><a href="../classes/State.html" class="crosslink">State</a></span>
+            <span class="type">Object | Undefined</span>
         </span>
 
 
 
 
 
-        <span class="flag chainable">chainable</span>
 
 
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_state.js.html#l92"><code>src\core\state.js:92</code></a>
+        <a href="../files/src_core_plugin.js.html#l37"><code>src\core\plugin.js:37</code></a>
         </p>
 
 
@@ -179,22 +208,17 @@
     </div>
 
     <div class="description">
-        <p>Changes state to one identified by <code>name</code> parameter.
-Changing state process looks roughly like this:</p>
-<ol>
-<li>calling current state&#39;s <code>exit</code> method (if present)</li>
-<li>calling next state&#39;s <code>initialize</code> method (if present and state wasn&#39;t initialized)</li>
-<li>calling transition function (if present)</li>
-<li>calling next state&#39;s <code>enter</code> method (if present)</li>
-</ol>
-<p>Transition functions are called when transitionig from one state to another. They are called after current state
-<code>exit</code> method and before next state&#39;s <code>enter</code> method. If the next state is not initailizes, its <code>initialize</code> method is
-called after <code>exit</code> and before transition method. Transition arguments are (in order):</p>
+        <p>This method should be used to add plugins to system.
+Plugin name and plugin object (can be instance of a &quot;class&quot; or plain object) must be provided.
+These names are reserved: <code>game</code>, <code>engine</code>, <code>ticker</code>, <code>plugin</code>.</p>
+<p>Plugin instance can have lifecycle methods that are called automatically. These methods are:</p>
 <ul>
-<li>Game instance</li>
-<li>next state object</li>
-<li>[here come arguments given after <code>name</code>]</li>
-<li>done callback</li>
+<li><strong>start</strong> - called when game starts</li>
+<li><strong>stop</strong> - called when game stops</li>
+<li><strong>update</strong> - called on every game loop tick, method gets <code>delta</code> argument</li>
+<li><strong>pause</strong> - called when game pauses</li>
+<li><strong>resune</strong> - called when game resumes</li>
+<li><strong>destroy</strong> - called when plugin is destroyed, great place for freeing plugin resources, if some exist</li>
 </ul>
 
     </div>
@@ -207,10 +231,20 @@ called after <code>exit</code> and before transition method. Transition argument
                         <code class="param-name">name</code>
                         <span class="type">String</span>
 
-                        <span class="flag multiple" title="This argument may occur one or more times.">multiple</span>
 
                     <div class="param-description">
-                        <p>state to change into. Any addidtional parameter will be applied to transition method.</p>
+                        <p>plugin name</p>
+
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">obj</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>instance of plugin</p>
 
                     </div>
 
@@ -222,64 +256,39 @@ called after <code>exit</code> and before transition method. Transition argument
             <h4>Returns:</h4>
 
             <div class="returns-description">
-                        <span class="type"><a href="../classes/State.html" class="crosslink">State</a></span>:
-                    <p>State instance</p>
+                        <span class="type">Object | Undefined</span>:
+                    <p>provided plugin instance or <code>undefined</code> if plugin name is forbidden system name and plugin cannot be registered</p>
 
             </div>
         </div>
 
 
-</div>
-<div id="method_current" class="method item">
-    <h3 class="name"><code>current</code></h3>
+        <div class="example">
+            <h4>Example:</h4>
 
-        <span class="paren">()</span>
+            <div class="example-content">
+                <pre class="code prettyprint"><code>//somwhere in state lifecycyle method or other method with <code>game</code> in context...
+game.plugin.add(&#39;renderer&#39;, new Entropy.Plugin.Renderer(800, 600, 0xffffff));
 
-        <span class="returns-inline">
-            <span class="type">String</span>
-        </span>
+//added plugin is now available as a property of <code>game</code> object
+game.renderer.addSprite(&#39;ball.png&#39;);
 
+//ups, <code>plugin</code> is reserved system name
+game.plugin.add(&#39;plugin&#39;, new MyAwesomePlugin(&#39;hello world!&#39;)); //undefined returned and error in console, plugin not added
 
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_core_state.js.html#l162"><code>src\core\state.js:162</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Returns name of the current state.</p>
-
-    </div>
-
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">String</span>:
-                    <p>name of the current state</p>
-
+//plugin gets destroyed, its <code>destroy</code> method is called if present
+game.plugin.remove(&#39;renderer&#39;);
+</code></pre>
             </div>
         </div>
-
-
 </div>
-<div id="method_isIn" class="method item">
-    <h3 class="name"><code>isIn</code></h3>
+<div id="method_remove" class="method item">
+    <h3 class="name"><code>remove</code></h3>
 
         <div class="args">
             <span class="paren">(</span><ul class="args-list inline commas">
                 <li class="arg">
-                        <code>state</code>
+                        <code>name</code>
                 </li>
             </ul><span class="paren">)</span>
         </div>
@@ -297,7 +306,7 @@ called after <code>exit</code> and before transition method. Transition argument
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_state.js.html#l172"><code>src\core\state.js:172</code></a>
+        <a href="../files/src_core_plugin.js.html#l83"><code>src\core\plugin.js:83</code></a>
         </p>
 
 
@@ -305,7 +314,7 @@ called after <code>exit</code> and before transition method. Transition argument
     </div>
 
     <div class="description">
-        <p>Checks whether state machine is in state identified by name.</p>
+        <p>Removes plugin from game object. Plugin has to be <a href="../classes/Plugin.html#method_add" class="crosslink">added</a> beforehand.</p>
 
     </div>
 
@@ -314,12 +323,12 @@ called after <code>exit</code> and before transition method. Transition argument
 
             <ul class="params-list">
                 <li class="param">
-                        <code class="param-name">state</code>
+                        <code class="param-name">name</code>
                         <span class="type">String</span>
 
 
                     <div class="param-description">
-                        <p>states name</p>
+                        <p>plugin name</p>
 
                     </div>
 
@@ -332,98 +341,20 @@ called after <code>exit</code> and before transition method. Transition argument
 
             <div class="returns-description">
                         <span class="type">Boolean</span>:
+                    <p><code>true</code> if removed succesfully, <code>false</code> otherwise</p>
+
             </div>
         </div>
-
-
-</div>
-<div id="method_Register" class="method item">
-    <h3 class="name"><code>Register</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>state</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_core_state.js.html#l204"><code>src\core\state.js:204</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Registers new state. Registered states are shared between State instances.
-State methods are asynchronous. Their last argument is always a callback function, that must be called
-when the function finishes. This is handy when you want implement smooth transitions
-between states using animations (for example, jQuery animations), that are very often asynchronous.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">state</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        <p>state object (see example)</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
 
 
         <div class="example">
             <h4>Example:</h4>
 
             <div class="example-content">
-                <pre class="code prettyprint"><code>State.Register({
-    name: &quot;initialize&quot;,
-    initialize: function (game, done) {
-        console.log(&#39;State initialized.&#39;);
+                <pre class="code prettyprint"><code>//plugin gets destroyed, its <code>destroy</code> method is called if present
+game.plugin.remove(&#39;renderer&#39;);
 
-        return done();
-    },
-    enter: function (game, done) {
-        console.log(&#39;State entered.&#39;);
-
-        return done();
-    },
-    exit: function (game, done) {
-        console.log(&#39;State exited.&#39;);
-
-        return done();
-    },
-    trnsitions: {
-        menu: &quot;toMenu&quot;
-    },
-    toMenu: function (game, nextState, done) {
-        console.log(&#39;Transitioning from <code>initialize</code> to <code>menu</code>.&#39;);
-
-        return done();
-    }
-});
+game.renderer === undefined; //true
 </code></pre>
             </div>
         </div>

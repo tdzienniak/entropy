@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="Entropy" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.0</em>
+            <em>API Docs for: 0.3.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -42,6 +42,8 @@
                                 <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
                                 <li><a href="../classes/Game.html">Game</a></li>
+                                <li><a href="../classes/Plugin.html">Plugin</a></li>
+                                <li><a href="../classes/Plugin.Input.html">Plugin.Input</a></li>
                                 <li><a href="../classes/Pool.html">Pool</a></li>
                                 <li><a href="../classes/Query.html">Query</a></li>
                                 <li><a href="../classes/State.html">State</a></li>
@@ -98,21 +100,17 @@ var State = require(&#x27;./state&#x27;);
 var Engine = require(&#x27;./engine&#x27;);
 var Inverse = require(&#x27;inverse&#x27;);
 var Ticker = require(&#x27;./ticker&#x27;);
-var Input = require(&#x27;./input&#x27;);
+var Plugin = require(&#x27;./plugin&#x27;);
 
 /**
  * Main framework class. This is the only class, that needs to be instatiated by user.
  *
  * @class Game
+ * @extends EventEmitter
  * @param {String} [initialState] initial state
  */
-function Game (initialState) {
+function Game () {
     EventEmitter.call(this);
-
-    this.engine = new Engine(this);
-    this.state = new State(this);
-
-    this.input = new Input(this);
 
     /**
      * Instance of Inverse class.
@@ -123,6 +121,31 @@ function Game (initialState) {
      * @type {Inverse}
      */
     this.container = new Inverse();
+    
+    /**
+     * Instance of {{#crossLink &quot;Engine&quot;}}Engine{{/crossLink}} class.
+     *
+     * @property engine
+     * @type {Engine}
+     */
+    this.engine = new Engine(this);
+    
+   /**
+     * Instance of {{#crossLink &quot;State&quot;}}State{{/crossLink}} class.
+     *
+     * @property state
+     * @type {State}
+     */
+    this.state = new State(this);
+    
+    /**
+     * Instance of {{#crossLink &quot;Plugin&quot;}}Plugin{{/crossLink}} class.
+     *
+     * @property plugin
+     * @type {Plugin}
+     */
+    this.plugin = new Plugin(this);
+
 
     /**
      * Instance of Ticker class.
@@ -133,11 +156,6 @@ function Game (initialState) {
     this.ticker = new Ticker(this);
 
     this.ticker.on(&#x27;tick&#x27;, this.engine.update, this.engine);
-    this.ticker.on(&#x27;tick&#x27;, this.input.clearKeyTimes, this.input);
-
-    if (is.unemptyString(initialState)) {
-        this.state.change(initialState);
-    }
 }
 
 /**
@@ -165,7 +183,13 @@ extend(Game.prototype, {
      * @return {Boolean} succesfuly started or not
      */
     start: function () {
-        return this.ticker.start();
+        var start = this.ticker.start();
+
+        if (start) {
+            this.emit(&#x27;start&#x27;);
+        }
+
+        return start;
     },
 
     /**
@@ -178,15 +202,26 @@ extend(Game.prototype, {
     stop: function (clearEngine) {
         if (clearEngine) {
             this.engine.once(&#x27;clear&#x27;, function () {
-                this.engine.stop();
+                return this._stopAndEmit();
             }, this);
+
+            //schedule engine clearing
+            this.engine.clear();
 
             return;
         }
 
-        return this.ticker.stop();
+        return this._stopAndEmit();
     },
+    _stopAndEmit: function () {
+        var stop = this.ticker.stop();
 
+        if (stop) {
+            this.emit(&#x27;stop&#x27;);
+        }
+
+        return stop;
+    },
     /**
      * Pauses the game. See Ticker&#x27;s {{#crossLink &quot;Ticker/pause:method&quot;}}pause{{/crossLink}} method for more details.
      *
@@ -194,7 +229,13 @@ extend(Game.prototype, {
      * @return {Boolean} [description]
      */
     pause: function () {
-        return this.ticker.pause();
+        var pause = this.ticker.pause();
+    
+        if (pause) {
+            this.emit(&#x27;pause&#x27;);
+        }
+
+        return pause;
     },
 
     /**
@@ -204,7 +245,13 @@ extend(Game.prototype, {
      * @return {Boolean} [description]
      */
     resume: function () {
-        return this.ticker.resume();
+        var resume = this.ticker.resume();
+    
+        if (resume) {
+            this.emit(&#x27;resume&#x27;);
+        }
+
+        return resume;
     }
 });
 
