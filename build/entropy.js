@@ -2875,9 +2875,9 @@ extend(Engine.prototype, {
 
         var entity;
         for (var i = 0, greatestID = this._greatestEntityID; i < greatestID; i++) {
-            entity = entities[i];
+            entity = this._entities[i];
             if (entity === 0) {
-                return;
+                break;
             }
 
             if (query.satisfiedBy(entity)) {
@@ -3243,21 +3243,20 @@ function Game (initialState) {
     this.state = new State(this);
     
     /**
+     * Instance of Ticker class.
+     *
+     * @property ticker
+     * @type {Ticker}
+     */
+    
+    this.ticker = new Ticker(this);
+    /**
      * Instance of {{#crossLink "Plugin"}}Plugin{{/crossLink}} class.
      *
      * @property plugin
      * @type {Plugin}
      */
     this.plugin = new Plugin(this);
-
-
-    /**
-     * Instance of Ticker class.
-     *
-     * @property ticker
-     * @type {Ticker}
-     */
-    this.ticker = new Ticker(this);
 
     this.ticker.on('tick', this.engine.update, this.engine);
 
@@ -4390,15 +4389,13 @@ Entropy.Engine = Engine;
 
 Entropy.Config = config;
 
-Entropy.Plugin = plugin.register;
-
 Entropy.Utils = {
-    is: is,
-    extend: extend
+    is: require('check-types'),
+    extend: require('node.extend')
 }
 
 module.exports = Entropy;
-},{"./core/config":7,"./core/const":8,"./core/debug":9,"./core/engine":10,"./core/game":14,"./core/polyfill":16}],23:[function(require,module,exports){
+},{"./core/config":7,"./core/const":8,"./core/debug":9,"./core/engine":10,"./core/game":14,"./core/polyfill":16,"check-types":2,"node.extend":4}],23:[function(require,module,exports){
 // stats.js - http://github.com/mrdoob/stats.js
 var Stats=function(){var l=Date.now(),m=l,g=0,n=Infinity,o=0,h=0,p=Infinity,q=0,r=0,s=0,f=document.createElement("div");f.id="stats";f.addEventListener("mousedown",function(b){b.preventDefault();t(++s%2)},!1);f.style.cssText="width:80px;opacity:0.9;cursor:pointer";var a=document.createElement("div");a.id="fps";a.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#002";f.appendChild(a);var i=document.createElement("div");i.id="fpsText";i.style.cssText="color:#0ff;font-family:Helvetica,Arial,sans-serif;font-size:9px;font-weight:bold;line-height:15px";
 i.innerHTML="FPS";a.appendChild(i);var c=document.createElement("div");c.id="fpsGraph";c.style.cssText="position:relative;width:74px;height:30px;background-color:#0ff";for(a.appendChild(c);74>c.children.length;){var j=document.createElement("span");j.style.cssText="width:1px;height:30px;float:left;background-color:#113";c.appendChild(j)}var d=document.createElement("div");d.id="ms";d.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#020;display:none";f.appendChild(d);var k=document.createElement("div");

@@ -166,11 +166,9 @@ Entropy.Engine = Engine;
 
 Entropy.Config = config;
 
-Entropy.Plugin = plugin.register;
-
 Entropy.Utils = {
-    is: is,
-    extend: extend
+    is: require(&#x27;check-types&#x27;),
+    extend: require(&#x27;node.extend&#x27;)
 }
 
 module.exports = Entropy;

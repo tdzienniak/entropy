@@ -814,9 +814,9 @@ extend(Engine.prototype, {
 
         var entity;
         for (var i = 0, greatestID = this._greatestEntityID; i &lt; greatestID; i++) {
-            entity = entities[i];
+            entity = this._entities[i];
             if (entity === 0) {
-                return;
+                break;
             }
 
             if (query.satisfiedBy(entity)) {

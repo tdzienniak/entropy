@@ -121,7 +121,7 @@
             name: "BunnyMovement",
             initialize: function (fps) {
                 this.fpsContainer = fps;
-                this.query = new Entropy.Engine.Query(['Position', 'Velocity', 'Sprite']);
+                this.query = new Entropy.Engine.Query({name: 'Bunny'});
             },
             update: function (delta) {
                 this.fpsContainer.innerText = this.game.ticker.getCurrentFPS();

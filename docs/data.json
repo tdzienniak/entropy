@@ -641,15 +641,6 @@
         {
             "file": "src\\core\\game.js",
             "line": 50,
-            "description": "Instance of {{#crossLink \"Plugin\"}}Plugin{{/crossLink}} class.",
-            "itemtype": "property",
-            "name": "plugin",
-            "type": "{Plugin}",
-            "class": "Game"
-        },
-        {
-            "file": "src\\core\\game.js",
-            "line": 59,
             "description": "Instance of Ticker class.",
             "itemtype": "property",
             "name": "ticker",
@@ -658,7 +649,16 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 74,
+            "line": 58,
+            "description": "Instance of {{#crossLink \"Plugin\"}}Plugin{{/crossLink}} class.",
+            "itemtype": "property",
+            "name": "plugin",
+            "type": "{Plugin}",
+            "class": "Game"
+        },
+        {
+            "file": "src\\core\\game.js",
+            "line": 73,
             "description": "Registers new state. This method simply calls State's {{#crossLink \"State/Register:method\"}}Register{{/crossLink}} static method.",
             "example": [
                 "\n    Entropy.Game.State({\n        //state object here\n    });"
@@ -677,7 +677,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 92,
+            "line": 91,
             "description": "Starts the game. See Ticker's {{#crossLink \"Ticker/start:method\"}}start{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "start",
@@ -689,7 +689,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 108,
+            "line": 107,
             "description": "Stops the game. See Ticker's {{#crossLink \"Ticker/stop:method\"}}stop{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "stop",
@@ -708,7 +708,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 138,
+            "line": 137,
             "description": "Pauses the game. See Ticker's {{#crossLink \"Ticker/pause:method\"}}pause{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "pause",
@@ -720,7 +720,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 154,
+            "line": 153,
             "description": "Resumes the game. See Ticker's {{#crossLink \"Ticker/resume:method\"}}resume{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "resume",

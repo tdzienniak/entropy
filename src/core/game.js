@@ -48,21 +48,20 @@ function Game (initialState) {
     this.state = new State(this);
     
     /**
+     * Instance of Ticker class.
+     *
+     * @property ticker
+     * @type {Ticker}
+     */
+    
+    this.ticker = new Ticker(this);
+    /**
      * Instance of {{#crossLink "Plugin"}}Plugin{{/crossLink}} class.
      *
      * @property plugin
      * @type {Plugin}
      */
     this.plugin = new Plugin(this);
-
-
-    /**
-     * Instance of Ticker class.
-     *
-     * @property ticker
-     * @type {Ticker}
-     */
-    this.ticker = new Ticker(this);
 
     this.ticker.on('tick', this.engine.update, this.engine);
 
