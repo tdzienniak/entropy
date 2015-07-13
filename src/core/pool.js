@@ -33,7 +33,7 @@ extend(Pool.prototype, {
             }
         }
 
-        this._pool[++this._currentSize] = thing;
+        this._pool[this._currentSize++] = thing;
     },
     /**
      * Gets value from the pool. Returns last put value.
@@ -46,7 +46,7 @@ extend(Pool.prototype, {
             return null;
         }
 
-        return this._pool[this._currentSize--];
+        return this._pool[--this._currentSize];
     },
     /**
      * Returns current size of the pool (not maximum size).

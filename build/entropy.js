@@ -1,4 +1,4 @@
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Entropy=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Entropy = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
  * @license BitSet.js v1.0.2 16/06/2014
  * http://www.xarg.org/2014/03/javascript-bit-array/
@@ -2608,7 +2608,7 @@ extend(Engine.prototype, {
      */
     clear: function () {
         var entity;
-        for (var i = 0; i <= this._greatestEntityID; i++) {
+        for (var i = 1; i <= this._greatestEntityID; i++) {
             entity = this._entities[i];
 
             if (entity == null || entity.id === 0) {
@@ -2874,7 +2874,7 @@ extend(Engine.prototype, {
         var indexLength = 0;
 
         var entity;
-        for (var i = 0, greatestID = this._greatestEntityID; i < greatestID; i++) {
+        for (var i = 1, greatestID = this._greatestEntityID; i <= greatestID; i++) {
             entity = this._entities[i];
             if (entity === 0) {
                 break;
@@ -3061,7 +3061,7 @@ var extend = require('node.extend');
 var slice = Array.prototype.slice;
 
 function EventEmitter () {
-    this.events = {};
+    this._events = {};
 }
 
 extend(EventEmitter.prototype, {
@@ -3070,9 +3070,9 @@ extend(EventEmitter.prototype, {
             return;
         }
 
-        this.events[event] = this.events[event] || [];
+        this._events[event] = this._events[event] || [];
 
-        this.events[event].push({
+        this._events[event].push({
             fn: fn,
             binding: binding,
             once: once
@@ -3082,7 +3082,7 @@ extend(EventEmitter.prototype, {
         this.on(event, fn, binding, true);
     },
     emit: function (event) {
-        if (!(event in this.events)) {
+        if (!(event in this._events)) {
             return;
         }
 
@@ -3090,9 +3090,9 @@ extend(EventEmitter.prototype, {
 
         var listener;
         var i = 0;
-        var events = this.events[event];
+        var events = this._events[event];
         while (i < events.length) {
-            listener = this.events[event][i];
+            listener = this._events[event][i];
 
             var returnedValue = listener.fn.apply(listener.binding, args);
 
@@ -3112,11 +3112,11 @@ extend(EventEmitter.prototype, {
         this.emit.apply(this, arguments);
     },
     off: function (event, fn) {
-        if (is.not.string(event) || !(event in this.events)) {
+        if (is.not.string(event) || !(event in this._events)) {
             return;
         }
 
-        this.events[event] = this.events[event].filter(function (listener) {
+        this._events[event] = this._events[event].filter(function (listener) {
             return is.function(fn) && listener.fn !== fn;
         });
     }
@@ -3615,7 +3615,7 @@ extend(Pool.prototype, {
             }
         }
 
-        this._pool[++this._currentSize] = thing;
+        this._pool[this._currentSize++] = thing;
     },
     /**
      * Gets value from the pool. Returns last put value.
@@ -3628,7 +3628,7 @@ extend(Pool.prototype, {
             return null;
         }
 
-        return this._pool[this._currentSize--];
+        return this._pool[--this._currentSize];
     },
     /**
      * Returns current size of the pool (not maximum size).

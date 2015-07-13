@@ -2,7 +2,8 @@
     "project": {
         "name": "Entropy",
         "description": "Framework for making games and not only games in entity system manner.",
-        "version": "0.3.0"
+        "version": "0.3.0",
+        "logo": "../entropy.png"
     },
     "files": {
         "src\\core\\engine.js": {

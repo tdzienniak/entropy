@@ -41,7 +41,7 @@ module.exports = function(grunt) {
                 name: 'Entropy',
                 description: '<%= pkg.description %>',
                 version: '<%= pkg.version %>',
-                //url: '<%= pkg.homepage %>',
+                logo: '../entropy.png',
                 options: {
                     paths: ['./src', './plugins'],
                     outdir: './docs'
@@ -58,7 +58,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-browserify');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-yuidoc');
 
     // Default task(s).

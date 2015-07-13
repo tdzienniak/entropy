@@ -14,7 +14,7 @@
 <div id="doc">
     <div id="hd" class="yui3-g header">
         <div class="yui3-u-3-4">
-                <h1><img src="../assets/css/logo.png" title="Entropy" width="117" height="52"></h1>
+                <h1><img src="..\..\entropy.png" title="Entropy"></h1>
         </div>
         <div class="yui3-u-1-4 version">
             <em>API Docs for: 0.3.0</em>
@@ -108,36 +108,36 @@
 
     <div class="constructor">
         <h2>Constructor</h2>
-        <div id="method_Plugin" class="method item">
-            <h3 class="name"><code>Plugin</code></h3>
+<div id="method_Plugin" class="method item">
+    <h3 class="name"><code>Plugin</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_core_plugin.js.html#l10"><code>src\core\plugin.js:10</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
         
-                <span class="paren">()</span>
-        
-        
-        
-        
-        
-        
-        
-        
-            <div class="meta">
-                        <p>
-                        Defined in
-                <a href="../files/src_core_plugin.js.html#l10"><code>src\core\plugin.js:10</code></a>
-                </p>
-        
-        
-        
-            </div>
-        
-            <div class="description">
-                
-            </div>
-        
-        
-        
-        
-        </div>
+    </div>
+
+
+
+
+</div>
     </div>
 
 <div id="classdocs" class="tabview">
@@ -283,17 +283,17 @@ These names are reserved: <code>game</code>, <code>engine</code>, <code>ticker</
 
             <div class="example-content">
                 <pre class="code prettyprint"><code>//somwhere in state lifecycyle method or other method with <code>game</code> in context...
-game.plugin.add(&#39;renderer&#39;, new Entropy.Plugin.Renderer(800, 600, 0xffffff));
+game.plugin.add('renderer', new Entropy.Plugin.Renderer(800, 600, 0xffffff));
 
 //added plugin is now available as a property of <code>game</code> object
-game.renderer.addSprite(&#39;ball.png&#39;);
+game.renderer.addSprite('ball.png');
 
 //ups, <code>plugin</code> is reserved system name
-game.plugin.add(&#39;plugin&#39;, new MyAwesomePlugin(&#39;hello world!&#39;)); //undefined returned and error in console, plugin not added
+game.plugin.add('plugin', new MyAwesomePlugin('hello world!')); //undefined returned and error in console, plugin not added
 
 //plugin gets destroyed, its <code>destroy</code> method is called if present
-game.plugin.remove(&#39;renderer&#39;);
-</code></pre>
+game.plugin.remove('renderer');</code></pre>
+
             </div>
         </div>
 </div>
@@ -367,10 +367,10 @@ game.plugin.remove(&#39;renderer&#39;);
 
             <div class="example-content">
                 <pre class="code prettyprint"><code>//plugin gets destroyed, its <code>destroy</code> method is called if present
-game.plugin.remove(&#39;renderer&#39;);
+game.plugin.remove('renderer');
 
-game.renderer === undefined; //true
-</code></pre>
+game.renderer === undefined; //true</code></pre>
+
             </div>
         </div>
 </div>

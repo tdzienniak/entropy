@@ -456,7 +456,7 @@ extend(Engine.prototype, {
      */
     clear: function () {
         var entity;
-        for (var i = 0; i <= this._greatestEntityID; i++) {
+        for (var i = 1; i <= this._greatestEntityID; i++) {
             entity = this._entities[i];
 
             if (entity == null || entity.id === 0) {
@@ -722,7 +722,7 @@ extend(Engine.prototype, {
         var indexLength = 0;
 
         var entity;
-        for (var i = 0, greatestID = this._greatestEntityID; i < greatestID; i++) {
+        for (var i = 1, greatestID = this._greatestEntityID; i <= greatestID; i++) {
             entity = this._entities[i];
             if (entity === 0) {
                 break;

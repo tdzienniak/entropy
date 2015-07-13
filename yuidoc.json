@@ -2,6 +2,7 @@
     "name": "Entropy",
     "description": "JavaScript entity system for writing games.",
     "version": "0.3.0",
+    
     "options": {
         "paths": ["./src", "./plugins"],
         "outdir": "./docs"
