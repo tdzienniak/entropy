@@ -9,7 +9,7 @@ module.exports = function(grunt) {
         },
 
         browserify: {
-            standalone: {
+            core: {
                 dest: './build/entropy.js',
                 src: [ './src/entropy.js' ],
                 options: {
@@ -17,21 +17,38 @@ module.exports = function(grunt) {
                         standalone: 'Entropy'
                     }
                 }
+            },
+            plugins: {
+                dest: './build/entropy-plugins.js',
+                src: [ './plugins/index.js' ]
             }
         },
 
         uglify: {
-            options: {
-                banner: '/**\n* <%= pkg.name %> <%= pkg.version %> - framework for making games and not only games in entity system manner - build: <%= grunt.template.today("yyyy-mm-dd") %>\n*\n* @author       Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>\n* @license      {@link https://github.com/RainPhilosopher/Entropy/blob/master/LICENSE|MIT License}\n*/\n',
-                //       + '"use strict";',
-                mangle: true,
-                sourceMap: true,
-                sourceMapName: 'build/entropy.map.js'
-                //wrap: true
-            },
-            build: {
+            core: {
+                options: {
+                    banner: '/**\n* <%= pkg.name %> <%= pkg.version %> - framework for making games and not only games in entity system manner - build: <%= grunt.template.today("yyyy-mm-dd") %>\n*\n* @author       Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>\n* @license      {@link https://github.com/RainPhilosopher/Entropy/blob/master/LICENSE|MIT License}\n*/\n',
+                    //       + '"use strict";',
+                    mangle: true,
+                    sourceMap: true,
+                    sourceMapName: 'build/entropy.map.js'
+                    //wrap: true
+                },
                 files: {
                   'build/entropy.min.js': ['./build/entropy.js']
+                }
+            },
+            plugins: {
+                options: {
+                    banner: '/**\n* <%= pkg.name %> <%= pkg.version %> - framework for making games and not only games in entity system manner - build: <%= grunt.template.today("yyyy-mm-dd") %>\n*\n* @author       Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>\n* @license      {@link https://github.com/RainPhilosopher/Entropy/blob/master/LICENSE|MIT License}\n*/\n',
+                    //       + '"use strict";',
+                    mangle: true,
+                    sourceMap: true,
+                    sourceMapName: 'build/entropy-plugins.map.js'
+                    //wrap: true
+                },
+                files: {
+                  'build/entropy-plugins.min.js': ['./build/entropy-plugins.js']
                 }
             }
         },
@@ -47,10 +64,6 @@ module.exports = function(grunt) {
                     outdir: './docs'
                 }
             }
-        },
-
-        qunit: {
-            all: ['test/*.html']
         }
     });
 
@@ -61,6 +74,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-yuidoc');
 
     // Default task(s).
-    grunt.registerTask('default', ['clean', 'browserify', 'uglify', 'yuidoc']);
+    grunt.registerTask('build-core', ['clean', 'browserify:core', 'uglify:core']);
+    grunt.registerTask('build-plugins', ['browserify:plugins', 'uglify:plugins']);
+    grunt.registerTask('build-docs', ['yuidoc']);
+    grunt.registerTask('build', ['build-core', 'build-plugins', 'build-docs']);
 
 };
