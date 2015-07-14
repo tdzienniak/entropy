@@ -17,7 +17,7 @@
                 <h1><img src="..\..\entropy.png" title="Entropy"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.3.0</em>
+            <em>API Docs for: 0.1.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -41,6 +41,8 @@
                                 <li><a href="../classes/Engine.html">Engine</a></li>
                                 <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
+                                <li><a href="../classes/Entropy.Animation.html">Entropy.Animation</a></li>
+                                <li><a href="../classes/EventEmitter.html">EventEmitter</a></li>
                                 <li><a href="../classes/Game.html">Game</a></li>
                                 <li><a href="../classes/Plugin.html">Plugin</a></li>
                                 <li><a href="../classes/Plugin.Input.html">Plugin.Input</a></li>
@@ -101,10 +103,8 @@ require(&#x27;./core/polyfill&#x27;);
 
 var debug = require(&#x27;./core/debug&#x27;);
 var config = require(&#x27;./core/config&#x27;);
-
-var Const = require(&#x27;./core/const&#x27;);
-var Game = require(&#x27;./core/game&#x27;);
-var Engine = require(&#x27;./core/engine&#x27;);
+var State = require(&#x27;./core/state&#x27;);
+var register = require(&#x27;./core/register&#x27;);
 
 //Welcome message.
 console.log.apply(console, [
@@ -117,7 +117,7 @@ console.log.apply(console, [
 ]);
 
 /**
- * Main static framework. Used as top namespace.
+ * Main static framework class. Used as a top namespace.
  * 
  * @class Entropy
  * @static
@@ -126,6 +126,111 @@ function Entropy () {
     debug.warning(&#x27;This function should not be used as a constructor.&#x27;);
     return;
 }
+
+/**
+ * Registers new component pattern.
+ * Only argument should be an object with obligatory &#x60;name&#x60; property and &#x60;initialize&#x60; method.
+ * This method is used to assign some data to component object. &#x60;this&#x60; inside &#x60;initialize&#x60; function is a
+ * reference to newly created component object.
+ *
+ * @example
+ *     Entropy.Component({
+ *         name: &quot;Position&quot;,
+ *         initialize: function (x, y) {
+ *             this.x = x;
+ *             this.y = y;
+ *         },
+ *         //not obligatory
+ *         reset: function () {
+ *             this.x = 0;
+ *             this.y = 0;
+ *         }
+ *     });
+ *
+ * @method Component
+ * @static
+ * @param {Object} component component pattern
+ */
+Entropy.Component = function (component) {
+    register.registerComponent(component);
+};
+
+/**
+ * Registers new entity pattern.
+ *
+ * Pattern is an object with following properties:
+ *  - __name__ (required) - name of an entity
+ *  - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.
+ *   &#x60;this&#x60; inside function references newly created entity object (instance of {{#crossLink &quot;Entity&quot;}}Entity{{/crossLink}} class).
+ *   Function is called with first argument being &#x60;game&#x60; object and every others are parameters with witch {{#crossLink &quot;Engine/create:method&quot;}}create{{/crossLink}} method is called.
+ *  - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).
+ *   First and only argument is a &#x60;game&#x60; object.
+ *
+ * @example
+ *     Entropy.Entity({
+ *         name: &quot;Ball&quot;,
+ *         create: function (game, x, y, radius) {
+ *             var sprite = new Sprite(&quot;Ball&quot;);
+ *
+ *             game.container.make(&quot;renderer&quot;).addSprite(sprite);
+ *
+ *             this.add(&quot;Position&quot;, x, y)
+ *                 .add(&quot;Radius&quot;, radius)
+ *                 .add(&quot;Velocity&quot;, 5, 5)
+ *                 .add(&quot;Sprite&quot;, sprite);
+ *         },
+ *         //not oblgatory
+ *         remove: function (game) {
+ *             game.container.make(&quot;renderer&quot;).removeSprite(this.components.sprite.sprite);
+ *         }
+ *     });
+ *
+ * @method Entity
+ * @static
+ * @param {Object} entity entity pattern
+ */
+Entropy.Entity = function (entity) {
+    register.registerEntity(entity);
+};
+
+/**
+ * Registers new system pattern.
+ *
+ * @example
+ *     Entropy.System({
+ *         name: &quot;MovementSystem&quot;,
+ *         priority: 1, //not obligatory
+ *         initialize: function () {
+ *             this.query = new Entropy.Query([&quot;Position&quot;, &quot;Velocity&quot;]);
+ *         },
+ *         update: function (delta) {
+ *             var entities = this.engine.getEntities(this.query);
+ *             var e;
+ *
+ *             var i = 0;
+ *             while (e = entities[i]) {
+ *                 var position = e.components.position;
+ *                 var velocity = e.components.velocity;
+ *
+ *                 position.x += delta / 1000 * velocity.vx;
+ *                 position.y += delta / 1000 * velocity.vy;
+ *
+ *                 i++;
+ *             }
+ *         },
+ *         //not obligatory
+ *         remove: function () {
+ *
+ *         }
+ *     });
+ *
+ * @method System
+ * @static
+ * @param {Object} system system pattern object
+ */
+Entropy.System = function (system) {
+    register.registerSystem(system);
+};
 
 /**
  * Assignes new property to main Entropy namespace identified by key (uppercased).
@@ -142,9 +247,7 @@ function Entropy () {
  * @param {String}  key      constans key
  * @param {Any}     value    constans value
  */
-Entropy.Const = function (key, value) {
-    return Const.call(this, key, value);
-};
+Entropy.Const = require(&#x27;./core/const&#x27;);
 
 /**
  * {{#crossLink &quot;Game&quot;}}Game{{/crossLink}} class reference.
@@ -153,7 +256,7 @@ Entropy.Const = function (key, value) {
  * @method Game
  * @type {Game}
  */
-Entropy.Game = Game;
+Entropy.Game = require(&#x27;./core/game&#x27;);
 
 /**
  * {{#crossLink &quot;Engine&quot;}}Engine{{/crossLink}} class reference.
@@ -162,14 +265,55 @@ Entropy.Game = Game;
  * @method Engine
  * @type {Engine}
  */
-Entropy.Engine = Engine;
+Entropy.Engine = require(&#x27;./core/engine&#x27;);
 
+/**
+ * {{#crossLink &quot;Config&quot;}}Config{{/crossLink}} class reference.
+ * 
+ * @static
+ * @method Config
+ * @type {Config}
+ */
 Entropy.Config = config;
+
+/**
+ * {{#crossLink &quot;Query&quot;}}Query{{/crossLink}} class reference.
+ * 
+ * @static
+ * @method Query
+ * @type {Query}
+ */
+Entropy.Query = require(&#x27;./core/query&#x27;);
+
+/**
+ * Registers new state. This method simply calls State&#x27;s {{#crossLink &quot;State/Register:method&quot;}}Register{{/crossLink}} static method.
+ *
+ * @example
+ *     Entropy.State({
+ *         //state object here
+ *     });
+ *
+ * @static
+ * @method State
+ * @param {Object} state state object
+ */
+Entropy.State = function (state) {
+    State.Register(state);
+}
 
 Entropy.Utils = {
     is: require(&#x27;check-types&#x27;),
     extend: require(&#x27;node.extend&#x27;)
 }
+
+/**
+ * {{#crossLink &quot;EventEmitter&quot;}}EventEmitter{{/crossLink}} class reference.
+ * 
+ * @static
+ * @method EventEmitter
+ * @type {EventEmitter}
+ */
+Entropy.EventEmitter = require(&#x27;./core/event&#x27;);
 
 module.exports = Entropy;
     </pre>

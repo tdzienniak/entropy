@@ -4,6 +4,8 @@ YUI.add("yuidoc-meta", function(Y) {
         "Engine",
         "Entity",
         "Entropy",
+        "Entropy.Animation",
+        "EventEmitter",
         "Game",
         "Plugin",
         "Plugin.Input",

@@ -17,7 +17,7 @@
                 <h1><img src="..\..\entropy.png" title="Entropy"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.3.0</em>
+            <em>API Docs for: 0.1.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -41,6 +41,8 @@
                                 <li><a href="../classes/Engine.html">Engine</a></li>
                                 <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
+                                <li><a href="../classes/Entropy.Animation.html">Entropy.Animation</a></li>
+                                <li><a href="../classes/EventEmitter.html">EventEmitter</a></li>
                                 <li><a href="../classes/Game.html">Game</a></li>
                                 <li><a href="../classes/Plugin.html">Plugin</a></li>
                                 <li><a href="../classes/Plugin.Input.html">Plugin.Input</a></li>
@@ -101,7 +103,8 @@
 <div class="box intro">
     <p>Used to perform matching of entities.
 Only parameter is an array of component names to include or object with <code>include</code> and/or <code>exclude</code> properties,
-witch are arrays of component names to respectively include and/or exclude.</p>
+witch are arrays of component names to respectively include and/or exclude. Object can also have <code>name</code> property,
+that will match entities with given name.</p>
 
 </div>
 
@@ -163,12 +166,17 @@ witch are arrays of component names to respectively include and/or exclude.</p>
             <h4>Example:</h4>
 
             <div class="example-content">
-                <pre class="code prettyprint"><code>var q1 = new Entropy.Engine.Query([&quot;Position&quot;, &quot;Velocity&quot;]);
-var q2 = new Entropy.Engine.Query({
+                <pre class="code prettyprint"><code>//matches entities with 'Position' and 'Velocity' components
+var q1 = new Entropy.Query([&quot;Position&quot;, &quot;Velocity&quot;]);
+
+//matches entities with 'Position' and 'Velocity' components and without 'Sprite' component
+var q2 = new Entropy.Query({
     include: [&quot;Position&quot;, &quot;Velocity&quot;],
     exclude: [&quot;Sprite&quot;]
 });
-var q3 = new Entropy.Engine.Query({
+
+//matches entities with name 'Ball'
+var q3 = new Entropy.Query({
     name: &quot;Ball&quot;
 });</code></pre>
 

@@ -17,7 +17,7 @@
                 <h1><img src="..\..\entropy.png" title="Entropy"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.3.0</em>
+            <em>API Docs for: 0.1.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -41,6 +41,8 @@
                                 <li><a href="../classes/Engine.html">Engine</a></li>
                                 <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
+                                <li><a href="../classes/Entropy.Animation.html">Entropy.Animation</a></li>
+                                <li><a href="../classes/EventEmitter.html">EventEmitter</a></li>
                                 <li><a href="../classes/Game.html">Game</a></li>
                                 <li><a href="../classes/Plugin.html">Plugin</a></li>
                                 <li><a href="../classes/Plugin.Input.html">Plugin.Input</a></li>
@@ -90,7 +92,7 @@
 
 
         <div class="foundat">
-            Defined in: <a href="../files/src_entropy.js.html#l28"><code>src\entropy.js:28</code></a>
+            Defined in: <a href="../files/src_entropy.js.html#l26"><code>src\entropy.js:26</code></a>
         </div>
 
             Module: <a href="../modules/Entropy.html">Entropy</a>
@@ -99,7 +101,7 @@
 
 
 <div class="box intro">
-    <p>Main static framework. Used as top namespace.</p>
+    <p>Main static framework class. Used as a top namespace.</p>
 
 </div>
 
@@ -120,6 +122,16 @@
 
                     <ul class="index-list methods">
                             <li class="index-item method">
+                                <a href="#method_Component">Component</a>
+
+                                    <span class="flag static">static</span>
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_Config">Config</a>
+
+                                    <span class="flag static">static</span>
+                            </li>
+                            <li class="index-item method">
                                 <a href="#method_Const">Const</a>
 
                                     <span class="flag static">static</span>
@@ -130,7 +142,32 @@
                                     <span class="flag static">static</span>
                             </li>
                             <li class="index-item method">
+                                <a href="#method_Entity">Entity</a>
+
+                                    <span class="flag static">static</span>
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_EventEmitter">EventEmitter</a>
+
+                                    <span class="flag static">static</span>
+                            </li>
+                            <li class="index-item method">
                                 <a href="#method_Game">Game</a>
+
+                                    <span class="flag static">static</span>
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_Query">Query</a>
+
+                                    <span class="flag static">static</span>
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_State">State</a>
+
+                                    <span class="flag static">static</span>
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_System">System</a>
 
                                     <span class="flag static">static</span>
                             </li>
@@ -144,6 +181,115 @@
             <div id="methods" class="api-class-tabpanel">
                 <h2 class="off-left">Methods</h2>
 
+<div id="method_Component" class="method item">
+    <h3 class="name"><code>Component</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>component</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+        <span class="flag static">static</span>
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_entropy.js.html#l37"><code>src\entropy.js:37</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Registers new component pattern.
+Only argument should be an object with obligatory <code>name</code> property and <code>initialize</code> method.
+This method is used to assign some data to component object. <code>this</code> inside <code>initialize</code> function is a
+reference to newly created component object.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">component</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>component pattern</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+        <div class="example">
+            <h4>Example:</h4>
+
+            <div class="example-content">
+                <pre class="code prettyprint"><code>Entropy.Component({
+    name: &quot;Position&quot;,
+    initialize: function (x, y) {
+        this.x = x;
+        this.y = y;
+    },
+    //not obligatory
+    reset: function () {
+        this.x = 0;
+        this.y = 0;
+    }
+});</code></pre>
+
+            </div>
+        </div>
+</div>
+<div id="method_Config" class="method item">
+    <h3 class="name"><code>Config</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+
+
+        <span class="flag static">static</span>
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_entropy.js.html#l177"><code>src\entropy.js:177</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Config class reference.</p>
+
+    </div>
+
+
+
+
+</div>
 <div id="method_Const" class="method item">
     <h3 class="name"><code>Const</code></h3>
 
@@ -169,7 +315,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_entropy.js.html#l39"><code>src\entropy.js:39</code></a>
+        <a href="../files/src_entropy.js.html#l142"><code>src\entropy.js:142</code></a>
         </p>
 
 
@@ -241,7 +387,7 @@ Entropy.WIDTH; //800</code></pre>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_entropy.js.html#l67"><code>src\entropy.js:67</code></a>
+        <a href="../files/src_entropy.js.html#l168"><code>src\entropy.js:168</code></a>
         </p>
 
 
@@ -250,6 +396,126 @@ Entropy.WIDTH; //800</code></pre>
 
     <div class="description">
         <p><a href="../classes/Engine.html" class="crosslink">Engine</a> class reference.</p>
+
+    </div>
+
+
+
+
+</div>
+<div id="method_Entity" class="method item">
+    <h3 class="name"><code>Entity</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>entity</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+        <span class="flag static">static</span>
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_entropy.js.html#l65"><code>src\entropy.js:65</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Registers new entity pattern.</p>
+<p>Pattern is an object with following properties:</p>
+<ul>
+<li><strong>name</strong> (required) - name of an entity</li>
+<li><strong>create</strong> (required) - method called when creating new entity. Here you should add initial components to an entity.
+<code>this</code> inside function references newly created entity object (instance of <a href="../classes/Entity.html" class="crosslink">Entity</a> class).
+Function is called with first argument being <code>game</code> object and every others are parameters with witch <a href="../classes/Engine.html#method_create" class="crosslink">create</a> method is called.</li>
+<li><strong>remove</strong> (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).
+First and only argument is a <code>game</code> object.</li>
+</ul>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">entity</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>entity pattern</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+        <div class="example">
+            <h4>Example:</h4>
+
+            <div class="example-content">
+                <pre class="code prettyprint"><code>Entropy.Entity({
+    name: &quot;Ball&quot;,
+    create: function (game, x, y, radius) {
+        var sprite = new Sprite(&quot;Ball&quot;);
+
+        game.container.make(&quot;renderer&quot;).addSprite(sprite);
+
+        this.add(&quot;Position&quot;, x, y)
+            .add(&quot;Radius&quot;, radius)
+            .add(&quot;Velocity&quot;, 5, 5)
+            .add(&quot;Sprite&quot;, sprite);
+    },
+    //not oblgatory
+    remove: function (game) {
+        game.container.make(&quot;renderer&quot;).removeSprite(this.components.sprite.sprite);
+    }
+});</code></pre>
+
+            </div>
+        </div>
+</div>
+<div id="method_EventEmitter" class="method item">
+    <h3 class="name"><code>EventEmitter</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+
+
+        <span class="flag static">static</span>
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_entropy.js.html#l216"><code>src\entropy.js:216</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p><a href="../classes/EventEmitter.html" class="crosslink">EventEmitter</a> class reference.</p>
 
     </div>
 
@@ -273,7 +539,7 @@ Entropy.WIDTH; //800</code></pre>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_entropy.js.html#l58"><code>src\entropy.js:58</code></a>
+        <a href="../files/src_entropy.js.html#l159"><code>src\entropy.js:159</code></a>
         </p>
 
 
@@ -288,6 +554,191 @@ Entropy.WIDTH; //800</code></pre>
 
 
 
+</div>
+<div id="method_Query" class="method item">
+    <h3 class="name"><code>Query</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+
+
+        <span class="flag static">static</span>
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_entropy.js.html#l186"><code>src\entropy.js:186</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p><a href="../classes/Query.html" class="crosslink">Query</a> class reference.</p>
+
+    </div>
+
+
+
+
+</div>
+<div id="method_State" class="method item">
+    <h3 class="name"><code>State</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>state</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+        <span class="flag static">static</span>
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_entropy.js.html#l195"><code>src\entropy.js:195</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Registers new state. This method simply calls State's <a href="../classes/State.html#method_Register" class="crosslink">Register</a> static method.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">state</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>state object</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+        <div class="example">
+            <h4>Example:</h4>
+
+            <div class="example-content">
+                <pre class="code prettyprint"><code>Entropy.State({
+    //state object here
+});</code></pre>
+
+            </div>
+        </div>
+</div>
+<div id="method_System" class="method item">
+    <h3 class="name"><code>System</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>system</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+        <span class="flag static">static</span>
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_entropy.js.html#l103"><code>src\entropy.js:103</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Registers new system pattern.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">system</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>system pattern object</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+        <div class="example">
+            <h4>Example:</h4>
+
+            <div class="example-content">
+                <pre class="code prettyprint"><code>Entropy.System({
+    name: &quot;MovementSystem&quot;,
+    priority: 1, //not obligatory
+    initialize: function () {
+        this.query = new Entropy.Query([&quot;Position&quot;, &quot;Velocity&quot;]);
+    },
+    update: function (delta) {
+        var entities = this.engine.getEntities(this.query);
+        var e;
+
+        var i = 0;
+        while (e = entities[i]) {
+            var position = e.components.position;
+            var velocity = e.components.velocity;
+
+            position.x += delta / 1000 * velocity.vx;
+            position.y += delta / 1000 * velocity.vy;
+
+            i++;
+        }
+    },
+    //not obligatory
+    remove: function () {
+
+    }
+});</code></pre>
+
+            </div>
+        </div>
 </div>
             </div>
 

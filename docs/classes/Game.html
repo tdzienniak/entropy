@@ -17,7 +17,7 @@
                 <h1><img src="..\..\entropy.png" title="Entropy"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.3.0</em>
+            <em>API Docs for: 0.1.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -41,6 +41,8 @@
                                 <li><a href="../classes/Engine.html">Engine</a></li>
                                 <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
+                                <li><a href="../classes/Entropy.Animation.html">Entropy.Animation</a></li>
+                                <li><a href="../classes/EventEmitter.html">EventEmitter</a></li>
                                 <li><a href="../classes/Game.html">Game</a></li>
                                 <li><a href="../classes/Plugin.html">Plugin</a></li>
                                 <li><a href="../classes/Plugin.Input.html">Plugin.Input</a></li>
@@ -89,7 +91,7 @@
 <div class="box meta">
 
         <div class="extends">
-            Extends EventEmitter
+            Extends <a href="../classes/EventEmitter.html" class="crosslink">EventEmitter</a>
         </div>
 
         <div class="foundat">
@@ -123,6 +125,10 @@
                     <h3>Methods</h3>
 
                     <ul class="index-list methods extends">
+                            <li class="index-item method inherited">
+                                <a href="#method_on">on</a>
+
+                            </li>
                             <li class="index-item method">
                                 <a href="#method_pause">pause</a>
 
@@ -136,11 +142,6 @@
 
                             </li>
                             <li class="index-item method">
-                                <a href="#method_State">State</a>
-
-                                    <span class="flag static">static</span>
-                            </li>
-                            <li class="index-item method">
                                 <a href="#method_stop">stop</a>
 
                             </li>
@@ -151,6 +152,10 @@
                     <h3>Properties</h3>
 
                     <ul class="index-list properties extends">
+                            <li class="index-item property private inherited">
+                                <a href="#property__events">_events</a>
+
+                            </li>
                             <li class="index-item property">
                                 <a href="#property_container">container</a>
 
@@ -180,6 +185,112 @@
             <div id="methods" class="api-class-tabpanel">
                 <h2 class="off-left">Methods</h2>
 
+<div id="method_on" class="method item inherited">
+    <h3 class="name"><code>on</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>event</code>
+                </li>
+                <li class="arg">
+                        <code>fn</code>
+                </li>
+                <li class="arg">
+                        <code>binding</code>
+                </li>
+                <li class="arg">
+                        <code>once</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/EventEmitter.html#method_on">EventEmitter</a>:
+        <a href="../files/src_core_event.js.html#l24"><code>src\core\event.js:24</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Method used to register event listener.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">event</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                        <p>event name</p>
+
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">fn</code>
+                        <span class="type">Function</span>
+
+
+                    <div class="param-description">
+                        <p>event listener</p>
+
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">binding</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>context used as <code>this</code> when calling listener</p>
+
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">once</code>
+                        <span class="type">Boolean</span>
+
+
+                    <div class="param-description">
+                        <p>if set to <code>true</code>, listener will be called once, then will be unregistered</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+        <div class="example">
+            <h4>Example:</h4>
+
+            <div class="example-content">
+                <pre class="code prettyprint"><code>emitter.on('event', function () {
+    console.log(this.foo); //bar
+}, {foo: 'bar'});</code></pre>
+
+            </div>
+        </div>
+</div>
 <div id="method_pause" class="method item">
     <h3 class="name"><code>pause</code></h3>
 
@@ -198,7 +309,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l137"><code>src\core\game.js:137</code></a>
+        <a href="../files/src_core_game.js.html#l121"><code>src\core\game.js:121</code></a>
         </p>
 
 
@@ -241,7 +352,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l153"><code>src\core\game.js:153</code></a>
+        <a href="../files/src_core_game.js.html#l137"><code>src\core\game.js:137</code></a>
         </p>
 
 
@@ -284,7 +395,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l91"><code>src\core\game.js:91</code></a>
+        <a href="../files/src_core_game.js.html#l75"><code>src\core\game.js:75</code></a>
         </p>
 
 
@@ -308,71 +419,6 @@
         </div>
 
 
-</div>
-<div id="method_State" class="method item">
-    <h3 class="name"><code>State</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>state</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_core_game.js.html#l73"><code>src\core\game.js:73</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Registers new state. This method simply calls State's <a href="../classes/State.html#method_Register" class="crosslink">Register</a> static method.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">state</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        <p>state object</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-        <div class="example">
-            <h4>Example:</h4>
-
-            <div class="example-content">
-                <pre class="code prettyprint"><code>Entropy.Game.State({
-    //state object here
-});</code></pre>
-
-            </div>
-        </div>
 </div>
 <div id="method_stop" class="method item">
     <h3 class="name"><code>stop</code></h3>
@@ -398,7 +444,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_game.js.html#l107"><code>src\core\game.js:107</code></a>
+        <a href="../files/src_core_game.js.html#l91"><code>src\core\game.js:91</code></a>
         </p>
 
 
@@ -445,6 +491,32 @@
             <div id="properties" class="api-class-tabpanel">
                 <h2 class="off-left">Properties</h2>
 
+                    <div id="property__events" class="property item private inherited">
+                        <h3 class="name"><code>_events</code></h3>
+                        <span class="type">Object</span>
+                    
+                    
+                            <span class="flag private">private</span>
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>Inherited from
+                                    <a href="../classes/EventEmitter.html#property__events">EventEmitter</a>:
+                            <a href="../files/src_core_event.js.html#l14"><code>src\core\event.js:14</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Object with registered event listeners. Keys are event names.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
                     <div id="property_container" class="property item">
                         <h3 class="name"><code>container</code></h3>
                         <span class="type">Inverse</span>

@@ -17,7 +17,7 @@
                 <h1><img src="..\..\entropy.png" title="Entropy"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.3.0</em>
+            <em>API Docs for: 0.1.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -41,6 +41,8 @@
                                 <li><a href="../classes/Engine.html">Engine</a></li>
                                 <li><a href="../classes/Entity.html">Entity</a></li>
                                 <li><a href="../classes/Entropy.html">Entropy</a></li>
+                                <li><a href="../classes/Entropy.Animation.html">Entropy.Animation</a></li>
+                                <li><a href="../classes/EventEmitter.html">EventEmitter</a></li>
                                 <li><a href="../classes/Game.html">Game</a></li>
                                 <li><a href="../classes/Plugin.html">Plugin</a></li>
                                 <li><a href="../classes/Plugin.Input.html">Plugin.Input</a></li>
@@ -89,7 +91,7 @@
 <div class="box meta">
 
         <div class="extends">
-            Extends EventEmitter
+            Extends <a href="../classes/EventEmitter.html" class="crosslink">EventEmitter</a>
         </div>
 
         <div class="foundat">
@@ -173,36 +175,20 @@
 
                             </li>
                             <li class="index-item method">
-                                <a href="#method_Component">Component</a>
-
-                                    <span class="flag static">static</span>
-                            </li>
-                            <li class="index-item method">
                                 <a href="#method_create">create</a>
 
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_Entity">Entity</a>
-
-                                    <span class="flag static">static</span>
                             </li>
                             <li class="index-item method">
                                 <a href="#method_getEntities">getEntities</a>
 
                             </li>
-                            <li class="index-item method">
-                                <a href="#method_Query">Query</a>
+                            <li class="index-item method inherited">
+                                <a href="#method_on">on</a>
 
-                                    <span class="flag static">static</span>
                             </li>
                             <li class="index-item method">
                                 <a href="#method_remove">remove</a>
 
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_System">System</a>
-
-                                    <span class="flag static">static</span>
                             </li>
                     </ul>
                 </div>
@@ -213,6 +199,10 @@
                     <ul class="index-list properties extends">
                             <li class="index-item property private">
                                 <a href="#property__entities">_entities</a>
+
+                            </li>
+                            <li class="index-item property private inherited">
+                                <a href="#property__events">_events</a>
 
                             </li>
                             <li class="index-item property private">
@@ -259,7 +249,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l693"><code>src\core\engine.js:693</code></a>
+        <a href="../files/src_core_engine.js.html#l566"><code>src\core\engine.js:566</code></a>
         </p>
 
 
@@ -306,7 +296,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l709"><code>src\core\engine.js:709</code></a>
+        <a href="../files/src_core_engine.js.html#l582"><code>src\core\engine.js:582</code></a>
         </p>
 
 
@@ -363,7 +353,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l320"><code>src\core\engine.js:320</code></a>
+        <a href="../files/src_core_engine.js.html#l193"><code>src\core\engine.js:193</code></a>
         </p>
 
 
@@ -441,7 +431,7 @@ game.engine.addSystem([&quot;Renderer&quot;, 1], rendererObject);</code></pre>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l453"><code>src\core\engine.js:453</code></a>
+        <a href="../files/src_core_engine.js.html#l326"><code>src\core\engine.js:326</code></a>
         </p>
 
 
@@ -464,83 +454,6 @@ game.engine.addSystem([&quot;Renderer&quot;, 1], rendererObject);</code></pre>
         </div>
 
 
-</div>
-<div id="method_Component" class="method item">
-    <h3 class="name"><code>Component</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>component</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_core_engine.js.html#l100"><code>src\core\engine.js:100</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Registers new component pattern.
-Only argument should be an object with obligatory <code>name</code> property and <code>initialize</code> method.
-This method is used to assign some data to component object. <code>this</code> inside <code>initialize</code> function is a
-reference to newly created component object.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">component</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        <p>component pattern</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-        <div class="example">
-            <h4>Example:</h4>
-
-            <div class="example-content">
-                <pre class="code prettyprint"><code>Entropy.Engine.Component({
-    name: &quot;Position&quot;,
-    initialize: function (x, y) {
-        this.x = x;
-        this.y = y;
-    },
-    //not obligatory
-    reset: function () {
-        this.x = 0;
-        this.y = 0;
-    }
-});</code></pre>
-
-            </div>
-        </div>
 </div>
 <div id="method_create" class="method item">
     <h3 class="name"><code>create</code></h3>
@@ -566,7 +479,7 @@ reference to newly created component object.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l229"><code>src\core\engine.js:229</code></a>
+        <a href="../files/src_core_engine.js.html#l102"><code>src\core\engine.js:102</code></a>
         </p>
 
 
@@ -619,94 +532,6 @@ Patterns <code>create</code> method is called imediatelly after calling this met
             </div>
         </div>
 </div>
-<div id="method_Entity" class="method item">
-    <h3 class="name"><code>Entity</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>entity</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_core_engine.js.html#l128"><code>src\core\engine.js:128</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Registers new entity pattern.</p>
-<p>Pattern is an object with following properties:</p>
-<ul>
-<li><strong>name</strong> (required) - name of an entity</li>
-<li><strong>create</strong> (required) - method called when creating new entity. Here you should add initial components to an entity.
-<code>this</code> inside function references newly created entity object (instance of <a href="../classes/Entity.html" class="crosslink">Entity</a> class).
-Function is called with first argument being <code>game</code> object and every others are parameters with witch <a href="../classes/Engine.html#method_create" class="crosslink">create</a> method is called.</li>
-<li><strong>remove</strong> (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).
-First and only argument is a <code>game</code> object.</li>
-</ul>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">entity</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        <p>entity pattern</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-        <div class="example">
-            <h4>Example:</h4>
-
-            <div class="example-content">
-                <pre class="code prettyprint"><code>Entropy.Engine.Entity({
-    name: &quot;Ball&quot;,
-    create: function (game, x, y, radius) {
-        var sprite = new Sprite(&quot;Ball&quot;);
-
-        game.container.make(&quot;renderer&quot;).addSprite(sprite);
-
-        this.add(&quot;Position&quot;, x, y)
-            .add(&quot;Radius&quot;, radius)
-            .add(&quot;Velocity&quot;, 5, 5)
-            .add(&quot;Sprite&quot;, sprite);
-    },
-    //not oblgatory
-    remove: function (game) {
-        game.container.make(&quot;renderer&quot;).removeSprite(this.components.sprite.sprite);
-    }
-});</code></pre>
-
-            </div>
-        </div>
-</div>
 <div id="method_getEntities" class="method item">
     <h3 class="name"><code>getEntities</code></h3>
 
@@ -731,7 +556,7 @@ First and only argument is a <code>game</code> object.</li>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l292"><code>src\core\engine.js:292</code></a>
+        <a href="../files/src_core_engine.js.html#l165"><code>src\core\engine.js:165</code></a>
         </p>
 
 
@@ -792,32 +617,37 @@ var movingEntities = this.engine.getEntities(this.query);
             </div>
         </div>
 </div>
-<div id="method_Query" class="method item">
-    <h3 class="name"><code>Query</code></h3>
+<div id="method_on" class="method item inherited">
+    <h3 class="name"><code>on</code></h3>
 
         <div class="args">
             <span class="paren">(</span><ul class="args-list inline commas">
                 <li class="arg">
-                        <code>criterions</code>
+                        <code>event</code>
+                </li>
+                <li class="arg">
+                        <code>fn</code>
+                </li>
+                <li class="arg">
+                        <code>binding</code>
+                </li>
+                <li class="arg">
+                        <code>once</code>
                 </li>
             </ul><span class="paren">)</span>
         </div>
 
-        <span class="returns-inline">
-            <span class="type">Object</span>
-        </span>
 
 
 
 
-        <span class="flag static">static</span>
 
 
 
     <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_core_engine.js.html#l205"><code>src\core\engine.js:205</code></a>
+                <p>Inherited from
+                <a href="../classes/EventEmitter.html#method_on">EventEmitter</a>:
+        <a href="../files/src_core_event.js.html#l24"><code>src\core\event.js:24</code></a>
         </p>
 
 
@@ -825,10 +655,7 @@ var movingEntities = this.engine.getEntities(this.query);
     </div>
 
     <div class="description">
-        <p>Used to perform matching of entities.
-Only parameter is an array of component names to include or object with <code>include</code> and/or <code>exclude</code> properties,
-witch are arrays of component names to respectively include and/or exclude.</p>
-
+        Method used to register event listener.
     </div>
 
         <div class="params">
@@ -836,42 +663,57 @@ witch are arrays of component names to respectively include and/or exclude.</p>
 
             <ul class="params-list">
                 <li class="param">
-                        <code class="param-name">criterions</code>
-                        <span class="type">Array | Object</span>
+                        <code class="param-name">event</code>
+                        <span class="type">String</span>
 
 
                     <div class="param-description">
-                        <p>query matching criterions</p>
+                        event name
+                    </div>
 
+                </li>
+                <li class="param">
+                        <code class="param-name">fn</code>
+                        <span class="type">Function</span>
+
+
+                    <div class="param-description">
+                        event listener
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">binding</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        context used as <code>this</code> when calling listener
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">once</code>
+                        <span class="type">Boolean</span>
+
+
+                    <div class="param-description">
+                        if set to <code>true</code>, listener will be called once, then will be unregistered
                     </div>
 
                 </li>
             </ul>
         </div>
 
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Object</span>:
-                    <p>query object</p>
-
-            </div>
-        </div>
 
 
         <div class="example">
             <h4>Example:</h4>
 
             <div class="example-content">
-                <pre class="code prettyprint"><code>var q1 = new Entropy.Engine.Query([&quot;Position&quot;, &quot;Velocity&quot;]);
-var q2 = new Entropy.Engine.Query({
-    include: [&quot;Position&quot;, &quot;Velocity&quot;],
-    exclude: [&quot;Sprite&quot;]
-});
-var q3 = new Entropy.Engine.Query({
-    name: &quot;Ball&quot;
-});</code></pre>
+                <pre class="code prettyprint"><code>emitter.on('event', function () {
+    console.log(this.foo); //bar
+}, {foo: 'bar'});</code></pre>
 
             </div>
         </div>
@@ -900,7 +742,7 @@ var q3 = new Entropy.Engine.Query({
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l266"><code>src\core\engine.js:266</code></a>
+        <a href="../files/src_core_engine.js.html#l139"><code>src\core\engine.js:139</code></a>
         </p>
 
 
@@ -954,94 +796,6 @@ if (entity.components.hp.quantity &lt;= 0) { //entity is dead, remove
             </div>
         </div>
 </div>
-<div id="method_System" class="method item">
-    <h3 class="name"><code>System</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>system</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_core_engine.js.html#l166"><code>src\core\engine.js:166</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Registers new system pattern.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">system</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        <p>system pattern object</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-        <div class="example">
-            <h4>Example:</h4>
-
-            <div class="example-content">
-                <pre class="code prettyprint"><code>Entropy.Engine.System({
-    name: &quot;MovementSystem&quot;,
-    priority: 1, //not obligatory
-    initialize: function () {
-        this.query = new Entropy.Engine.Query([&quot;Position&quot;, &quot;Velocity&quot;]);
-    },
-    update: function (delta) {
-        var entities = this.engine.getEntities(this.query);
-        var e;
-
-        var i = 0;
-        while (e = entities[i]) {
-            var position = e.components.position;
-            var velocity = e.components.velocity;
-
-            position.x += delta / 1000 * velocity.vx;
-            position.y += delta / 1000 * velocity.vy;
-
-            i++;
-        }
-    },
-    //not obligatory
-    remove: function () {
-
-    }
-});</code></pre>
-
-            </div>
-        </div>
-</div>
             </div>
 
             <div id="properties" class="api-class-tabpanel">
@@ -1068,6 +822,31 @@ if (entity.components.hp.quantity &lt;= 0) { //entity is dead, remove
                         <div class="description">
                             <p>Array with entities. Array index corresponds to ID of an entity.</p>
                     
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="property__events" class="property item private inherited">
+                        <h3 class="name"><code>_events</code></h3>
+                        <span class="type">Object</span>
+                    
+                    
+                            <span class="flag private">private</span>
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>Inherited from
+                                    <a href="../classes/EventEmitter.html#property__events">EventEmitter</a>:
+                            <a href="../files/src_core_event.js.html#l14"><code>src\core\event.js:14</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            Object with registered event listeners. Keys are event names.
                         </div>
                     
                     

@@ -2,7 +2,7 @@
     "project": {
         "name": "Entropy",
         "description": "Framework for making games and not only games in entity system manner.",
-        "version": "0.3.0",
+        "version": "0.1.0",
         "logo": "../entropy.png"
     },
     "files": {
@@ -20,6 +20,15 @@
             "modules": {},
             "classes": {
                 "Entity": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\core\\event.js": {
+            "name": "src\\core\\event.js",
+            "modules": {},
+            "classes": {
+                "EventEmitter": 1
             },
             "fors": {},
             "namespaces": {}
@@ -89,6 +98,15 @@
             "fors": {},
             "namespaces": {}
         },
+        "plugins\\animation\\Animation.js": {
+            "name": "plugins\\animation\\Animation.js",
+            "modules": {},
+            "classes": {
+                "Entropy.Animation": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
         "plugins\\input\\index.js": {
             "name": "plugins\\input\\index.js",
             "modules": {},
@@ -106,6 +124,7 @@
             "classes": {
                 "Engine": 1,
                 "Entity": 1,
+                "EventEmitter": 1,
                 "Game": 1,
                 "Plugin": 1,
                 "Pool": 1,
@@ -113,6 +132,7 @@
                 "State": 1,
                 "Ticker": 1,
                 "Entropy": 1,
+                "Entropy.Animation": 1,
                 "Plugin.Input": 1
             },
             "fors": {},
@@ -169,6 +189,20 @@
                     "type": "Engine"
                 }
             ]
+        },
+        "EventEmitter": {
+            "name": "EventEmitter",
+            "shortname": "EventEmitter",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Entropy",
+            "file": "src\\core\\event.js",
+            "line": 7,
+            "description": "EventEmitter class. This is very simple yet suficient event emitter implementation.",
+            "is_constructor": 1
         },
         "Game": {
             "name": "Game",
@@ -238,9 +272,9 @@
             "module": "Entropy",
             "file": "src\\core\\query.js",
             "line": 11,
-            "description": "Used to perform matching of entities.\nOnly parameter is an array of component names to include or object with `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
+            "description": "Used to perform matching of entities.\nOnly parameter is an array of component names to include or object with `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude. Object can also have `name` property,\nthat will match entities with given name.",
             "example": [
-                "\n    var q1 = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n    var q2 = new Entropy.Engine.Query({\n        include: [\"Position\", \"Velocity\"],\n        exclude: [\"Sprite\"]\n    });\n    var q3 = new Entropy.Engine.Query({\n        name: \"Ball\"\n    });"
+                "\n    //matches entities with 'Position' and 'Velocity' components\n    var q1 = new Entropy.Query([\"Position\", \"Velocity\"]);\n\n    //matches entities with 'Position' and 'Velocity' components and without 'Sprite' component\n    var q2 = new Entropy.Query({\n        include: [\"Position\", \"Velocity\"],\n        exclude: [\"Sprite\"]\n    });\n\n    //matches entities with name 'Ball'\n    var q3 = new Entropy.Query({\n        name: \"Ball\"\n    });"
             ],
             "is_constructor": 1,
             "params": [
@@ -302,9 +336,35 @@
             "module": "Entropy",
             "namespace": "",
             "file": "src\\entropy.js",
-            "line": 28,
-            "description": "Main static framework. Used as top namespace.",
+            "line": 26,
+            "description": "Main static framework class. Used as a top namespace.",
             "static": 1
+        },
+        "Entropy.Animation": {
+            "name": "Entropy.Animation",
+            "shortname": "Entropy.Animation",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Entropy",
+            "namespace": "",
+            "file": "plugins\\animation\\Animation.js",
+            "line": 1,
+            "description": "Animation class.",
+            "params": [
+                {
+                    "name": "frames",
+                    "description": "[description]",
+                    "type": "Array"
+                },
+                {
+                    "name": "fps",
+                    "description": "[description]",
+                    "type": "Number"
+                }
+            ]
         },
         "Plugin.Input": {
             "name": "Plugin.Input",
@@ -379,87 +439,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 100,
-            "description": "Registers new component pattern.\nOnly argument should be an object with obligatory `name` property and `initialize` method.\nThis method is used to assign some data to component object. `this` inside `initialize` function is a\nreference to newly created component object.",
-            "example": [
-                "\n    Entropy.Engine.Component({\n        name: \"Position\",\n        initialize: function (x, y) {\n            this.x = x;\n            this.y = y;\n        },\n        //not obligatory\n        reset: function () {\n            this.x = 0;\n            this.y = 0;\n        }\n    });"
-            ],
-            "itemtype": "method",
-            "name": "Component",
-            "static": 1,
-            "params": [
-                {
-                    "name": "component",
-                    "description": "component pattern",
-                    "type": "Object"
-                }
-            ],
-            "class": "Engine"
-        },
-        {
-            "file": "src\\core\\engine.js",
-            "line": 128,
-            "description": "Registers new entity pattern.\n\nPattern is an object with following properties:\n - __name__ (required) - name of an entity\n - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.\n  `this` inside function references newly created entity object (instance of {{#crossLink \"Entity\"}}Entity{{/crossLink}} class).\n  Function is called with first argument being `game` object and every others are parameters with witch {{#crossLink \"Engine/create:method\"}}create{{/crossLink}} method is called.\n - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).\n  First and only argument is a `game` object.",
-            "example": [
-                "\n    Entropy.Engine.Entity({\n        name: \"Ball\",\n        create: function (game, x, y, radius) {\n            var sprite = new Sprite(\"Ball\");\n\n            game.container.make(\"renderer\").addSprite(sprite);\n\n            this.add(\"Position\", x, y)\n                .add(\"Radius\", radius)\n                .add(\"Velocity\", 5, 5)\n                .add(\"Sprite\", sprite);\n        },\n        //not oblgatory\n        remove: function (game) {\n            game.container.make(\"renderer\").removeSprite(this.components.sprite.sprite);\n        }\n    });"
-            ],
-            "itemtype": "method",
-            "name": "Entity",
-            "static": 1,
-            "params": [
-                {
-                    "name": "entity",
-                    "description": "entity pattern",
-                    "type": "Object"
-                }
-            ],
-            "class": "Engine"
-        },
-        {
-            "file": "src\\core\\engine.js",
-            "line": 166,
-            "description": "Registers new system pattern.",
-            "example": [
-                "\n    Entropy.Engine.System({\n        name: \"MovementSystem\",\n        priority: 1, //not obligatory\n        initialize: function () {\n            this.query = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n        },\n        update: function (delta) {\n            var entities = this.engine.getEntities(this.query);\n            var e;\n\n            var i = 0;\n            while (e = entities[i]) {\n                var position = e.components.position;\n                var velocity = e.components.velocity;\n\n                position.x += delta / 1000 * velocity.vx;\n                position.y += delta / 1000 * velocity.vy;\n\n                i++;\n            }\n        },\n        //not obligatory\n        remove: function () {\n\n        }\n    });"
-            ],
-            "itemtype": "method",
-            "name": "System",
-            "static": 1,
-            "params": [
-                {
-                    "name": "system",
-                    "description": "system pattern object",
-                    "type": "Object"
-                }
-            ],
-            "class": "Engine"
-        },
-        {
-            "file": "src\\core\\engine.js",
-            "line": 205,
-            "description": "Used to perform matching of entities.\nOnly parameter is an array of component names to include or object with `include` and/or `exclude` properties,\nwitch are arrays of component names to respectively include and/or exclude.",
-            "example": [
-                "\n    var q1 = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n    var q2 = new Entropy.Engine.Query({\n        include: [\"Position\", \"Velocity\"],\n        exclude: [\"Sprite\"]\n    });\n    var q3 = new Entropy.Engine.Query({\n        name: \"Ball\"\n    });"
-            ],
-            "itemtype": "method",
-            "name": "Query",
-            "static": 1,
-            "params": [
-                {
-                    "name": "criterions",
-                    "description": "query matching criterions",
-                    "type": "Array|Object"
-                }
-            ],
-            "return": {
-                "description": "query object",
-                "type": "Object"
-            },
-            "class": "Engine"
-        },
-        {
-            "file": "src\\core\\engine.js",
-            "line": 229,
+            "line": 102,
             "description": "Creates new entity using pattern identified by `name` parameter.\nEvery additional parameter will be applied to patterns `create` method.\nPatterns `create` method is called imediatelly after calling this method.",
             "example": [
                 "\n    game.engine.create(\"Ball\", 5, 5, 5); //x, y, radius"
@@ -482,7 +462,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 266,
+            "line": 139,
             "description": "Removes entity from engine.\nEntity removal does not happen imediatelly, but after current update cycle.",
             "example": [
                 "\n    //somwhere in the system 'update' method\n    if (entity.components.hp.quantity <= 0) { //entity is dead, remove\n        game.engine.remove(entity);\n    }"
@@ -504,7 +484,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 292,
+            "line": 165,
             "description": "Returns array of entities satisfying given {{#crossLink \"Query\"}}query{{/crossLink}} conditions.\nReturned arrays length does not correspond with matched entities quantity.\nTo loop over entities start from 0 index, and then check if element is different than 0.\nThis method guaranties, that entities will be arranged as subsequent array slice, starting from 0 index and ending on element equal to 0.\nThe array is in this form for performance reasons.",
             "example": [
                 "\n    //in systems 'initialize' method...\n    this.query = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n\n    //in systems 'update' method\n    var movingEntities = this.engine.getEntities(this.query);\n\n    //here do something with entities in loop\n    ..."
@@ -526,7 +506,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 320,
+            "line": 193,
             "description": "Creates new system object and adds it to the engine. System patterns `initialize` method is called (if present).\nIt can be called in two ways - with first argument being either:\n- system name - then system has priority as defined by patterns `priority` property or 0.\n- array with two elements - system name and its desired priority. In this case patterns `priority` property is simply skiped.",
             "example": [
                 "\n    game.engine.addSystem(\"Renderer\", rendererObject);\n\n    //or\n\n    game.engine.addSystem([\"Renderer\", 1], rendererObject);"
@@ -549,7 +529,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 453,
+            "line": 326,
             "itemtype": "method",
             "name": "clear",
             "return": {
@@ -560,7 +540,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 693,
+            "line": 566,
             "description": "Returns ID for an entity. Reuses old IDs or creates new.",
             "access": "private",
             "tagname": "",
@@ -574,7 +554,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 709,
+            "line": 582,
             "description": "Initializes new query. Performs initial entity search.",
             "access": "private",
             "tagname": "",
@@ -611,6 +591,50 @@
                 "type": "Entity"
             },
             "class": "Entity"
+        },
+        {
+            "file": "src\\core\\event.js",
+            "line": 14,
+            "description": "Object with registered event listeners. Keys are event names.",
+            "access": "private",
+            "tagname": "",
+            "itemtype": "property",
+            "name": "_events",
+            "type": "Object",
+            "class": "EventEmitter"
+        },
+        {
+            "file": "src\\core\\event.js",
+            "line": 24,
+            "description": "Method used to register event listener.",
+            "example": [
+                "\n    emitter.on('event', function () {\n        console.log(this.foo); //bar\n    }, {foo: 'bar'});"
+            ],
+            "itemtype": "method",
+            "name": "on",
+            "params": [
+                {
+                    "name": "event",
+                    "description": "event name",
+                    "type": "String"
+                },
+                {
+                    "name": "fn",
+                    "description": "event listener",
+                    "type": "Function"
+                },
+                {
+                    "name": "binding",
+                    "description": "context used as `this` when calling listener",
+                    "type": "Object"
+                },
+                {
+                    "name": "once",
+                    "description": "if set to `true`, listener will be called once, then will be unregistered",
+                    "type": "Boolean"
+                }
+            ],
+            "class": "EventEmitter"
         },
         {
             "file": "src\\core\\game.js",
@@ -659,26 +683,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 73,
-            "description": "Registers new state. This method simply calls State's {{#crossLink \"State/Register:method\"}}Register{{/crossLink}} static method.",
-            "example": [
-                "\n    Entropy.Game.State({\n        //state object here\n    });"
-            ],
-            "static": 1,
-            "itemtype": "method",
-            "name": "State",
-            "params": [
-                {
-                    "name": "state",
-                    "description": "state object",
-                    "type": "Object"
-                }
-            ],
-            "class": "Game"
-        },
-        {
-            "file": "src\\core\\game.js",
-            "line": 91,
+            "line": 75,
             "description": "Starts the game. See Ticker's {{#crossLink \"Ticker/start:method\"}}start{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "start",
@@ -690,7 +695,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 107,
+            "line": 91,
             "description": "Stops the game. See Ticker's {{#crossLink \"Ticker/stop:method\"}}stop{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "stop",
@@ -709,7 +714,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 137,
+            "line": 121,
             "description": "Pauses the game. See Ticker's {{#crossLink \"Ticker/pause:method\"}}pause{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "pause",
@@ -721,7 +726,7 @@
         },
         {
             "file": "src\\core\\game.js",
-            "line": 153,
+            "line": 137,
             "description": "Resumes the game. See Ticker's {{#crossLink \"Ticker/resume:method\"}}resume{{/crossLink}} method for more details.",
             "itemtype": "method",
             "name": "resume",
@@ -1006,7 +1011,67 @@
         },
         {
             "file": "src\\entropy.js",
-            "line": 39,
+            "line": 37,
+            "description": "Registers new component pattern.\nOnly argument should be an object with obligatory `name` property and `initialize` method.\nThis method is used to assign some data to component object. `this` inside `initialize` function is a\nreference to newly created component object.",
+            "example": [
+                "\n    Entropy.Component({\n        name: \"Position\",\n        initialize: function (x, y) {\n            this.x = x;\n            this.y = y;\n        },\n        //not obligatory\n        reset: function () {\n            this.x = 0;\n            this.y = 0;\n        }\n    });"
+            ],
+            "itemtype": "method",
+            "name": "Component",
+            "static": 1,
+            "params": [
+                {
+                    "name": "component",
+                    "description": "component pattern",
+                    "type": "Object"
+                }
+            ],
+            "class": "Entropy",
+            "module": "Entropy"
+        },
+        {
+            "file": "src\\entropy.js",
+            "line": 65,
+            "description": "Registers new entity pattern.\n\nPattern is an object with following properties:\n - __name__ (required) - name of an entity\n - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.\n  `this` inside function references newly created entity object (instance of {{#crossLink \"Entity\"}}Entity{{/crossLink}} class).\n  Function is called with first argument being `game` object and every others are parameters with witch {{#crossLink \"Engine/create:method\"}}create{{/crossLink}} method is called.\n - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).\n  First and only argument is a `game` object.",
+            "example": [
+                "\n    Entropy.Entity({\n        name: \"Ball\",\n        create: function (game, x, y, radius) {\n            var sprite = new Sprite(\"Ball\");\n\n            game.container.make(\"renderer\").addSprite(sprite);\n\n            this.add(\"Position\", x, y)\n                .add(\"Radius\", radius)\n                .add(\"Velocity\", 5, 5)\n                .add(\"Sprite\", sprite);\n        },\n        //not oblgatory\n        remove: function (game) {\n            game.container.make(\"renderer\").removeSprite(this.components.sprite.sprite);\n        }\n    });"
+            ],
+            "itemtype": "method",
+            "name": "Entity",
+            "static": 1,
+            "params": [
+                {
+                    "name": "entity",
+                    "description": "entity pattern",
+                    "type": "Object"
+                }
+            ],
+            "class": "Entropy",
+            "module": "Entropy"
+        },
+        {
+            "file": "src\\entropy.js",
+            "line": 103,
+            "description": "Registers new system pattern.",
+            "example": [
+                "\n    Entropy.System({\n        name: \"MovementSystem\",\n        priority: 1, //not obligatory\n        initialize: function () {\n            this.query = new Entropy.Query([\"Position\", \"Velocity\"]);\n        },\n        update: function (delta) {\n            var entities = this.engine.getEntities(this.query);\n            var e;\n\n            var i = 0;\n            while (e = entities[i]) {\n                var position = e.components.position;\n                var velocity = e.components.velocity;\n\n                position.x += delta / 1000 * velocity.vx;\n                position.y += delta / 1000 * velocity.vy;\n\n                i++;\n            }\n        },\n        //not obligatory\n        remove: function () {\n\n        }\n    });"
+            ],
+            "itemtype": "method",
+            "name": "System",
+            "static": 1,
+            "params": [
+                {
+                    "name": "system",
+                    "description": "system pattern object",
+                    "type": "Object"
+                }
+            ],
+            "class": "Entropy",
+            "module": "Entropy"
+        },
+        {
+            "file": "src\\entropy.js",
+            "line": 142,
             "description": "Assignes new property to main Entropy namespace identified by key (uppercased).\nOnce assigned, can't be assigned again.\nCan be later accessed by: Entropy.KEY",
             "example": [
                 "\n    Entropy.Const('WIDTH', 800);\n\n    Entropy.WIDTH; //800"
@@ -1031,7 +1096,7 @@
         },
         {
             "file": "src\\entropy.js",
-            "line": 58,
+            "line": 159,
             "description": "{{#crossLink \"Game\"}}Game{{/crossLink}} class reference.",
             "static": 1,
             "itemtype": "method",
@@ -1042,12 +1107,65 @@
         },
         {
             "file": "src\\entropy.js",
-            "line": 67,
+            "line": 168,
             "description": "{{#crossLink \"Engine\"}}Engine{{/crossLink}} class reference.",
             "static": 1,
             "itemtype": "method",
             "name": "Engine",
             "type": "{Engine}",
+            "class": "Entropy",
+            "module": "Entropy"
+        },
+        {
+            "file": "src\\entropy.js",
+            "line": 177,
+            "description": "{{#crossLink \"Config\"}}Config{{/crossLink}} class reference.",
+            "static": 1,
+            "itemtype": "method",
+            "name": "Config",
+            "type": "{Config}",
+            "class": "Entropy",
+            "module": "Entropy"
+        },
+        {
+            "file": "src\\entropy.js",
+            "line": 186,
+            "description": "{{#crossLink \"Query\"}}Query{{/crossLink}} class reference.",
+            "static": 1,
+            "itemtype": "method",
+            "name": "Query",
+            "type": "{Query}",
+            "class": "Entropy",
+            "module": "Entropy"
+        },
+        {
+            "file": "src\\entropy.js",
+            "line": 195,
+            "description": "Registers new state. This method simply calls State's {{#crossLink \"State/Register:method\"}}Register{{/crossLink}} static method.",
+            "example": [
+                "\n    Entropy.State({\n        //state object here\n    });"
+            ],
+            "static": 1,
+            "itemtype": "method",
+            "name": "State",
+            "params": [
+                {
+                    "name": "state",
+                    "description": "state object",
+                    "type": "Object"
+                }
+            ],
+            "class": "Entropy",
+            "module": "Entropy"
+        },
+        {
+            "file": "src\\entropy.js",
+            "line": 216,
+            "description": "{{#crossLink \"EventEmitter\"}}EventEmitter{{/crossLink}} class reference.",
+            "static": 1,
+            "itemtype": "method",
+            "name": "EventEmitter",
+            "type": "{EventEmitter}",
             "class": "Entropy",
             "module": "Entropy"
         }
