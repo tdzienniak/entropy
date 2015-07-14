@@ -4,11 +4,37 @@ var is = require('check-types');
 var extend = require('node.extend');
 var slice = Array.prototype.slice;
 
+/**
+ * EventEmitter class. This is very simple yet suficient event emitter implementation.
+ *
+ * @class EventEmitter
+ * @constructor
+ */
 function EventEmitter () {
+    /**
+     * Object with registered event listeners. Keys are event names.
+     * 
+     * @private
+     * @property {Object} _events
+     */
     this._events = {};
 }
 
 extend(EventEmitter.prototype, {
+    /**
+     * Method used to register event listener.
+     *
+     * @example
+     *     emitter.on('event', function () {
+     *         console.log(this.foo); //bar
+     *     }, {foo: 'bar'});
+     *
+     * @method on
+     * @param  {String}     event   event name
+     * @param  {Function}   fn      event listener
+     * @param  {Object}     binding context used as `this` when calling listener
+     * @param  {Boolean}    once    if set to `true`, listener will be called once, then will be unregistered
+     */
     on: function (event, fn, binding, once) {
         if (is.not.string(event) || is.not.function(fn)) {
             return;

@@ -34,7 +34,7 @@ npm install grunt-cli -g
 
 Then, to build run:
 ```
-grunt
+grunt build
 ```
 
 ##Docs##

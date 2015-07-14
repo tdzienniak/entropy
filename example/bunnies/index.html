@@ -19,13 +19,14 @@
     <script src="../lib/pixi.min.js"></script>
     <script src="../lib/memory-stats.js"></script>
     <script src="../../build/entropy.js"></script>
+    <script src="../../build/entropy-plugins.js"></script>
     <script>
         /*
          * STATES
          */
         var stage, renderer, game;
 
-        Entropy.Game.State({
+        Entropy.State({
             name: "initialize",
             initialize: function (game, done) {
                 Entropy.Const("WIDTH", 600);
@@ -75,7 +76,7 @@
         });
 
 
-        Entropy.Engine.Component({
+        Entropy.Component({
             name: "Position",
             initialize: function (x, y) {
                 this.x = x;
@@ -83,7 +84,7 @@
             }
         });
 
-        Entropy.Engine.Component({
+        Entropy.Component({
             name: "Velocity",
             initialize: function (vx, vy) {
                 this.vx = vx;
@@ -91,14 +92,14 @@
             }
         });
 
-        Entropy.Engine.Component({
+        Entropy.Component({
             name: "Sprite",
             initialize: function (sprite) {
                 this.sprite = sprite;
             }
         });
 
-        Entropy.Engine.Entity({
+        Entropy.Entity({
             name: "Bunny",
             create: function (game, bunnyTexture) {
                 var sprite = new PIXI.Sprite(bunnyTexture);
@@ -117,7 +118,7 @@
         });
 
 
-        Entropy.Engine.System({
+        Entropy.System({
             name: "BunnyMovement",
             initialize: function (fps) {
                 this.fpsContainer = fps;
@@ -166,7 +167,7 @@
             }
         });
         
-        Entropy.Engine.System({
+        Entropy.System({
             name: "SpritePositionUpdater",
             initialize: function () {
                 this.query = new Entropy.Engine.Query(['Position', 'Sprite']);
@@ -190,7 +191,7 @@
             }
         });
 
-        Entropy.Engine.System({
+        Entropy.System({
             name: "Render",
             initialize: function () {
                 this.stage = stage;

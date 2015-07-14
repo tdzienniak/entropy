@@ -1,6 +1,6 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Entropy = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
- * @license BitSet.js v1.0.2 16/06/2014
+ * @license BitSet.js v1.1.0 06/02/2015
  * http://www.xarg.org/2014/03/javascript-bit-array/
  *
  * Copyright (c) 2014, Robert Eisele (robert@xarg.org)
@@ -20,7 +20,7 @@ function BitSet(alloc, value) {
     if (alloc === undefined) {
         alloc = 31;
     } else if (typeof alloc === 'string') {
-        alloc = alloc['length'];
+        alloc = alloc.length;
     }
 
     if (value !== 1) {
@@ -47,7 +47,7 @@ function BitSet(alloc, value) {
 
     if (typeof alloc === 'string') {
 
-        for (i = alloc['length']; i--; ) {
+        for (i = alloc.length; i--; ) {
             this['set'](i, alloc.charAt(i));
         }
     }
@@ -251,14 +251,22 @@ function BitSet(alloc, value) {
 
         if (obj instanceof BitSet) {
 
-            if (obj['length'] !== length) {
-                return false;
+            var max = obj;
+            var min = this;
+
+            if (length > obj.length) {
+                max = this;
+                min = obj;
             }
 
-            for (var i = length; i--; ) {
+            for (var i = max.length; i--; ) {
 
-                if (obj[i] !== this[i])
+                if (i < min.length) {
+                    if (max[i] !== min[i])
+                        return false;
+                } else if (max[i] !== 0) {
                     return false;
+                }
             }
 
         } else {
@@ -421,19 +429,36 @@ function BitSet(alloc, value) {
      */
     this['set'] = function(ndx, value) {
 
+        if (ndx < 0) {
+            return null;
+        }
+
         if (value === undefined) {
             value = 1;
         }
 
-        if (0 <= ndx && ndx < size * length) {
+        var slot = ndx / size;
 
-            var slot = ndx / size | 0;
+        if (slot >= length) {
 
-            this[slot] ^= (1 << ndx % size) & (-(value & 1) ^ this[slot]);
+            // AUTO SCALE
 
-            return this;
+            length = Math.ceil(slot);
+
+            for (var i = this['length']; i < length; i++) {
+                this[i] = 0;
+            }
+
+            this['size'] = size * length;
+            this['length'] = length;
         }
-        return null;
+
+        slot = Math.floor(slot);
+
+        this[slot] ^= (1 << ndx % size) & (-(value & 1) ^ this[slot]);
+
+        return this;
+
     };
 
     /**
@@ -568,17 +593,17 @@ if (typeof module !== 'undefined' && module['exports']) {
 }
 
 },{}],2:[function(require,module,exports){
+/*globals define, module, Symbol */
+
 /**
  * This module exports functions for checking types
  * and throwing exceptions.
  */
 
-/*globals define, module */
-
 (function (globals) {
     'use strict';
 
-    var messages, predicates, functions, assert, not, maybe, either;
+    var messages, predicates, functions, assert, not, maybe, either, collections, slice;
 
     messages = {
         like: 'Invalid type',
@@ -588,18 +613,30 @@ if (typeof module !== 'undefined' && module['exports']) {
         assigned: 'Invalid value',
         undefined: 'Invalid value',
         null: 'Invalid value',
-        length: 'Invalid length',
+        hasLength: 'Invalid length',
+        emptyArray: 'Invalid array',
         array: 'Invalid array',
+        arrayLike: 'Invalid array-like object',
+        iterable: 'Invalid iterable',
         date: 'Invalid date',
+        error: 'Invalid error',
         fn: 'Invalid function',
-        webUrl: 'Invalid URL',
+        match: 'Invalid string',
+        contains: 'Invalid string',
         unemptyString: 'Invalid string',
         string: 'Invalid string',
         odd: 'Invalid number',
         even: 'Invalid number',
+        inRange: 'Invalid number',
+        greaterOrEqual: 'Invalid number',
+        lessOrEqual: 'Invalid number',
+        between: 'Invalid number',
+        greater: 'Invalid number',
+        less: 'Invalid number',
         positive: 'Invalid number',
         negative: 'Invalid number',
         integer: 'Invalid number',
+        zero: 'Invalid number',
         number: 'Invalid number',
         boolean: 'Invalid boolean'
     };
@@ -612,18 +649,30 @@ if (typeof module !== 'undefined' && module['exports']) {
         assigned: assigned,
         undefined: isUndefined,
         null: isNull,
-        length: length,
+        hasLength: hasLength,
+        emptyArray: emptyArray,
         array: array,
+        arrayLike: arrayLike,
+        iterable: iterable,
         date: date,
+        error: error,
         function: isFunction,
-        webUrl: webUrl,
+        match: match,
+        contains: contains,
         unemptyString: unemptyString,
         string: string,
         odd: odd,
         even: even,
+        inRange: inRange,
+        greaterOrEqual: greaterOrEqual,
+        lessOrEqual: lessOrEqual,
+        between: between,
+        greater: greater,
+        less: less,
         positive: positive,
         negative: negative,
         integer : integer,
+        zero: zero,
         number: number,
         boolean: boolean
     };
@@ -635,14 +684,22 @@ if (typeof module !== 'undefined' && module['exports']) {
         any: any
     };
 
+    collections = [ 'array', 'arrayLike', 'iterable', 'object' ];
+    slice = Array.prototype.slice;
+
     functions = mixin(functions, predicates);
-    assert = createModifiedPredicates(assertModifier);
-    not = createModifiedPredicates(notModifier);
-    maybe = createModifiedPredicates(maybeModifier);
+    assert = createModifiedPredicates(assertModifier, assertImpl);
+    not = createModifiedPredicates(notModifier, notImpl);
+    maybe = createModifiedPredicates(maybeModifier, maybeImpl);
     either = createModifiedPredicates(eitherModifier);
-    assert.not = createModifiedFunctions(assertModifier, not);
-    assert.maybe = createModifiedFunctions(assertModifier, maybe);
-    assert.either = createModifiedFunctions(assertEitherModifier, predicates);
+    assert.not = createModifiedModifier(assertModifier, not);
+    assert.maybe = createModifiedModifier(assertModifier, maybe);
+    assert.either = createModifiedModifier(assertEitherModifier, predicates);
+
+    collections.forEach(createOfPredicates);
+    createOfModifiers(assert, assertModifier);
+    createOfModifiers(not, notModifier);
+    collections.forEach(createMaybeOfModifiers);
 
     exportFunctions(mixin(functions, {
         assert: assert,
@@ -657,15 +714,11 @@ if (typeof module !== 'undefined' && module['exports']) {
      * Tests whether an object 'quacks like a duck'.
      * Returns `true` if the first argument has all of
      * the properties of the second, archetypal argument
-     * (the 'duck'). Returns `false` otherwise. If either
-     * argument is not an object, an exception is thrown.
+     * (the 'duck'). Returns `false` otherwise.
      *
      */
     function like (data, duck) {
         var name;
-
-        assert.object(data);
-        assert.object(duck);
 
         for (name in duck) {
             if (duck.hasOwnProperty(name)) {
@@ -716,7 +769,7 @@ if (typeof module !== 'undefined' && module['exports']) {
      *
      */
     function object (data) {
-        return assigned(data) && Object.prototype.toString.call(data) === '[object Object]';
+        return Object.prototype.toString.call(data) === '[object Object]';
     }
 
     /**
@@ -753,16 +806,25 @@ if (typeof module !== 'undefined' && module['exports']) {
     }
 
     /**
-     * Public function `length`.
+     * Public function `hasLength`.
      *
      * Returns `true` if something is has a length property
      * that equals `value`, `false` otherwise.
      *
      */
-    function length (data, value) {
-        assert.not.undefined(value);
-
+    function hasLength (data, value) {
         return assigned(data) && data.length === value;
+    }
+
+    /**
+     * Public function `emptyArray`.
+     *
+     * Returns `true` if something is an empty array,
+     * `false` otherwise.
+     *
+     */
+    function emptyArray (data) {
+        return array(data) && data.length === 0;
     }
 
     /**
@@ -774,6 +836,33 @@ if (typeof module !== 'undefined' && module['exports']) {
      */
     function array (data) {
         return Array.isArray(data);
+    }
+
+    /**
+     * Public function `arrayLike`.
+     *
+     * Returns `true` something is an array-like object,
+     * `false` otherwise.
+     *
+     */
+    function arrayLike (data) {
+        return assigned(data) && number(data.length);
+    }
+
+    /**
+     * Public function `iterable`.
+     *
+     * Returns `true` something is an iterable,
+     * `false` otherwise.
+     *
+     */
+    function iterable (data) {
+        if (typeof Symbol === 'undefined') {
+            // Fall back to arrayLike predicate in pre-ES6 environments.
+            return arrayLike(data);
+        }
+
+        return assigned(data) && isFunction(data[Symbol.iterator]);
     }
 
     /**
@@ -789,6 +878,17 @@ if (typeof module !== 'undefined' && module['exports']) {
     }
 
     /**
+     * Public function `error`.
+     *
+     * Returns `true` if something is a plain-old JS object,
+     * `false` otherwise.
+     *
+     */
+    function error (data) {
+        return Object.prototype.toString.call(data) === '[object Error]';
+    }
+
+    /**
      * Public function `function`.
      *
      * Returns `true` if something is function,
@@ -800,21 +900,32 @@ if (typeof module !== 'undefined' && module['exports']) {
     }
 
     /**
-     * Public function `webUrl`.
+     * Public function `match`.
      *
-     * Returns `true` if something is an HTTP or HTTPS URL,
-     * `false` otherwise.
+     * Returns `true` if something is a string
+     * that matches `regex`, `false` otherwise.
      *
      */
-    function webUrl (data) {
-        return unemptyString(data) && /^(https?:)?\/\/([\w-\.~:@]+)(\/[\w-\.~\/\?#\[\]&\(\)\*\+,;=%]*)?$/.test(data);
+    function match (data, regex) {
+        return string(data) && !!data.match(regex);
+    }
+
+    /**
+     * Public function `contains`.
+     *
+     * Returns `true` if something is a string
+     * that contains `substring`, `false` otherwise.
+     *
+     */
+    function contains (data, substring) {
+        return string(data) && data.indexOf(substring) !== -1;
     }
 
     /**
      * Public function `unemptyString`.
      *
-     * Returns `true` if something is a non-empty string, `false`
-     * otherwise.
+     * Returns `true` if something is a non-empty string,
+     * `false` otherwise.
      *
      */
     function unemptyString (data) {
@@ -865,6 +976,80 @@ if (typeof module !== 'undefined' && module['exports']) {
     }
 
     /**
+     * Public function `inRange`.
+     *
+     * Returns `true` if something is a number in
+     * the range `a` .. `b`, `false` otherwise.
+     *
+     */
+    function inRange (data, a, b) {
+        if (a < b) {
+            return greaterOrEqual(data, a) && lessOrEqual(data, b);
+        }
+
+        return lessOrEqual(data, a) && greaterOrEqual(data, b);
+    }
+
+    /**
+     * Public function `greaterOrEqual`.
+     *
+     * Returns `true` if something is a number greater
+     * than or equal to `value`, `false` otherwise.
+     *
+     */
+    function greaterOrEqual (data, value) {
+        return number(data) && data >= value;
+    }
+
+    /**
+     * Public function `lessOrEqual`.
+     *
+     * Returns `true` if something is a number less
+     * than or equal to `value`, `false` otherwise.
+     *
+     */
+    function lessOrEqual (data, value) {
+        return number(data) && data <= value;
+    }
+
+    /**
+     * Public function `between`.
+     *
+     * Returns `true` if something is a number
+     * between `a` and `b`, `false` otherwise.
+     *
+     */
+    function between (data, a, b) {
+        if (a < b) {
+            return greater(data, a) && less(data, b);
+        }
+
+        return less(data, a) && greater(data, b);
+    }
+
+    /**
+     * Public function `greater`.
+     *
+     * Returns `true` if something is a number
+     * greater than `value`, `false` otherwise.
+     *
+     */
+    function greater (data, value) {
+        return number(data) && data > value;
+    }
+
+    /**
+     * Public function `less`.
+     *
+     * Returns `true` if something is a number
+     * less than `value`, `false` otherwise.
+     *
+     */
+    function less (data, value) {
+        return number(data) && data < value;
+    }
+
+    /**
      * Public function `positive`.
      *
      * Returns `true` if something is a positive number,
@@ -872,7 +1057,7 @@ if (typeof module !== 'undefined' && module['exports']) {
      *
      */
     function positive (data) {
-        return number(data) && data > 0;
+        return greater(data, 0);
     }
 
     /**
@@ -884,7 +1069,7 @@ if (typeof module !== 'undefined' && module['exports']) {
      * @param data          The thing to test.
      */
     function negative (data) {
-        return number(data) && data < 0;
+        return less(data, 0);
     }
 
     /**
@@ -898,6 +1083,18 @@ if (typeof module !== 'undefined' && module['exports']) {
         return typeof data === 'number' && isNaN(data) === false &&
                data !== Number.POSITIVE_INFINITY &&
                data !== Number.NEGATIVE_INFINITY;
+    }
+
+    /**
+     * Public function `zero`.
+     *
+     * Returns `true` if something is zero,
+     * `false` otherwise.
+     *
+     * @param data          The thing to test.
+     */
+    function zero (data) {
+        return data === 0;
     }
 
     /**
@@ -929,7 +1126,7 @@ if (typeof module !== 'undefined' && module['exports']) {
         }
 
         assert.array(predicates);
-        assert.length(data, predicates.length);
+        assert.hasLength(data, predicates.length);
 
         return data.map(function (value, index) {
             return predicates[index](value);
@@ -940,25 +1137,47 @@ if (typeof module !== 'undefined' && module['exports']) {
      * Public function `map`.
      *
      * Maps each value from the data to the corresponding predicate and returns
-     * the result object. Supports nested objects.
+     * the result object. Supports nested objects. If the data is not nested and
+     * the same function is to be applied across all of it, a single predicate
+     * function may be passed in.
      *
      */
     function map (data, predicates) {
-        var result = {}, keys;
-
         assert.object(data);
+
+        if (isFunction(predicates)) {
+            return mapSimple(data, predicates);
+        }
+
         assert.object(predicates);
 
-        keys = Object.keys(predicates);
-        assert.length(Object.keys(data), keys.length);
+        return mapComplex(data, predicates);
+    }
 
-        keys.forEach(function (key) {
+    function mapSimple (data, predicate) {
+        var result = {};
+
+        Object.keys(data).forEach(function (key) {
+            result[key] = predicate(data[key]);
+        });
+
+        return result;
+    }
+
+    function mapComplex (data, predicates) {
+        var result = {};
+
+        Object.keys(predicates).forEach(function (key) {
             var predicate = predicates[key];
 
             if (isFunction(predicate)) {
-                result[key] = predicate(data[key]);
+                if (not.assigned(data)) {
+                    result[key] = !!predicate._isMaybefied;
+                } else {
+                    result[key] = predicate(data[key]);
+                }
             } else if (object(predicate)) {
-                result[key] = map(data[key], predicate);
+                result[key] = mapComplex(data[key], predicate);
             }
         });
 
@@ -1053,11 +1272,13 @@ if (typeof module !== 'undefined' && module['exports']) {
     }
 
     function assertPredicate (predicate, args, defaultMessage) {
-        var message;
+        var message = args[args.length - 1];
+        assertImpl(predicate.apply(null, args), unemptyString(message) ? message : defaultMessage);
+    }
 
-        if (!predicate.apply(null, args)) {
-            message = args[args.length - 1];
-            throw new Error(unemptyString(message) ? message : defaultMessage);
+    function assertImpl (value, message) {
+        if (value === false) {
+            throw new Error(message || 'Assertion failed');
         }
     }
 
@@ -1094,8 +1315,12 @@ if (typeof module !== 'undefined' && module['exports']) {
      */
     function notModifier (predicate) {
         return function () {
-            return !predicate.apply(null, arguments);
+            return notImpl(predicate.apply(null, arguments));
         };
+    }
+
+    function notImpl (value) {
+        return !value;
     }
 
     /**
@@ -1105,13 +1330,29 @@ if (typeof module !== 'undefined' && module['exports']) {
      * otherwise propagates the return value from `predicate`.
      */
     function maybeModifier (predicate) {
-        return function () {
+        var modifiedPredicate = function () {
             if (!assigned(arguments[0])) {
                 return true;
             }
 
             return predicate.apply(null, arguments);
         };
+
+        // Hackishly indicate that this is a maybe.xxx predicate.
+        // Without this flag, the alternative would be to iterate
+        // through the maybe predicates or use indexOf to check,
+        // which would be time-consuming.
+        modifiedPredicate._isMaybefied = true;
+
+        return modifiedPredicate;
+    }
+
+    function maybeImpl (value) {
+        if (assigned(value) === false) {
+            return true;
+        }
+
+        return value;
     }
 
     /**
@@ -1138,18 +1379,105 @@ if (typeof module !== 'undefined' && module['exports']) {
         }
     }
 
-    function createModifiedPredicates (modifier) {
-        return createModifiedFunctions(modifier, predicates);
+    /**
+     * Public modifier `of`.
+     *
+     * Applies the chained predicate to members of the collection.
+     */
+    function ofModifier (target, type, predicate) {
+        return function () {
+            var collection, args;
+
+            collection = arguments[0];
+
+            if (!type(collection)) {
+                return false;
+            }
+
+            collection = coerceCollection(type, collection);
+            args = slice.call(arguments, 1);
+
+            try {
+                collection.forEach(function (item) {
+                    if (
+                        (target !== 'maybe' || assigned(item)) &&
+                        !predicate.apply(null, [ item ].concat(args))
+                    ) {
+                        // HACK: Ideally we'd use a for...of loop and return here,
+                        //       but that syntax is not supported by ES5. We could
+                        //       use a transpiler and a build step but I'm happy
+                        //       enough with this until ES6 is the baseline.
+                        throw 0;
+                    }
+                });
+            } catch (ignore) {
+                return false;
+            }
+
+            return true;
+        };
     }
 
-    function createModifiedFunctions (modifier, functions) {
-        var result = {};
+    function coerceCollection (type, collection) {
+        switch (type) {
+            case arrayLike:
+                return slice.call(collection);
+            case object:
+                return Object.keys(collection).map(function (key) {
+                    return collection[key];
+                });
+            default:
+                return collection;
+        }
+    }
+
+    function createModifiedPredicates (modifier, object) {
+        return createModifiedFunctions([ modifier, predicates, object ]);
+    }
+
+    function createModifiedFunctions (args) {
+        var modifier, object, functions, result;
+
+        modifier = args.shift();
+        object = args.pop();
+        functions = args.pop();
+
+        result = object || {};
 
         Object.keys(functions).forEach(function (key) {
-            result[key] = modifier(functions[key], messages[key]);
+            Object.defineProperty(result, key, {
+                configurable: false,
+                enumerable: true,
+                writable: false,
+                value: modifier.apply(null, args.concat(functions[key], messages[key]))
+            });
         });
 
         return result;
+    }
+
+    function createModifiedModifier (modifier, modified) {
+        return createModifiedFunctions([ modifier, modified, null ]);
+    }
+
+    function createOfPredicates (key) {
+        predicates[key].of = createModifiedFunctions(
+            [ ofModifier.bind(null, null), predicates[key], predicates, null ]
+        );
+    }
+
+    function createOfModifiers (base, modifier) {
+        collections.forEach(function (key) {
+            base[key].of = createModifiedModifier(modifier, predicates[key].of);
+        });
+    }
+
+    function createMaybeOfModifiers (key) {
+        maybe[key].of = createModifiedFunctions(
+            [ ofModifier.bind(null, 'maybe'), predicates[key], predicates, null ]
+        );
+        assert.maybe[key].of = createModifiedModifier(assertModifier, maybe[key].of);
+        assert.not[key].of = createModifiedModifier(assertModifier, not[key].of);
     }
 
     function exportFunctions (functions) {
@@ -2249,133 +2577,6 @@ function Engine (game) {
     }, this);
 }
 
-/**
- * Registers new component pattern.
- * Only argument should be an object with obligatory `name` property and `initialize` method.
- * This method is used to assign some data to component object. `this` inside `initialize` function is a
- * reference to newly created component object.
- *
- * @example
- *     Entropy.Engine.Component({
- *         name: "Position",
- *         initialize: function (x, y) {
- *             this.x = x;
- *             this.y = y;
- *         },
- *         //not obligatory
- *         reset: function () {
- *             this.x = 0;
- *             this.y = 0;
- *         }
- *     });
- *
- * @method Component
- * @static
- * @param {Object} component component pattern
- */
-Engine.Component = function (component) {
-    register.registerComponent(component);
-};
-
-/**
- * Registers new entity pattern.
- *
- * Pattern is an object with following properties:
- *  - __name__ (required) - name of an entity
- *  - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.
- *   `this` inside function references newly created entity object (instance of {{#crossLink "Entity"}}Entity{{/crossLink}} class).
- *   Function is called with first argument being `game` object and every others are parameters with witch {{#crossLink "Engine/create:method"}}create{{/crossLink}} method is called.
- *  - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).
- *   First and only argument is a `game` object.
- *
- * @example
- *     Entropy.Engine.Entity({
- *         name: "Ball",
- *         create: function (game, x, y, radius) {
- *             var sprite = new Sprite("Ball");
- *
- *             game.container.make("renderer").addSprite(sprite);
- *
- *             this.add("Position", x, y)
- *                 .add("Radius", radius)
- *                 .add("Velocity", 5, 5)
- *                 .add("Sprite", sprite);
- *         },
- *         //not oblgatory
- *         remove: function (game) {
- *             game.container.make("renderer").removeSprite(this.components.sprite.sprite);
- *         }
- *     });
- *
- * @method Entity
- * @static
- * @param {Object} entity entity pattern
- */
-Engine.Entity = function (entity) {
-    register.registerEntity(entity);
-};
-
-/**
- * Registers new system pattern.
- *
- * @example
- *     Entropy.Engine.System({
- *         name: "MovementSystem",
- *         priority: 1, //not obligatory
- *         initialize: function () {
- *             this.query = new Entropy.Engine.Query(["Position", "Velocity"]);
- *         },
- *         update: function (delta) {
- *             var entities = this.engine.getEntities(this.query);
- *             var e;
- *
- *             var i = 0;
- *             while (e = entities[i]) {
- *                 var position = e.components.position;
- *                 var velocity = e.components.velocity;
- *
- *                 position.x += delta / 1000 * velocity.vx;
- *                 position.y += delta / 1000 * velocity.vy;
- *
- *                 i++;
- *             }
- *         },
- *         //not obligatory
- *         remove: function () {
- *
- *         }
- *     });
- *
- * @method System
- * @static
- * @param {Object} system system pattern object
- */
-Engine.System = function (system) {
-    register.registerSystem(system);
-};
-
-/**
- * Used to perform matching of entities.
- * Only parameter is an array of component names to include or object with `include` and/or `exclude` properties,
- * witch are arrays of component names to respectively include and/or exclude.
- *
- * @example
- *     var q1 = new Entropy.Engine.Query(["Position", "Velocity"]);
- *     var q2 = new Entropy.Engine.Query({
- *         include: ["Position", "Velocity"],
- *         exclude: ["Sprite"]
- *     });
- *     var q3 = new Entropy.Engine.Query({
- *         name: "Ball"
- *     });
- *
- * @method Query
- * @static
- * @param {Array|Object} criterions query matching criterions
- * @return {Object} query object
- */
-Engine.Query = Query;
-
 extend(Engine.prototype, EventEmitter.prototype);
 extend(Engine.prototype, {
     /**
@@ -3060,11 +3261,37 @@ var is = require('check-types');
 var extend = require('node.extend');
 var slice = Array.prototype.slice;
 
+/**
+ * EventEmitter class. This is very simple yet suficient event emitter implementation.
+ *
+ * @class EventEmitter
+ * @constructor
+ */
 function EventEmitter () {
+    /**
+     * Object with registered event listeners. Keys are event names.
+     * 
+     * @private
+     * @property {Object} _events
+     */
     this._events = {};
 }
 
 extend(EventEmitter.prototype, {
+    /**
+     * Method used to register event listener.
+     *
+     * @example
+     *     emitter.on('event', function () {
+     *         console.log(this.foo); //bar
+     *     }, {foo: 'bar'});
+     *
+     * @method on
+     * @param  {String}     event   event name
+     * @param  {Function}   fn      event listener
+     * @param  {Object}     binding context used as `this` when calling listener
+     * @param  {Boolean}    once    if set to `true`, listener will be called once, then will be unregistered
+     */
     on: function (event, fn, binding, once) {
         if (is.not.string(event) || is.not.function(fn)) {
             return;
@@ -3124,8 +3351,16 @@ extend(EventEmitter.prototype, {
 
 module.exports = EventEmitter;
 },{"check-types":2,"node.extend":4}],13:[function(require,module,exports){
+var is = require('check-types');
+
 module.exports = {
     alloc: function (size) {
+        if (is.not.number(size)) {
+            throw new Error('Array size should be number.')
+
+            return;
+        }
+
         var arr = new Array(size);
 
         for (var i = 0; i < size; i++) {
@@ -3192,7 +3427,7 @@ module.exports = {
     }
 };
 
-},{}],14:[function(require,module,exports){
+},{"check-types":2}],14:[function(require,module,exports){
 'use strict';
 
 var is = require('check-types');
@@ -3263,22 +3498,6 @@ function Game (initialState) {
     if (is.unemptyString(initialState)) {
         this.state.change(initialState);
     }
-}
-
-/**
- * Registers new state. This method simply calls State's {{#crossLink "State/Register:method"}}Register{{/crossLink}} static method.
- *
- * @example
- *     Entropy.Game.State({
- *         //state object here
- *     });
- *
- * @static
- * @method State
- * @param {Object} state state object
- */
-Game.State = function (state) {
-    State.Register(state);
 }
 
 extend(Game.prototype, EventEmitter.prototype);
@@ -3656,15 +3875,21 @@ var BitSet = require('bitset.js').BitSet;
 /**
  * Used to perform matching of entities.
  * Only parameter is an array of component names to include or object with `include` and/or `exclude` properties,
- * witch are arrays of component names to respectively include and/or exclude.
+ * witch are arrays of component names to respectively include and/or exclude. Object can also have `name` property,
+ * that will match entities with given name. 
  *
  * @example
- *     var q1 = new Entropy.Engine.Query(["Position", "Velocity"]);
- *     var q2 = new Entropy.Engine.Query({
+ *     //matches entities with 'Position' and 'Velocity' components
+ *     var q1 = new Entropy.Query(["Position", "Velocity"]);
+ *
+ *     //matches entities with 'Position' and 'Velocity' components and without 'Sprite' component
+ *     var q2 = new Entropy.Query({
  *         include: ["Position", "Velocity"],
  *         exclude: ["Sprite"]
  *     });
- *     var q3 = new Entropy.Engine.Query({
+ *
+ *     //matches entities with name 'Ball'
+ *     var q3 = new Entropy.Query({
  *         name: "Ball"
  *     });
  *
@@ -4324,10 +4549,8 @@ require('./core/polyfill');
 
 var debug = require('./core/debug');
 var config = require('./core/config');
-
-var Const = require('./core/const');
-var Game = require('./core/game');
-var Engine = require('./core/engine');
+var State = require('./core/state');
+var register = require('./core/register');
 
 //Welcome message.
 console.log.apply(console, [
@@ -4340,7 +4563,7 @@ console.log.apply(console, [
 ]);
 
 /**
- * Main static framework. Used as top namespace.
+ * Main static framework class. Used as a top namespace.
  * 
  * @class Entropy
  * @static
@@ -4349,6 +4572,111 @@ function Entropy () {
     debug.warning('This function should not be used as a constructor.');
     return;
 }
+
+/**
+ * Registers new component pattern.
+ * Only argument should be an object with obligatory `name` property and `initialize` method.
+ * This method is used to assign some data to component object. `this` inside `initialize` function is a
+ * reference to newly created component object.
+ *
+ * @example
+ *     Entropy.Component({
+ *         name: "Position",
+ *         initialize: function (x, y) {
+ *             this.x = x;
+ *             this.y = y;
+ *         },
+ *         //not obligatory
+ *         reset: function () {
+ *             this.x = 0;
+ *             this.y = 0;
+ *         }
+ *     });
+ *
+ * @method Component
+ * @static
+ * @param {Object} component component pattern
+ */
+Entropy.Component = function (component) {
+    register.registerComponent(component);
+};
+
+/**
+ * Registers new entity pattern.
+ *
+ * Pattern is an object with following properties:
+ *  - __name__ (required) - name of an entity
+ *  - __create__ (required) - method called when creating new entity. Here you should add initial components to an entity.
+ *   `this` inside function references newly created entity object (instance of {{#crossLink "Entity"}}Entity{{/crossLink}} class).
+ *   Function is called with first argument being `game` object and every others are parameters with witch {{#crossLink "Engine/create:method"}}create{{/crossLink}} method is called.
+ *  - __remove__ (optional) - method called when entity is removed from the system. This is good place to clean after entity (ex. remove some resources from renderer).
+ *   First and only argument is a `game` object.
+ *
+ * @example
+ *     Entropy.Entity({
+ *         name: "Ball",
+ *         create: function (game, x, y, radius) {
+ *             var sprite = new Sprite("Ball");
+ *
+ *             game.container.make("renderer").addSprite(sprite);
+ *
+ *             this.add("Position", x, y)
+ *                 .add("Radius", radius)
+ *                 .add("Velocity", 5, 5)
+ *                 .add("Sprite", sprite);
+ *         },
+ *         //not oblgatory
+ *         remove: function (game) {
+ *             game.container.make("renderer").removeSprite(this.components.sprite.sprite);
+ *         }
+ *     });
+ *
+ * @method Entity
+ * @static
+ * @param {Object} entity entity pattern
+ */
+Entropy.Entity = function (entity) {
+    register.registerEntity(entity);
+};
+
+/**
+ * Registers new system pattern.
+ *
+ * @example
+ *     Entropy.System({
+ *         name: "MovementSystem",
+ *         priority: 1, //not obligatory
+ *         initialize: function () {
+ *             this.query = new Entropy.Query(["Position", "Velocity"]);
+ *         },
+ *         update: function (delta) {
+ *             var entities = this.engine.getEntities(this.query);
+ *             var e;
+ *
+ *             var i = 0;
+ *             while (e = entities[i]) {
+ *                 var position = e.components.position;
+ *                 var velocity = e.components.velocity;
+ *
+ *                 position.x += delta / 1000 * velocity.vx;
+ *                 position.y += delta / 1000 * velocity.vy;
+ *
+ *                 i++;
+ *             }
+ *         },
+ *         //not obligatory
+ *         remove: function () {
+ *
+ *         }
+ *     });
+ *
+ * @method System
+ * @static
+ * @param {Object} system system pattern object
+ */
+Entropy.System = function (system) {
+    register.registerSystem(system);
+};
 
 /**
  * Assignes new property to main Entropy namespace identified by key (uppercased).
@@ -4365,9 +4693,7 @@ function Entropy () {
  * @param {String}  key      constans key
  * @param {Any}     value    constans value
  */
-Entropy.Const = function (key, value) {
-    return Const.call(this, key, value);
-};
+Entropy.Const = require('./core/const');
 
 /**
  * {{#crossLink "Game"}}Game{{/crossLink}} class reference.
@@ -4376,7 +4702,7 @@ Entropy.Const = function (key, value) {
  * @method Game
  * @type {Game}
  */
-Entropy.Game = Game;
+Entropy.Game = require('./core/game');
 
 /**
  * {{#crossLink "Engine"}}Engine{{/crossLink}} class reference.
@@ -4385,17 +4711,58 @@ Entropy.Game = Game;
  * @method Engine
  * @type {Engine}
  */
-Entropy.Engine = Engine;
+Entropy.Engine = require('./core/engine');
 
+/**
+ * {{#crossLink "Config"}}Config{{/crossLink}} class reference.
+ * 
+ * @static
+ * @method Config
+ * @type {Config}
+ */
 Entropy.Config = config;
+
+/**
+ * {{#crossLink "Query"}}Query{{/crossLink}} class reference.
+ * 
+ * @static
+ * @method Query
+ * @type {Query}
+ */
+Entropy.Query = require('./core/query');
+
+/**
+ * Registers new state. This method simply calls State's {{#crossLink "State/Register:method"}}Register{{/crossLink}} static method.
+ *
+ * @example
+ *     Entropy.State({
+ *         //state object here
+ *     });
+ *
+ * @static
+ * @method State
+ * @param {Object} state state object
+ */
+Entropy.State = function (state) {
+    State.Register(state);
+}
 
 Entropy.Utils = {
     is: require('check-types'),
     extend: require('node.extend')
 }
 
+/**
+ * {{#crossLink "EventEmitter"}}EventEmitter{{/crossLink}} class reference.
+ * 
+ * @static
+ * @method EventEmitter
+ * @type {EventEmitter}
+ */
+Entropy.EventEmitter = require('./core/event');
+
 module.exports = Entropy;
-},{"./core/config":7,"./core/const":8,"./core/debug":9,"./core/engine":10,"./core/game":14,"./core/polyfill":16,"check-types":2,"node.extend":4}],23:[function(require,module,exports){
+},{"./core/config":7,"./core/const":8,"./core/debug":9,"./core/engine":10,"./core/event":12,"./core/game":14,"./core/polyfill":16,"./core/query":18,"./core/register":19,"./core/state":20,"check-types":2,"node.extend":4}],23:[function(require,module,exports){
 // stats.js - http://github.com/mrdoob/stats.js
 var Stats=function(){var l=Date.now(),m=l,g=0,n=Infinity,o=0,h=0,p=Infinity,q=0,r=0,s=0,f=document.createElement("div");f.id="stats";f.addEventListener("mousedown",function(b){b.preventDefault();t(++s%2)},!1);f.style.cssText="width:80px;opacity:0.9;cursor:pointer";var a=document.createElement("div");a.id="fps";a.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#002";f.appendChild(a);var i=document.createElement("div");i.id="fpsText";i.style.cssText="color:#0ff;font-family:Helvetica,Arial,sans-serif;font-size:9px;font-weight:bold;line-height:15px";
 i.innerHTML="FPS";a.appendChild(i);var c=document.createElement("div");c.id="fpsGraph";c.style.cssText="position:relative;width:74px;height:30px;background-color:#0ff";for(a.appendChild(c);74>c.children.length;){var j=document.createElement("span");j.style.cssText="width:1px;height:30px;float:left;background-color:#113";c.appendChild(j)}var d=document.createElement("div");d.id="ms";d.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#020;display:none";f.appendChild(d);var k=document.createElement("div");

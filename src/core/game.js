@@ -70,22 +70,6 @@ function Game (initialState) {
     }
 }
 
-/**
- * Registers new state. This method simply calls State's {{#crossLink "State/Register:method"}}Register{{/crossLink}} static method.
- *
- * @example
- *     Entropy.Game.State({
- *         //state object here
- *     });
- *
- * @static
- * @method State
- * @param {Object} state state object
- */
-Game.State = function (state) {
-    State.Register(state);
-}
-
 extend(Game.prototype, EventEmitter.prototype);
 extend(Game.prototype, {
     /**

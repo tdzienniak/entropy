@@ -1,5 +1,13 @@
+var is = require('check-types');
+
 module.exports = {
     alloc: function (size) {
+        if (is.not.number(size)) {
+            throw new Error('Array size should be number.')
+
+            return;
+        }
+
         var arr = new Array(size);
 
         for (var i = 0; i < size; i++) {
