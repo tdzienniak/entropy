@@ -1,1 +1,2 @@
-index.js
+require('./animation');
+require('./input');

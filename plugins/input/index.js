@@ -112,10 +112,8 @@ var KEY_NAMES = Object.keys(KEYS);
  * @extends EventEmitter
  * @constructor
  */
-function Input(game) {
+function Input () {
     var self = this;
-
-    this.game = game;
 
     this._pressedKeys = [];
     this._pressedKeysTime = [];
