@@ -170,7 +170,7 @@
         Entropy.System({
             name: "SpritePositionUpdater",
             initialize: function () {
-                this.query = new Entropy.Engine.Query(['Position', 'Sprite']);
+                this.query = new Entropy.Query(['Position', 'Sprite']);
             },
             update: function (delta, event) {
                 ///var sprites = this.engine.getEntitiesWith(["Sprite", "Position"]);

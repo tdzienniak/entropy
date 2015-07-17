@@ -2565,7 +2565,7 @@ function Engine (game) {
 
     this._performClearing = false;
 
-    register.setCannotModify();
+    //register.setCannotModify();
 
     //Initialize components and entities pools.
     register.listComponentsNames().forEach(function (name) {
@@ -2606,6 +2606,10 @@ extend(Engine.prototype, {
 
         var args = slice.call(arguments, 1);
         args.unshift(this.game);
+
+        if (this._entitiesPool[name] == null) {
+            this._entitiesPool[name] = new Pool(config('initial_entities_pool_size'));
+        }
 
         var entity = this._entitiesPool[name].get();
         entity = entity || new Entity(name, entityPattern, this);
@@ -3023,9 +3027,16 @@ extend(Engine.prototype, {
     _getNewComponent: function (name) {
         var component;
         var componentPattern = register.getComponentPattern(name);
+        var poolJustCreated = false;
 
         if (is.not.object(componentPattern)) {
             return null;
+        }
+
+        if (this._componentsPool[name] == null) {
+            this._componentsPool[name] = new Pool(config('initial_components_pool_size'));
+
+            poolJustCreated = true;
         }
 
         component = this._componentsPool[name].get();
@@ -3041,6 +3052,10 @@ extend(Engine.prototype, {
         return component;
     },
     _addComponentToPool: function (component) {
+        if (this._componentsPool[name] == null) {
+            this._componentsPool[name] = new Pool(config('initial_components_pool_size'));
+        }
+        
         this._componentsPool[component._pattern.name].put(component);
     },
     /**
@@ -4554,7 +4569,7 @@ var register = require('./core/register');
 
 //Welcome message.
 console.log.apply(console, [
-    '%c %c %c Entropy 0.2.0 - Entity System Framework for JavaScript %c %c ',
+    '%c %c %c Entropy 0.1.0 - Entity System Framework for JavaScript %c %c ',
     'background: rgb(200, 200,200);',  
     'background: rgb(80, 80, 80);',
     'color: white; background: black;',
@@ -4705,15 +4720,6 @@ Entropy.Const = require('./core/const');
 Entropy.Game = require('./core/game');
 
 /**
- * {{#crossLink "Engine"}}Engine{{/crossLink}} class reference.
- * 
- * @static
- * @method Engine
- * @type {Engine}
- */
-Entropy.Engine = require('./core/engine');
-
-/**
  * {{#crossLink "Config"}}Config{{/crossLink}} class reference.
  * 
  * @static
@@ -4762,7 +4768,7 @@ Entropy.Utils = {
 Entropy.EventEmitter = require('./core/event');
 
 module.exports = Entropy;
-},{"./core/config":7,"./core/const":8,"./core/debug":9,"./core/engine":10,"./core/event":12,"./core/game":14,"./core/polyfill":16,"./core/query":18,"./core/register":19,"./core/state":20,"check-types":2,"node.extend":4}],23:[function(require,module,exports){
+},{"./core/config":7,"./core/const":8,"./core/debug":9,"./core/event":12,"./core/game":14,"./core/polyfill":16,"./core/query":18,"./core/register":19,"./core/state":20,"check-types":2,"node.extend":4}],23:[function(require,module,exports){
 // stats.js - http://github.com/mrdoob/stats.js
 var Stats=function(){var l=Date.now(),m=l,g=0,n=Infinity,o=0,h=0,p=Infinity,q=0,r=0,s=0,f=document.createElement("div");f.id="stats";f.addEventListener("mousedown",function(b){b.preventDefault();t(++s%2)},!1);f.style.cssText="width:80px;opacity:0.9;cursor:pointer";var a=document.createElement("div");a.id="fps";a.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#002";f.appendChild(a);var i=document.createElement("div");i.id="fpsText";i.style.cssText="color:#0ff;font-family:Helvetica,Arial,sans-serif;font-size:9px;font-weight:bold;line-height:15px";
 i.innerHTML="FPS";a.appendChild(i);var c=document.createElement("div");c.id="fpsGraph";c.style.cssText="position:relative;width:74px;height:30px;background-color:#0ff";for(a.appendChild(c);74>c.children.length;){var j=document.createElement("span");j.style.cssText="width:1px;height:30px;float:left;background-color:#113";c.appendChild(j)}var d=document.createElement("div");d.id="ms";d.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#020;display:none";f.appendChild(d);var k=document.createElement("div");

@@ -85,7 +85,7 @@ function Engine (game) {
 
     this._performClearing = false;
 
-    register.setCannotModify();
+    //register.setCannotModify();
 
     //Initialize components and entities pools.
     register.listComponentsNames().forEach(function (name) {
@@ -126,6 +126,10 @@ extend(Engine.prototype, {
 
         var args = slice.call(arguments, 1);
         args.unshift(this.game);
+
+        if (this._entitiesPool[name] == null) {
+            this._entitiesPool[name] = new Pool(config('initial_entities_pool_size'));
+        }
 
         var entity = this._entitiesPool[name].get();
         entity = entity || new Entity(name, entityPattern, this);
@@ -543,9 +547,16 @@ extend(Engine.prototype, {
     _getNewComponent: function (name) {
         var component;
         var componentPattern = register.getComponentPattern(name);
+        var poolJustCreated = false;
 
         if (is.not.object(componentPattern)) {
             return null;
+        }
+
+        if (this._componentsPool[name] == null) {
+            this._componentsPool[name] = new Pool(config('initial_components_pool_size'));
+
+            poolJustCreated = true;
         }
 
         component = this._componentsPool[name].get();
@@ -561,6 +572,10 @@ extend(Engine.prototype, {
         return component;
     },
     _addComponentToPool: function (component) {
+        if (this._componentsPool[name] == null) {
+            this._componentsPool[name] = new Pool(config('initial_components_pool_size'));
+        }
+        
         this._componentsPool[component._pattern.name].put(component);
     },
     /**

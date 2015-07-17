@@ -115,6 +115,13 @@
             },
             "fors": {},
             "namespaces": {}
+        },
+        "plugins\\loader\\PixiTextureAtlasLoader.js": {
+            "name": "plugins\\loader\\PixiTextureAtlasLoader.js",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
         }
     },
     "modules": {
@@ -351,7 +358,7 @@
             "module": "Entropy",
             "namespace": "",
             "file": "plugins\\animation\\Animation.js",
-            "line": 1,
+            "line": 3,
             "description": "Animation class.",
             "params": [
                 {
@@ -462,7 +469,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 139,
+            "line": 143,
             "description": "Removes entity from engine.\nEntity removal does not happen imediatelly, but after current update cycle.",
             "example": [
                 "\n    //somwhere in the system 'update' method\n    if (entity.components.hp.quantity <= 0) { //entity is dead, remove\n        game.engine.remove(entity);\n    }"
@@ -484,7 +491,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 165,
+            "line": 169,
             "description": "Returns array of entities satisfying given {{#crossLink \"Query\"}}query{{/crossLink}} conditions.\nReturned arrays length does not correspond with matched entities quantity.\nTo loop over entities start from 0 index, and then check if element is different than 0.\nThis method guaranties, that entities will be arranged as subsequent array slice, starting from 0 index and ending on element equal to 0.\nThe array is in this form for performance reasons.",
             "example": [
                 "\n    //in systems 'initialize' method...\n    this.query = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n\n    //in systems 'update' method\n    var movingEntities = this.engine.getEntities(this.query);\n\n    //here do something with entities in loop\n    ..."
@@ -506,7 +513,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 193,
+            "line": 197,
             "description": "Creates new system object and adds it to the engine. System patterns `initialize` method is called (if present).\nIt can be called in two ways - with first argument being either:\n- system name - then system has priority as defined by patterns `priority` property or 0.\n- array with two elements - system name and its desired priority. In this case patterns `priority` property is simply skiped.",
             "example": [
                 "\n    game.engine.addSystem(\"Renderer\", rendererObject);\n\n    //or\n\n    game.engine.addSystem([\"Renderer\", 1], rendererObject);"
@@ -529,7 +536,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 326,
+            "line": 330,
             "itemtype": "method",
             "name": "clear",
             "return": {
@@ -540,7 +547,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 566,
+            "line": 581,
             "description": "Returns ID for an entity. Reuses old IDs or creates new.",
             "access": "private",
             "tagname": "",
@@ -554,7 +561,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 582,
+            "line": 597,
             "description": "Initializes new query. Performs initial entity search.",
             "access": "private",
             "tagname": "",
@@ -1108,17 +1115,6 @@
         {
             "file": "src\\entropy.js",
             "line": 168,
-            "description": "{{#crossLink \"Engine\"}}Engine{{/crossLink}} class reference.",
-            "static": 1,
-            "itemtype": "method",
-            "name": "Engine",
-            "type": "{Engine}",
-            "class": "Entropy",
-            "module": "Entropy"
-        },
-        {
-            "file": "src\\entropy.js",
-            "line": 177,
             "description": "{{#crossLink \"Config\"}}Config{{/crossLink}} class reference.",
             "static": 1,
             "itemtype": "method",
@@ -1129,7 +1125,7 @@
         },
         {
             "file": "src\\entropy.js",
-            "line": 186,
+            "line": 177,
             "description": "{{#crossLink \"Query\"}}Query{{/crossLink}} class reference.",
             "static": 1,
             "itemtype": "method",
@@ -1140,7 +1136,7 @@
         },
         {
             "file": "src\\entropy.js",
-            "line": 195,
+            "line": 186,
             "description": "Registers new state. This method simply calls State's {{#crossLink \"State/Register:method\"}}Register{{/crossLink}} static method.",
             "example": [
                 "\n    Entropy.State({\n        //state object here\n    });"
@@ -1160,7 +1156,7 @@
         },
         {
             "file": "src\\entropy.js",
-            "line": 216,
+            "line": 207,
             "description": "{{#crossLink \"EventEmitter\"}}EventEmitter{{/crossLink}} class reference.",
             "static": 1,
             "itemtype": "method",
@@ -1168,7 +1164,19 @@
             "type": "{EventEmitter}",
             "class": "Entropy",
             "module": "Entropy"
+        },
+        {
+            "file": "plugins\\loader\\PixiTextureAtlasLoader.js",
+            "line": 92,
+            "description": "This code comes from PIXIs default loader:\nhttps://github.com/GoodBoyDigital/pixi.js/blob/master/src/loaders/spritesheetParser.js",
+            "class": "",
+            "module": "Entropy"
         }
     ],
-    "warnings": []
+    "warnings": [
+        {
+            "message": "Missing item type\nThis code comes from PIXIs default loader:\nhttps://github.com/GoodBoyDigital/pixi.js/blob/master/src/loaders/spritesheetParser.js",
+            "line": " plugins\\loader\\PixiTextureAtlasLoader.js:92"
+        }
+    ]
 }

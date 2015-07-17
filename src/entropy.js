@@ -15,7 +15,7 @@ var register = require('./core/register');
 
 //Welcome message.
 console.log.apply(console, [
-    '%c %c %c Entropy 0.2.0 - Entity System Framework for JavaScript %c %c ',
+    '%c %c %c Entropy 0.1.0 - Entity System Framework for JavaScript %c %c ',
     'background: rgb(200, 200,200);',  
     'background: rgb(80, 80, 80);',
     'color: white; background: black;',
@@ -164,15 +164,6 @@ Entropy.Const = require('./core/const');
  * @type {Game}
  */
 Entropy.Game = require('./core/game');
-
-/**
- * {{#crossLink "Engine"}}Engine{{/crossLink}} class reference.
- * 
- * @static
- * @method Engine
- * @type {Engine}
- */
-Entropy.Engine = require('./core/engine');
 
 /**
  * {{#crossLink "Config"}}Config{{/crossLink}} class reference.
