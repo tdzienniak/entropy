@@ -76,13 +76,21 @@ extend(Entity.prototype, {
 
         this.components[lowercaseName] = component;
 
-        this._modifications.push({
-            fn: function () {
-                this.bitset.set(register.getComponentID(lowercaseName));
-            }
-        });
+        /**
+         * If entity id equals 0, it has not yet been added to the system, so we can
+         * safely modify it.
+         */
+        if (this.id === 0) {
+            this.bitset.set(register.getComponentID(lowercaseName));
+        } else {
+            this._modifications.push({
+                fn: function () {
+                    this.bitset.set(register.getComponentID(lowercaseName));
+                }
+            });
 
-        this.engine.markModifiedEntity(this);
+            this.engine.markModifiedEntity(this);
+        }
 
         return this;
     },
@@ -100,18 +108,24 @@ extend(Entity.prototype, {
             return this;
         }
 
-        this._modifications.push({
-            fn: function () {
-                this.engine._addComponentToPool(this.components[lowercaseName]);
+        if (this.id === 0) {
+            this._removeComponent(lowercaseName, componentId);
+        } else {
+            this._modifications.push({
+                fn: this._removeComponent,
+                args: [lowercaseName, componentId]
+            })
 
-                this.components[lowercaseName] = null;
-                this.bitset.clear(componentId);
-            }
-        });
-
-        this.engine.markModifiedEntity(this);
+            this.engine.markModifiedEntity(this);
+        }
 
         return this;
+    },
+    _removeComponent: function (lowercaseName, componentId) {
+        this.engine._addComponentToPool(this.components[lowercaseName]);
+
+        this.components[lowercaseName] = null;
+        this.bitset.clear(componentId);
     },
     get: function (name) {
          if (is.not.unemptyString(name)) {

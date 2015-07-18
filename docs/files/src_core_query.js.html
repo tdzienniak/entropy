@@ -146,21 +146,21 @@ function Query (query) {
         }
     }
 
-    if (include.lenght === 0 &amp;&amp; exclude.lenght === 0) {
+    if (include.length === 0 &amp;&amp; exclude.length === 0) {
         debug.warn(&#x27;You want to create empty query. If your intention is to get all entities, use getAllEntities() instead.&#x27;);
         return;
     }
 
-    if (include.lenght &gt; 0) {
+    if (include.length &gt; 0) {
         includeBS = new BitSet(config(&#x27;max_component_count&#x27;));
-        for (var i = 0; i &lt; include.lenght; i++) {
+        for (var i = 0; i &lt; include.length; i++) {
             includeBS.set(register.getComponentID(include[i]));
         }
     }
 
     if (exclude) {
         excludeBS = new BitSet(config(&#x27;max_component_count&#x27;));
-        for (var e = 0; e &lt; exclude.lenght; e++) {
+        for (var e = 0; e &lt; exclude.length; e++) {
             excludeBS.set(register.getComponentID(exclude[i]))
         }
     }

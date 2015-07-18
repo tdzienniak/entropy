@@ -10,6 +10,7 @@
         var i = 0;
 
         while (e = animations[i]) {
+
             sprite = e.components.animation.animation.update(delta);
            
             i++;
@@ -28,13 +29,12 @@ Entropy.System({
         var e, animation, position;
 
         var i = 0;
-
+        debugger;
         while (e = animations[i]) {
             animation = e.components.animation;
             position = e.components.position;
 
             var animationSprite = animation.animation.getAnimationSprite();
-
 
             animationSprite.position.x = position.x;
             animationSprite.position.y = position.y;

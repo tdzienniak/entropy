@@ -53,27 +53,27 @@ function Query (query) {
         }
     }
 
-    if (include.lenght === 0 && exclude.lenght === 0) {
+    if (include.length === 0 && exclude.length === 0 && name == null) {
         debug.warn('You want to create empty query. If your intention is to get all entities, use getAllEntities() instead.');
         return;
     }
 
-    if (include.lenght > 0) {
+    if (include.length > 0) {
         includeBS = new BitSet(config('max_component_count'));
-        for (var i = 0; i < include.lenght; i++) {
+        for (var i = 0; i < include.length; i++) {
             includeBS.set(register.getComponentID(include[i]));
         }
     }
 
     if (exclude) {
         excludeBS = new BitSet(config('max_component_count'));
-        for (var e = 0; e < exclude.lenght; e++) {
+        for (var e = 0; e < exclude.length; e++) {
             excludeBS.set(register.getComponentID(exclude[i]))
         }
     }
 
     this.matchName = name;
-    this.include = includeBS;
+    this.includes = includeBS;
     this.excludes = excludeBS;
 }
 
@@ -89,7 +89,7 @@ extend(Query.prototype, {
         }
 
         if (includes != null) {
-            satisfies = satisfies && includes.subsetOf(entity.bitset);
+            satisfies = satisfies && includes.clone().and(entity.bitset).equals(includes);
         }
 
         if (excludes != null) {

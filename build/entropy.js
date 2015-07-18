@@ -3194,13 +3194,21 @@ extend(Entity.prototype, {
 
         this.components[lowercaseName] = component;
 
-        this._modifications.push({
-            fn: function () {
-                this.bitset.set(register.getComponentID(lowercaseName));
-            }
-        });
+        /**
+         * If entity id equals 0, it has not yet been added to the system, so we can
+         * safely modify it.
+         */
+        if (this.id === 0) {
+            this.bitset.set(register.getComponentID(lowercaseName));
+        } else {
+            this._modifications.push({
+                fn: function () {
+                    this.bitset.set(register.getComponentID(lowercaseName));
+                }
+            });
 
-        this.engine.markModifiedEntity(this);
+            this.engine.markModifiedEntity(this);
+        }
 
         return this;
     },
@@ -3218,18 +3226,24 @@ extend(Entity.prototype, {
             return this;
         }
 
-        this._modifications.push({
-            fn: function () {
-                this.engine._addComponentToPool(this.components[lowercaseName]);
+        if (this.id === 0) {
+            this._removeComponent(lowercaseName, componentId);
+        } else {
+            this._modifications.push({
+                fn: this._removeComponent,
+                args: [lowercaseName, componentId]
+            })
 
-                this.components[lowercaseName] = null;
-                this.bitset.clear(componentId);
-            }
-        });
-
-        this.engine.markModifiedEntity(this);
+            this.engine.markModifiedEntity(this);
+        }
 
         return this;
+    },
+    _removeComponent: function (lowercaseName, componentId) {
+        this.engine._addComponentToPool(this.components[lowercaseName]);
+
+        this.components[lowercaseName] = null;
+        this.bitset.clear(componentId);
     },
     get: function (name) {
          if (is.not.unemptyString(name)) {
@@ -3932,27 +3946,27 @@ function Query (query) {
         }
     }
 
-    if (include.lenght === 0 && exclude.lenght === 0) {
+    if (include.length === 0 && exclude.length === 0 && name == null) {
         debug.warn('You want to create empty query. If your intention is to get all entities, use getAllEntities() instead.');
         return;
     }
 
-    if (include.lenght > 0) {
+    if (include.length > 0) {
         includeBS = new BitSet(config('max_component_count'));
-        for (var i = 0; i < include.lenght; i++) {
+        for (var i = 0; i < include.length; i++) {
             includeBS.set(register.getComponentID(include[i]));
         }
     }
 
     if (exclude) {
         excludeBS = new BitSet(config('max_component_count'));
-        for (var e = 0; e < exclude.lenght; e++) {
+        for (var e = 0; e < exclude.length; e++) {
             excludeBS.set(register.getComponentID(exclude[i]))
         }
     }
 
     this.matchName = name;
-    this.include = includeBS;
+    this.includes = includeBS;
     this.excludes = excludeBS;
 }
 
@@ -3968,7 +3982,7 @@ extend(Query.prototype, {
         }
 
         if (includes != null) {
-            satisfies = satisfies && includes.subsetOf(entity.bitset);
+            satisfies = satisfies && includes.clone().and(entity.bitset).equals(includes);
         }
 
         if (excludes != null) {

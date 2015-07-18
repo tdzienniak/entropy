@@ -14,7 +14,7 @@ Entropy.State({
 
         game.loader.loadManifest([
             //some libs
-            "./lib/pixi.min.js",
+            "./lib/pixi.js",
             "./lib/howler.min.js",
             "./lib/p2.min.js",
             //states
@@ -24,14 +24,22 @@ Entropy.State({
             //components
             "./js/components/Animation.js",
             "./js/components/Position.js",
+            "./js/components/Body.js",
+            "./js/components/Sprite.js",
             //entities
             "./js/entities/Ball.js",
-            "./js/entities/Pad.js",
+            "./js/entities/Paddle.js",
             "./js/entities/Counter.js",
             "./js/entities/Block.js",
             "./js/entities/PowerUp.js",
+            "./js/entities/WallTop.js",
+            "./js/entities/WallRight.js",
+            "./js/entities/WallLeft.js",
             //systems
             "./js/systems/AnimationUpdater.js",
+            "./js/systems/PhysicsStep.js",
+            "./js/systems/SpriteBodyUpdater.js",
+            "./js/systems/PaddleMovement.js",
             {
                 id: 'breakout',
                 src: './assets/textures/breakout.json',

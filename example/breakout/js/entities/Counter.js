@@ -13,8 +13,10 @@ Entropy.Entity({
 
         var animationSprite = animation.getAnimationSprite();
         
-        animationSprite.position.x = 160;
-        animationSprite.position.y = 200;
+        animationSprite.position.x = 3;//160;
+        animationSprite.position.y = 3;//200;
+        animationSprite.scale.y = -1 / Entropy.ZOOM;
+        animationSprite.scale.x = 1 / Entropy.ZOOM;
 
         game.stage.addChild(animationSprite);
 

@@ -74,9 +74,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-yuidoc');
 
     // Default task(s).
-    grunt.registerTask('build-core', ['clean', 'browserify:core', 'uglify:core']);
+    grunt.registerTask('build-core', ['browserify:core', 'uglify:core']);
     grunt.registerTask('build-plugins', ['browserify:plugins', 'uglify:plugins']);
     grunt.registerTask('build-docs', ['yuidoc']);
-    grunt.registerTask('build', ['build-core', 'build-plugins', 'build-docs']);
+    grunt.registerTask('build', ['clean', 'build-core', 'build-plugins', 'build-docs']);
 
 };
