@@ -600,6 +600,12 @@
             "class": "Entity"
         },
         {
+            "file": "src\\core\\entity.js",
+            "line": 79,
+            "description": "If entity id equals 0, it has not yet been added to the system, so we can\nsafely modify it.",
+            "class": "Entity"
+        },
+        {
             "file": "src\\core\\event.js",
             "line": 14,
             "description": "Object with registered event listeners. Keys are event names.",
@@ -1174,6 +1180,10 @@
         }
     ],
     "warnings": [
+        {
+            "message": "Missing item type\nIf entity id equals 0, it has not yet been added to the system, so we can\nsafely modify it.",
+            "line": " src\\core\\entity.js:79"
+        },
         {
             "message": "Missing item type\nThis code comes from PIXIs default loader:\nhttps://github.com/GoodBoyDigital/pixi.js/blob/master/src/loaders/spritesheetParser.js",
             "line": " plugins\\loader\\PixiTextureAtlasLoader.js:92"

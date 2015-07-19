@@ -146,7 +146,7 @@ function Query (query) {
         }
     }
 
-    if (include.length === 0 &amp;&amp; exclude.length === 0) {
+    if (include.length === 0 &amp;&amp; exclude.length === 0 &amp;&amp; name == null) {
         debug.warn(&#x27;You want to create empty query. If your intention is to get all entities, use getAllEntities() instead.&#x27;);
         return;
     }
@@ -166,7 +166,7 @@ function Query (query) {
     }
 
     this.matchName = name;
-    this.include = includeBS;
+    this.includes = includeBS;
     this.excludes = excludeBS;
 }
 
@@ -182,7 +182,7 @@ extend(Query.prototype, {
         }
 
         if (includes != null) {
-            satisfies = satisfies &amp;&amp; includes.subsetOf(entity.bitset);
+            satisfies = satisfies &amp;&amp; includes.clone().and(entity.bitset).equals(includes);
         }
 
         if (excludes != null) {
