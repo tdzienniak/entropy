@@ -29,7 +29,7 @@ Entropy.Entity({
         body.addShape(ballShape);
         game.world.addBody(body);
 
-        var animation = new Entropy.Animation(frames, 30, true);
+        var animation = new Entropy.Animation(frames, 20, true);
     
         var sprite = animation.getAnimationSprite();
 

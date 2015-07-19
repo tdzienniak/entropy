@@ -613,7 +613,7 @@ extend(Engine.prototype, {
         for (var i = 1, greatestID = this._greatestEntityID; i <= greatestID; i++) {
             entity = this._entities[i];
             if (entity === 0) {
-                break;
+                continue;
             }
 
             if (query.satisfiedBy(entity)) {

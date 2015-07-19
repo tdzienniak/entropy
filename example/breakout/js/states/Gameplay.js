@@ -123,14 +123,15 @@ Entropy.State({
         game.engine.addSystem(["AnimationUpdater", 1]);
         game.engine.addSystem(["SpriteBodyUpdater", 2]);
         game.engine.addSystem(["BlockHit", 3]);
-        game.engine.addSystem(["PhysicsStep", 3]);
+        game.engine.addSystem(["CountdownSystem", 3]);
+        //game.engine.addSystem(["PhysicsStep", 3]);
 
         game.engine.create('WallTop', wallMaterial)
         game.engine.create('WallRight', wallMaterial)
         game.engine.create('WallLeft', wallMaterial)
-        game.engine.create('Ball', 0, 0, -7, -7, ballMaterial);
+        game.engine.create('Ball', -8, 0, 9, -9, ballMaterial);
         game.engine.create('Paddle', wallMaterial);
-        //game.engine.create('Counter')
+        game.engine.create('Counter')
 
         game.world.addContactMaterial(new p2.ContactMaterial(ballMaterial, wallMaterial, {
             restitution : 1.0,

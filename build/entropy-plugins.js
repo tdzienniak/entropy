@@ -459,6 +459,8 @@ Entropy.Utils.extend(Animation.prototype, {
         }
 
         if (this._currentFrameTime >= this._frameTime) {
+            this.emit('frameChange');
+
             this._currentFrame = this.nextFrame();
 
             this._currentFrameTime = 0;

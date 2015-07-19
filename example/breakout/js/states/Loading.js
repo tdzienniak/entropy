@@ -41,12 +41,29 @@ Entropy.State({
             .loadFile('./js/systems/SpriteBodyUpdater.js')
             .loadFile('./js/systems/PaddleMovement.js')
             .loadFile('./js/systems/BlockHit.js')
+            .loadFile('./js/systems/CountdownSystem.js')
         //texures
             .loadTextureAtlas('./assets/textures/breakout.json')
         //sounds
             .loadSound({
                 id: 'brickDeath',
                 src: ['./assets/sounds/brickDeath.ogg', './assets/sounds/brickDeath.mp3', './assets/sounds/brickDeath.wav'],
+            })
+            .loadSound({
+                id: 'countdownBlip',
+                src: ['./assets/sounds/countdownBlip.ogg', './assets/sounds/countdownBlip.mp3', './assets/sounds/countdownBlip.wav'],
+            })
+            .loadSound({
+                id: 'powerdown',
+                src: ['./assets/sounds/powerdown.ogg', './assets/sounds/powerdown.mp3', './assets/sounds/powerdown.wav'],
+            })
+            .loadSound({
+                id: 'powerup',
+                src: ['./assets/sounds/powerup.ogg', './assets/sounds/powerup.mp3', './assets/sounds/powerup.wav'],
+            })
+            .loadSound({
+                id: 'recover',
+                src: ['./assets/sounds/recover.ogg', './assets/sounds/recover.mp3', './assets/sounds/recover.wav'],
             })
 
         game.loader.on('fileload', function (e) {

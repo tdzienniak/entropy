@@ -7,26 +7,33 @@ Entropy.Entity({
             new Entropy.Frame(PIXI.utils.TextureCache["num_1.png"])
         ]
 
-        var animation = new Entropy.Animation(frames, 1, true);
+        var animation = new Entropy.Animation(frames, 1, false);
 
        // animation.reverse();
 
         var animationSprite = animation.getAnimationSprite();
         
-        animationSprite.position.x = 3;//160;
-        animationSprite.position.y = 3;//200;
+        animationSprite.position.x = 0;
+        animationSprite.position.y = 0;
+        animationSprite.anchor.x = 0.5;
+        animationSprite.anchor.y = 0.5;
         animationSprite.scale.y = -1 / Entropy.ZOOM;
         animationSprite.scale.x = 1 / Entropy.ZOOM;
 
         game.stage.addChild(animationSprite);
 
-        animation.play();
+        animation.on('start', function () {
+            game.sounds.countdownBlip.play();
+        })
+
+        animation.on('frameChange', function () {
+            game.sounds.countdownBlip.play();
+        })
 
         this.add("Animation", animation);
     },
-    remove: function () {
-
-
-
+    remove: function (game) {
+        var animationSprite = this.components.animation.animation.getAnimationSprite();
+        game.stage.removeChild(animationSprite);
     }
 });

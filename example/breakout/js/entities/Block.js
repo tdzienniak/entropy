@@ -13,8 +13,6 @@ Entropy.Entity({
             width: 3.2
         });
 
-        console.log
-
         blockShape.material = material;
 
         body.addShape(blockShape);
@@ -22,7 +20,7 @@ Entropy.Entity({
 
         var frames = [1, 2, 3, 4, 5].map(function (num) {
             return new Entropy.Frame(PIXI.utils.TextureCache[color + "_0" + num + ".png"])
-        })
+        }).reverse();
 
         var animation = new Entropy.Animation(frames, 20, false);
 
@@ -36,6 +34,12 @@ Entropy.Entity({
         animationSprite.scale.x = 1 / Entropy.ZOOM;
 
         game.stage.addChild(animationSprite);
+
+        animation.play()
+
+        animation.on('end', function () {
+            animation.reverse()
+        })
 
         this.add("Sprite", animationSprite)
             .add("Animation", animation)
