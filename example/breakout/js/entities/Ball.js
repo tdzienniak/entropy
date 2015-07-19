@@ -1,13 +1,20 @@
 Entropy.Entity({
     name: "Ball",
-    create: function (game, material) {
+    create: function (game, x, y, vx, vy, material) {
+        var frames = [
+            new Entropy.Frame(PIXI.utils.TextureCache["ball_01.png"]),
+            new Entropy.Frame(PIXI.utils.TextureCache["ball_02.png"]),
+            new Entropy.Frame(PIXI.utils.TextureCache["ball_03.png"]),
+            new Entropy.Frame(PIXI.utils.TextureCache["ball_04.png"]),
+            new Entropy.Frame(PIXI.utils.TextureCache["ball_05.png"])
+        ];
 
         var body = new p2.Body({
-            //type: p2.Body.KINEMATIC,
+            id: "ball",
             mass: 1,
-            position: [0, 0],
+            position: [x, y],
             angle: 0,
-            velocity: [5, 5],
+            velocity: [vx, vy],
             angularVelocity: 0,
             damping: 0,
             angularDamping: 0
@@ -19,13 +26,15 @@ Entropy.Entity({
 
         ballShape.material = material;
 
-        // Add a circular shape to the body
         body.addShape(ballShape);
-        
-        // Add the body to the world
         game.world.addBody(body);
 
-        var sprite = new PIXI.Sprite(PIXI.utils.TextureCache["ball_01.png"]);
+        var animation = new Entropy.Animation(frames, 30, true);
+    
+        var sprite = animation.getAnimationSprite();
+
+        sprite.position.x = x;
+        sprite.position.y = y;
 
         sprite.anchor.x = 0.5;
         sprite.anchor.y = 0.5;
@@ -35,7 +44,10 @@ Entropy.Entity({
 
         game.stage.addChild(sprite);
 
+        animation.play();
+
         this.add("Sprite", sprite)
+            .add("Animation", animation)
             .add("Body", body);
     }
 });

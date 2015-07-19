@@ -3,7 +3,7 @@ Entropy.State({
     initialize: function (game, done) {
         this.loadingScreen = document.querySelector('.loading-screen');
 
-        game.plugin.add('loader', Entropy.Loader());
+        game.plugin.add('loader', new Entropy.Loader());
 
         return done();
     },
@@ -11,42 +11,49 @@ Entropy.State({
         var self = this;
         var progressBar = document.querySelector('.progress-bar-inner');
 
+        game.sounds = {};
 
-        game.loader.loadManifest([
-            //some libs
-            "./lib/pixi.js",
-            "./lib/howler.min.js",
-            "./lib/p2.min.js",
-            //states
-            "./js/states/Initialize.js",
-            "./js/states/Menu.js",
-            "./js/states/Gameplay.js",
-            //components
-            "./js/components/Animation.js",
-            "./js/components/Position.js",
-            "./js/components/Body.js",
-            "./js/components/Sprite.js",
-            //entities
-            "./js/entities/Ball.js",
-            "./js/entities/Paddle.js",
-            "./js/entities/Counter.js",
-            "./js/entities/Block.js",
-            "./js/entities/PowerUp.js",
-            "./js/entities/WallTop.js",
-            "./js/entities/WallRight.js",
-            "./js/entities/WallLeft.js",
-            //systems
-            "./js/systems/AnimationUpdater.js",
-            "./js/systems/PhysicsStep.js",
-            "./js/systems/SpriteBodyUpdater.js",
-            "./js/systems/PaddleMovement.js",
-            {
-                id: 'breakout',
-                src: './assets/textures/breakout.json',
-                type: Entropy.Loader.TEXTUREATLAS
+        //some libs
+        game.loader.loadFile('./lib/pixi.js')
+            .loadFile('./lib/howler.min.js')
+            .loadFile('./lib/p2.min.js')
+        //states
+            .loadFile('./js/states/Initialize.js')
+            .loadFile('./js/states/Menu.js')
+            .loadFile('./js/states/Gameplay.js')
+        //components
+            .loadFile('./js/components/Animation.js')
+            .loadFile('./js/components/Position.js')
+            .loadFile('./js/components/Body.js')
+            .loadFile('./js/components/Sprite.js')
+        //entities
+            .loadFile('./js/entities/Ball.js')
+            .loadFile('./js/entities/Paddle.js')
+            .loadFile('./js/entities/Counter.js')
+            .loadFile('./js/entities/Block.js')
+            .loadFile('./js/entities/PowerUp.js')
+            .loadFile('./js/entities/WallTop.js')
+            .loadFile('./js/entities/WallRight.js')
+            .loadFile('./js/entities/WallLeft.js')
+        //systems
+            .loadFile('./js/systems/AnimationUpdater.js')
+            .loadFile('./js/systems/PhysicsStep.js')
+            .loadFile('./js/systems/SpriteBodyUpdater.js')
+            .loadFile('./js/systems/PaddleMovement.js')
+            .loadFile('./js/systems/BlockHit.js')
+        //texures
+            .loadTextureAtlas('./assets/textures/breakout.json')
+        //sounds
+            .loadSound({
+                id: 'brickDeath',
+                src: ['./assets/sounds/brickDeath.ogg', './assets/sounds/brickDeath.mp3', './assets/sounds/brickDeath.wav'],
+            })
+
+        game.loader.on('fileload', function (e) {
+            if (e.item.type === Entropy.Loader.SOUND) {
+                game.sounds[e.item.id] = e.result;
             }
-        ])
-
+        })
 
         game.loader.on('progress', function (e) {
             progressBar.style.width = e.progress * 320 + 'px';
@@ -66,3 +73,4 @@ Entropy.State({
         });
     }
 })
+
