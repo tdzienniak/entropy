@@ -17,7 +17,7 @@ Entropy is literally just a framework, variation on an entity system, that can h
 
 ##Installation##
 
-To start using Entropy just put the reference to `entropy.min.js` file in the script tag or add it to you assets loader.
+To start using Entropy just put reference to `entropy.min.js` file in the script tag or add it to you assets loader. If you want to use provided plugins, put reference to `entropy-plugins.min.js` __after__ main framework script.
 
 ##Getting started##
 
