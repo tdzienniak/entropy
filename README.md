@@ -3,6 +3,8 @@ Entropy
 
 _JavaScript entity system framework for games._
 
+__Note: this engine is still in active developement. It lacks many tests and breaking API changes are very likely to happen. It is not production ready, but I was able to build a few games with it, so if you want to experiment or help with developement, you are welcome.__
+
 Entropy is literally just a framework, variation on an entity system, that can help you organize and write your game in very specific way. It also does many things for you, such as game state management, input handling. It is not tied to any graphics library, sound library, or other fancy stuff. If you are not familiar with entity system idea, check out these articles: [one](http://www.gamedev.net/page/resources/_/technical/game-programming/understanding-component-entity-systems-r3013) [two](http://entity-systems.wikidot.com/es-tutorials).
 
 ##Key features:##
