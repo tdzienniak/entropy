@@ -1,4 +1,4 @@
-__Note: this engine is still in active developement. It lacks many tests and breaking API changes are very likely to happen. It is not production ready, but I was able to build a few games with it, so if you want to experiment or help with developement, you are welcome.__
+__Note: this engine is still in active developement. It lacks many tests, documentation is not complete and breaking API changes are very likely to happen. It is not production ready, but I was able to build a few games with it, so if you want to experiment or help with developement, you are welcome.__
 
 Entropy
 =======
