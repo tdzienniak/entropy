@@ -248,7 +248,9 @@ extend(Engine.prototype, {
      * @return {Engine}        Engine instance
      */
     remove: function (entity) {
-        if (entity == null) {
+        if (is.not.object(entity)) {
+            debug.error(&#x27;entity to remove has to be an object.&#x27;)
+
             return this;
         }
 
@@ -325,7 +327,7 @@ extend(Engine.prototype, {
         var pattern = register.getSystemPattern(systemName);
 
         if (is.not.object(pattern)) {
-            debug.warn(&#x27;There is no system %s.&#x27;, name);
+            debug.warn(&#x27;There is no system %s.&#x27;, systemName);
             return this;
         }
 
@@ -484,7 +486,7 @@ extend(Engine.prototype, {
                 continue;
             }
 
-            for (i = 0, len = this._queries.length; i &lt; len; i++) {
+            for (i = 0, len = queries.length; i &lt; len; i++) {
                 query = queries[i];
 
                 if (!query.satisfiedBy(entityToRemove)) {
@@ -626,10 +628,10 @@ extend(Engine.prototype, {
             index = query.index;
             var entities = query.entities;
             var entitiesLength = 0;
-            i = 0;
-            while (id = index[i]) {
+            var j = 0;
+            while (id = index[j]) {
                 array.push(entities, entitiesLength++, systemEntities[id]);
-                i += 1;
+                j += 1;
             }
 
             array.push(entities, entitiesLength, 0);
@@ -706,7 +708,7 @@ extend(Engine.prototype, {
         for (var i = 1, greatestID = this._greatestEntityID; i &lt;= greatestID; i++) {
             entity = this._entities[i];
             if (entity === 0) {
-                break;
+                continue;
             }
 
             if (query.satisfiedBy(entity)) {

@@ -491,7 +491,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 169,
+            "line": 171,
             "description": "Returns array of entities satisfying given {{#crossLink \"Query\"}}query{{/crossLink}} conditions.\nReturned arrays length does not correspond with matched entities quantity.\nTo loop over entities start from 0 index, and then check if element is different than 0.\nThis method guaranties, that entities will be arranged as subsequent array slice, starting from 0 index and ending on element equal to 0.\nThe array is in this form for performance reasons.",
             "example": [
                 "\n    //in systems 'initialize' method...\n    this.query = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n\n    //in systems 'update' method\n    var movingEntities = this.engine.getEntities(this.query);\n\n    //here do something with entities in loop\n    ..."
@@ -513,7 +513,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 197,
+            "line": 199,
             "description": "Creates new system object and adds it to the engine. System patterns `initialize` method is called (if present).\nIt can be called in two ways - with first argument being either:\n- system name - then system has priority as defined by patterns `priority` property or 0.\n- array with two elements - system name and its desired priority. In this case patterns `priority` property is simply skiped.",
             "example": [
                 "\n    game.engine.addSystem(\"Renderer\", rendererObject);\n\n    //or\n\n    game.engine.addSystem([\"Renderer\", 1], rendererObject);"
@@ -536,7 +536,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 330,
+            "line": 332,
             "itemtype": "method",
             "name": "clear",
             "return": {
@@ -547,7 +547,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 581,
+            "line": 583,
             "description": "Returns ID for an entity. Reuses old IDs or creates new.",
             "access": "private",
             "tagname": "",
@@ -561,7 +561,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 597,
+            "line": 599,
             "description": "Initializes new query. Performs initial entity search.",
             "access": "private",
             "tagname": "",
