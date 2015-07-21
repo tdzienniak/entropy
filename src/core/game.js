@@ -97,7 +97,7 @@ extend(Game.prototype, {
      */
     stop: function (clearEngine) {
         if (clearEngine) {
-            this.engine.once('clear', function () {
+            this.engine.once('cleared', function () {
                 return this._stopAndEmit();
             }, this);
 

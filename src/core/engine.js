@@ -8,7 +8,6 @@ var debug = require('./debug');
 var register = require('./register');
 var slice = Array.prototype.slice;
 
-var Query = require('./query');
 var EventEmitter = require('./event');
 var Pool = require('./pool');
 var Entity = require('./entity');
@@ -61,6 +60,8 @@ function Engine (game) {
 
     /**
      * Array with entities. Array index corresponds to ID of an entity.
+     * First element is empty (equals 0), because entity IDs start from 1.
+     * Entity with `id` property equal 0 is _officially_ not present in the system (it can be for example present in the pool or waiting for addition to system).
      *
      * @property _entities
      * @private
@@ -83,18 +84,23 @@ function Engine (game) {
 
     this._entitiesCount = 0;
 
-    this._performClearing = false;
+    /**
+     * Indicates whether clearing is scheduled.
+     * 
+     * @property _isClearingScheduled
+     * @private
+     * @type {Boolean}
+     */
+    this._isClearingScheduled = false;
 
-    //register.setCannotModify();
-
-    //Initialize components and entities pools.
-    register.listComponentsNames().forEach(function (name) {
-        this._componentsPool[name] = new Pool(config('initial_components_pool_size'));
-    }, this);
-
-    register.listEntitiesNames().forEach(function (name) {
-        this._entitiesPool[name] = new Pool(config('initial_entities_pool_size'));
-    }, this);
+    /**
+     * Indicates whether clearing was performed.
+     *
+     * @property _wasClearingPerformed
+     * @private
+     * @type {Boolean}
+     */
+    this._wasClearingPerformed = false;
 }
 
 extend(Engine.prototype, EventEmitter.prototype);
@@ -330,11 +336,21 @@ extend(Engine.prototype, {
         array.push(this._modifiedEntities, this._modifiedEntitiesLength++, entity.id);
     },
     /**
+     * Schedules clearing. Clearing is usually not done immediately, because removing entities and systems during game loop is dangerous and
+     * can result in some strange system behaviors. Thus, clearing is performed at the end of the game loop, after all systems have updated.
+     * The event `cleared` is fired when clearing is done, so it is good idea to, for example, stop the game in this listener.
+     * 
      * @method clear
-     * @return {[type]} [description]
      */
     clear: function () {
-        var entity;
+        this._isClearingScheduled = true;
+    },
+    _performScheduledClearing: function () {
+        var entity, entityToAdd, systemToAdd;
+        
+        /**
+         * Mark for removal all present entities.
+         */
         for (var i = 1; i <= this._greatestEntityID; i++) {
             entity = this._entities[i];
 
@@ -345,13 +361,33 @@ extend(Engine.prototype, {
             this._entitiesToRemove.put(entity);
         }
 
-        for (var i = 0, len = this._systems.length; i < len; i++) {
-            this._systemsToRemove(this._systems[i]);
+        /**
+         * Cancel addition of any entities. 
+         */
+        while (entityToAdd = this._entitiesToAdd.get()) {
+            if (is.function(entityToAdd.pattern.remove)) {
+                entityToAdd.pattern.remove.call(entityToAdd, this.game);
+            }
+
+            //Go back to pool, you stupid entity!
+            this._entitiesPool[entityToAdd.pattern.name].put(entityToAdd);
         }
 
-        this._performClearing = true;
-
-        return this;
+        /**
+         * Cancel addition of any systems.
+         */
+        while (systemToAdd = this._systemsToAdd.get()) {
+            if (is.function(systemToAdd.remove)) {
+                systemToAdd.remove();
+            }
+        }
+        
+        /**
+         * Mark for removal any present systems.
+         */
+        for (var i = 0, len = this._systems.length; i < len; i++) {
+            this._systemsToRemove.put(this._systems[i]);
+        }
     },
     update: function (event) {
         var delta = event.delta;
@@ -367,6 +403,12 @@ extend(Engine.prototype, {
             system.update(delta);
         }
 
+        if (this._isClearingScheduled) {
+            this._performScheduledClearing();
+
+            this._wasClearingPerformed = true;
+        }
+
         this._removeEntities();
         this._addEntities();
         this._modifyEntities();
@@ -374,9 +416,11 @@ extend(Engine.prototype, {
         this._addSystems();
         this._fetchQueries();
 
-        if (this._performClearing) {
-            this.emit('clear');
-            this._performClearing = false;
+        if (this._wasClearingPerformed) {
+            this.emit('cleared');
+
+            this._wasClearingPerformed = false;
+            this._isClearingScheduled = false;
         }
     },
     _removeEntities: function () {
@@ -420,6 +464,8 @@ extend(Engine.prototype, {
 
             this._entitiesPool[name].put(entityToRemove);
             this._entitiesCount -= 1;
+
+            this.emit('entityRemoved', entityToRemove);
         }
     },
     _addEntities: function () {
@@ -452,6 +498,8 @@ extend(Engine.prototype, {
             }
 
             this._entitiesCount += 1;
+
+            this.emit('entityAdded', entityToAdd);
         }
     },
     _modifyEntities: function () {
@@ -504,6 +552,8 @@ extend(Engine.prototype, {
             }
 
             array.removeAtIndex(this._systems, indexOfSystem);
+
+            this.emit('systemRemoved', systemToRemove);
         }
     },
     _addSystems: function () {
@@ -518,6 +568,8 @@ extend(Engine.prototype, {
             }
 
             this._systems.splice(insertionIndex, 0, systemToAdd);
+
+            this.emit('systemAdded', systemToAdd);
         }
     },
     _fetchQueries: function () {
@@ -635,5 +687,35 @@ extend(Engine.prototype, {
         this._queries.push(query);
     }
 });
+
+/**
+ * Entity added.
+ *
+ * @event entityAdded
+ */
+
+/**
+ * Entity removed.
+ *
+ * @event entityRemoved
+ */
+
+/**
+ * System added.
+ * 
+ * @event systemAdded
+ */
+
+/**
+ * System removed.
+ * 
+ * @event systemRemoved
+ */
+
+/**
+ * Fired at the and of game loop, when the scheduled clearing was performed.
+ * 
+ * @event cleared
+ */
 
 module.exports = Engine;
