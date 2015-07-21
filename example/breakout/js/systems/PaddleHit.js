@@ -3,7 +3,7 @@
     initialize: function () {
         this.game.world.on('beginContact', this.handlePaddleHit);
     },
-    handlePaddleHit: function () {
+    handlePaddleHit: function (e) {
         if (e.bodyA.entId === 'ball' && e.bodyB.entId === 'paddle') {
             var ball = e.bodyA;
             var paddle = e.bodyB;

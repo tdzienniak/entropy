@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="screens">
-        <div class="screen loading-screen active">
+        <div class="screen loading-screen">
             <div class="progress-bar-outer">
                 <div class="progress-bar-inner">
                 </div>
@@ -28,7 +28,6 @@
     </footer>
     <!-- Only these four scripts are needed initially, rest will be preloaded later. -->
     <script src="./lib/preloadjs.js"></script>
-    <script src="./lib/move.min.js"></script>
     <script src="../../build/entropy.js" defer></script>
     <script src="../../build/entropy-plugins.js" defer></script>
     <script src="./js/states/Loading.js" defer></script>
@@ -36,23 +35,59 @@
         window.addEventListener('load', function () {
             game = new Entropy.Game();
 
-            //Start da loading!
-            move('.loading-screen')
-                .set('top', 1)
-                .end(function () {
-                    console.log('loading')
-                    game.state.change('Loading');
-                    
-                })
-
-            // move('.menu-screen')
-            //     .x(1)
-            //     .end(function () {
-            //         console.log('loading')
-            //         game.state.change('Loading');
-                    
-            //     })
+            fadeInScreen('.loading-screen', function () {
+                game.state.change('Loading');
+            })
         })
+
+        //Some helper CSS animation functions
+        function fadeOutScreen(screen, done) {
+            var screenElement = document.querySelector(screen);
+
+            screenElement.classList.add('fade-out');
+
+            var animationEnd = function () {
+                off(screenElement, 'animationend', animationEnd);
+                screenElement.classList.remove('fade-out');
+                screenElement.classList.remove('active');
+
+                return done();
+            }
+
+            on(screenElement, 'animationend', animationEnd);
+        }
+
+        function fadeInScreen(screen, done) {
+            var screenElement = document.querySelector(screen);
+
+            screenElement.classList.add('fade-in');
+            screenElement.classList.add('active');
+
+            var animationEnd = function () {
+                off(screenElement, 'animationend', animationEnd);
+                screenElement.classList.remove('fade-in');
+
+                return done();
+            }
+
+            on(screenElement, 'animationend', animationEnd);
+        }
+        
+        function on(element, type, callback) {
+            var pfx = ["webkit", "moz", "MS", "o", ""];
+            for (var p = 0; p < pfx.length; p++) {
+                if (!pfx[p]) type = type.toLowerCase();
+                element.addEventListener(pfx[p]+type, callback, false);
+            }
+        }
+
+        function off(element, type, callback) {
+            var pfx = ["webkit", "moz", "MS", "o", ""];
+            for (var p = 0; p < pfx.length; p++) {
+                if (!pfx[p]) type = type.toLowerCase();
+                element.removeEventListener(pfx[p]+type, callback, false);
+            }
+        }
     </script>
 </body>
 </html>

@@ -37,12 +37,6 @@ Entropy.State({
         return done();
     },
     enter: function (game, done) {
-        this.gameplayScreen.classList.add('active');
-        
-        //play fade in animation
-        move('.gameplay-screen')
-            .set('opacity', 1)
-            .end();
 
         //define some materials
         game.materials = {
@@ -74,6 +68,7 @@ Entropy.State({
         game.engine.addSystem(["AnimationUpdater", 1]);
         game.engine.addSystem(["SpriteBodyUpdater", 2]);
         game.engine.addSystem(["BlockHit", 3]);
+        game.engine.addSystem(["PaddleHit", 3]);
         game.engine.addSystem(["CountdownSystem", 3]);
         game.engine.addSystem(["PaddleMovement", 3]);
         game.engine.addSystem(["BallDeathChecker", 3])
@@ -97,21 +92,18 @@ Entropy.State({
         }));
 
         //Start da game!
-        game.start();
+        fadeInScreen('.gameplay-screen', function () {
+            game.start();
 
-        return done();            
+            return done();
+        })        
     },
     exit: function (game, done) {
         var self = this;
 
-        //play fade in animation
-        move('.gameplay-screen')
-            .set('opacity', 0)
-            .end(function () {
-                self.gameplayScreen.classList.remove('active');
-
-                return done();
-            })
+        fadeOutScreen('.gameplay-screen', function () {
+            return done();
+        })
     }
 })
 

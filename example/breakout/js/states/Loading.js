@@ -41,6 +41,7 @@ Entropy.State({
             .loadFile('./js/systems/SpriteBodyUpdater.js')
             .loadFile('./js/systems/PaddleMovement.js')
             .loadFile('./js/systems/BlockHit.js')
+            .loadFile('./js/systems/PaddleHit.js')
             .loadFile('./js/systems/CountdownSystem.js')
             .loadFile('./js/systems/BallDeathChecker.js')
         //texures
@@ -86,14 +87,9 @@ Entropy.State({
     exit: function (game, done) {
         var self = this;
 
-        move('.loading-screen')
-            .set('opacity', 0)
-            .duration('0.5s')
-            .end(function () {
-                self.loadingScreen.classList.remove('active');
-                console.log('loading')
-                return done();
-            })
+        fadeOutScreen('.loading-screen', function () {
+            return done();
+        })
     }
 })
 
