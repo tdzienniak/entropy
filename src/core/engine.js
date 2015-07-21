@@ -202,6 +202,9 @@ extend(Engine.prototype, {
 
         return query.entities;
     },
+    getOne: function (query) {
+        return this.getEntities(query)[0];
+    },
     /**
      * Creates new system object and adds it to the engine. System patterns `initialize` method is called (if present).
      * It can be called in two ways - with first argument being either:
