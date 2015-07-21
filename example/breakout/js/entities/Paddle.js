@@ -39,5 +39,9 @@ Entropy.Entity({
 
         this.add("Sprite", sprite)
             .add("Body", body);
+    },
+    remove: function (game) {
+        game.stage.removeChild(this.components.sprite.sprite);
+        game.world.removeBody(this.components.body.body);
     }
 });

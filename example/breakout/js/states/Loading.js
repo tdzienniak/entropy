@@ -21,12 +21,14 @@ Entropy.State({
             .loadFile('./js/states/Initialize.js')
             .loadFile('./js/states/Menu.js')
             .loadFile('./js/states/Gameplay.js')
+            .loadFile('./js/states/GameOver.js')
         //components
             .loadFile('./js/components/Animation.js')
-            .loadFile('./js/components/Position.js')
             .loadFile('./js/components/Body.js')
             .loadFile('./js/components/Sprite.js')
+            .loadFile('./js/components/PlayerStats.js')
         //entities
+            .loadFile('./js/entities/Player.js')
             .loadFile('./js/entities/Ball.js')
             .loadFile('./js/entities/Paddle.js')
             .loadFile('./js/entities/Counter.js')

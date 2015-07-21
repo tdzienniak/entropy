@@ -35,10 +35,10 @@
         } else if (angle > 5 * halfCircleChunk || angle < 3 * halfCircleChunk) {
             coeficient = 1.05;
         } else if (angle < 5 * halfCircleChunk && angle > 3 * halfCircleChunk) {
-            coeficient = 0.99;
+            coeficient = 0.95;
         }
-        
-        p2.vec2.scale(newVelocity, newVelocity, currentVelocity * coeficient)
+
+        p2.vec2.scale(newVelocity, newVelocity, clamp(currentVelocity * coeficient, 10, 15))
 
         ball.velocity = newVelocity;
     },

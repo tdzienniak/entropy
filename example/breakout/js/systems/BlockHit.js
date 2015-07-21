@@ -5,6 +5,10 @@
             name: "Block"
         });
 
+        var playerQuery = new Entropy.Query({
+            name: "Player"
+        })
+
         var self = this;
         var game = this.game;
 
@@ -47,6 +51,11 @@
             
             animation.play();
             game.sounds.brickDeath.play();
+
+            var player = self.engine.getOne(playerQuery);
+
+            player.components.playerstats.score += 100;
+            player.components.playerstats.scoreTextNode.text = 'score:' + pad(player.components.playerstats.score, 4);
         }
 
         this.game.world.on('beginContact', handleBlockHit);

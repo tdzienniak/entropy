@@ -72,8 +72,8 @@ Entropy.State({
         game.engine.addSystem(["CountdownSystem", 3]);
         game.engine.addSystem(["PaddleMovement", 3]);
         game.engine.addSystem(["BallDeathChecker", 3])
-        //game.engine.addSystem(["PhysicsStep", 3]);
 
+        game.engine.create('Player')
         game.engine.create('WallTop')
         game.engine.create('WallRight')
         game.engine.create('WallLeft')
@@ -96,7 +96,7 @@ Entropy.State({
             game.start();
 
             return done();
-        })        
+        })
     },
     exit: function (game, done) {
         var self = this;

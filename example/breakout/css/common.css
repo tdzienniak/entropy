@@ -38,6 +38,7 @@ body {
     position: relative;
     top: 50%;
     transform: translateY(-50%);
+    font-family: 'Press Start 2P';
 }
 
 .active {
@@ -62,24 +63,30 @@ body {
 }
 
 .menu-message-text, .menu-click-to-start {
-    font-family: sans-serif;
-    font-weight: bold;
     position: absolute;
     text-align: center;
+    font-size: 9pt;
 }
 
 .menu-click-to-start {
     top: 300px;
     width: 320px;
-    font-size: 22pt;
 }
 
 .menu-message-text {
     position: absolute;
     text-align: center;
     padding: 10px 25px;
-    bottom: 0px;
+    bottom: 10px;
 
+}
+
+.gameover-text {
+    text-align: center;
+    font-size: 9pt;
+    color: white;
+    position: relative;
+    top: 200px;
 }
 
 .progress-bar-outer {

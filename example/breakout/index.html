@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Entropy - Breakout Game</title>
     <link href='http://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="./css/common.css">
 </head>
 <body>
@@ -21,6 +22,9 @@
         </div>
         <div class="screen gameplay-screen">
             <canvas class="game-canvas"></canvas>
+        </div>
+        <div class="screen gameover-screen">
+            <div class="gameover-text">Game over</div>
         </div>
     </div>
     <footer>
@@ -87,6 +91,24 @@
                 if (!pfx[p]) type = type.toLowerCase();
                 element.removeEventListener(pfx[p]+type, callback, false);
             }
+        }
+
+        function pad(n, width, z) {
+            z = z || '0';
+            n = n + '';
+            return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+        }
+
+        function clamp(value, min, max) {
+            if (value < min) {
+                return min;
+            }
+
+            if (value > max) {
+                return max;
+            }
+
+            return value;
         }
     </script>
 </body>
