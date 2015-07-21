@@ -190,7 +190,7 @@ extend(Game.prototype, {
      */
     stop: function (clearEngine) {
         if (clearEngine) {
-            this.engine.once(&#x27;clear&#x27;, function () {
+            this.engine.once(&#x27;cleared&#x27;, function () {
                 return this._stopAndEmit();
             }, this);
 

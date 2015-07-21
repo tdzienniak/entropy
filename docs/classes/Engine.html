@@ -95,7 +95,7 @@
         </div>
 
         <div class="foundat">
-            Defined in: <a href="../files/src_core_engine.js.html#l16"><code>src\core\engine.js:16</code></a>
+            Defined in: <a href="../files/src_core_engine.js.html#l15"><code>src\core\engine.js:15</code></a>
         </div>
 
             Module: <a href="../modules/Entropy.html">Entropy</a>
@@ -125,7 +125,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l16"><code>src\core\engine.js:16</code></a>
+        <a href="../files/src_core_engine.js.html#l15"><code>src\core\engine.js:15</code></a>
         </p>
 
 
@@ -148,6 +148,7 @@
 
             <li class="api-class-tab methods"><a href="#methods">Methods</a></li>
             <li class="api-class-tab properties"><a href="#properties">Properties</a></li>
+            <li class="api-class-tab events"><a href="#events">Events</a></li>
     </ul>
 
     <div>
@@ -214,7 +215,15 @@
 
                             </li>
                             <li class="index-item property private">
+                                <a href="#property__isClearingScheduled">_isClearingScheduled</a>
+
+                            </li>
+                            <li class="index-item property private">
                                 <a href="#property__systems">_systems</a>
+
+                            </li>
+                            <li class="index-item property private">
+                                <a href="#property__wasClearingPerformed">_wasClearingPerformed</a>
 
                             </li>
                             <li class="index-item property">
@@ -225,6 +234,32 @@
                 </div>
 
 
+                <div class="index-section events">
+                    <h3>Events</h3>
+
+                    <ul class="index-list events extends">
+                            <li class="index-item event">
+                                <a href="#event_cleared">cleared</a>
+
+                            </li>
+                            <li class="index-item event">
+                                <a href="#event_entityAdded">entityAdded</a>
+
+                            </li>
+                            <li class="index-item event">
+                                <a href="#event_entityRemoved">entityRemoved</a>
+
+                            </li>
+                            <li class="index-item event">
+                                <a href="#event_systemAdded">systemAdded</a>
+
+                            </li>
+                            <li class="index-item event">
+                                <a href="#event_systemRemoved">systemRemoved</a>
+
+                            </li>
+                    </ul>
+                </div>
         </div>
 
             <div id="methods" class="api-class-tabpanel">
@@ -249,7 +284,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l583"><code>src\core\engine.js:583</code></a>
+        <a href="../files/src_core_engine.js.html#l635"><code>src\core\engine.js:635</code></a>
         </p>
 
 
@@ -296,7 +331,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l599"><code>src\core\engine.js:599</code></a>
+        <a href="../files/src_core_engine.js.html#l651"><code>src\core\engine.js:651</code></a>
         </p>
 
 
@@ -353,7 +388,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l199"><code>src\core\engine.js:199</code></a>
+        <a href="../files/src_core_engine.js.html#l205"><code>src\core\engine.js:205</code></a>
         </p>
 
 
@@ -418,9 +453,6 @@ game.engine.addSystem([&quot;Renderer&quot;, 1], rendererObject);</code></pre>
 
         <span class="paren">()</span>
 
-        <span class="returns-inline">
-            <span class="type">type</span>
-        </span>
 
 
 
@@ -431,7 +463,7 @@ game.engine.addSystem([&quot;Renderer&quot;, 1], rendererObject);</code></pre>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l332"><code>src\core\engine.js:332</code></a>
+        <a href="../files/src_core_engine.js.html#l338"><code>src\core\engine.js:338</code></a>
         </p>
 
 
@@ -439,19 +471,13 @@ game.engine.addSystem([&quot;Renderer&quot;, 1], rendererObject);</code></pre>
     </div>
 
     <div class="description">
-        
+        <p>Schedules clearing. Clearing is usually not done immediately, because removing entities and systems during game loop is dangerous and
+can result in some strange system behaviors. Thus, clearing is performed at the end of the game loop, after all systems have updated.
+The event <code>cleared</code> is fired when clearing is done, so it is good idea to, for example, stop the game in this listener.</p>
+
     </div>
 
 
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">type</span>:
-                    <p>[description]</p>
-
-            </div>
-        </div>
 
 
 </div>
@@ -479,7 +505,7 @@ game.engine.addSystem([&quot;Renderer&quot;, 1], rendererObject);</code></pre>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l102"><code>src\core\engine.js:102</code></a>
+        <a href="../files/src_core_engine.js.html#l108"><code>src\core\engine.js:108</code></a>
         </p>
 
 
@@ -556,7 +582,7 @@ Patterns <code>create</code> method is called imediatelly after calling this met
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l171"><code>src\core\engine.js:171</code></a>
+        <a href="../files/src_core_engine.js.html#l177"><code>src\core\engine.js:177</code></a>
         </p>
 
 
@@ -742,7 +768,7 @@ var movingEntities = this.engine.getEntities(this.query);
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_core_engine.js.html#l143"><code>src\core\engine.js:143</code></a>
+        <a href="../files/src_core_engine.js.html#l149"><code>src\core\engine.js:149</code></a>
         </p>
 
 
@@ -813,14 +839,16 @@ if (entity.components.hp.quantity &lt;= 0) { //entity is dead, remove
                         <div class="meta">
                                     <p>
                                     Defined in
-                            <a href="../files/src_core_engine.js.html#l62"><code>src\core\engine.js:62</code></a>
+                            <a href="../files/src_core_engine.js.html#l61"><code>src\core\engine.js:61</code></a>
                             </p>
                     
                     
                         </div>
                     
                         <div class="description">
-                            <p>Array with entities. Array index corresponds to ID of an entity.</p>
+                            <p>Array with entities. Array index corresponds to ID of an entity.
+                    First element is empty (equals 0), because entity IDs start from 1.
+                    Entity with <code>id</code> property equal 0 is <em>officially</em> not present in the system (it can be for example present in the pool or waiting for addition to system).</p>
                     
                         </div>
                     
@@ -864,7 +892,7 @@ if (entity.components.hp.quantity &lt;= 0) { //entity is dead, remove
                         <div class="meta">
                                     <p>
                                     Defined in
-                            <a href="../files/src_core_engine.js.html#l34"><code>src\core\engine.js:34</code></a>
+                            <a href="../files/src_core_engine.js.html#l33"><code>src\core\engine.js:33</code></a>
                             </p>
                     
                     
@@ -891,7 +919,7 @@ if (entity.components.hp.quantity &lt;= 0) { //entity is dead, remove
                         <div class="meta">
                                     <p>
                                     Defined in
-                            <a href="../files/src_core_engine.js.html#l44"><code>src\core\engine.js:44</code></a>
+                            <a href="../files/src_core_engine.js.html#l43"><code>src\core\engine.js:43</code></a>
                             </p>
                     
                     
@@ -899,6 +927,32 @@ if (entity.components.hp.quantity &lt;= 0) { //entity is dead, remove
                     
                         <div class="description">
                             <p>Pool of currently not used entity IDs. Will be reused.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="property__isClearingScheduled" class="property item private">
+                        <h3 class="name"><code>_isClearingScheduled</code></h3>
+                        <span class="type">Boolean</span>
+                    
+                    
+                            <span class="flag private">private</span>
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_engine.js.html#l87"><code>src\core\engine.js:87</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Indicates whether clearing is scheduled.</p>
                     
                         </div>
                     
@@ -917,7 +971,7 @@ if (entity.components.hp.quantity &lt;= 0) { //entity is dead, remove
                         <div class="meta">
                                     <p>
                                     Defined in
-                            <a href="../files/src_core_engine.js.html#l53"><code>src\core\engine.js:53</code></a>
+                            <a href="../files/src_core_engine.js.html#l52"><code>src\core\engine.js:52</code></a>
                             </p>
                     
                     
@@ -925,6 +979,32 @@ if (entity.components.hp.quantity &lt;= 0) { //entity is dead, remove
                     
                         <div class="description">
                             <p>Systems that are processed every tick.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="property__wasClearingPerformed" class="property item private">
+                        <h3 class="name"><code>_wasClearingPerformed</code></h3>
+                        <span class="type">Boolean</span>
+                    
+                    
+                            <span class="flag private">private</span>
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_engine.js.html#l96"><code>src\core\engine.js:96</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Indicates whether clearing was performed.</p>
                     
                         </div>
                     
@@ -942,7 +1022,7 @@ if (entity.components.hp.quantity &lt;= 0) { //entity is dead, remove
                         <div class="meta">
                                     <p>
                                     Defined in
-                            <a href="../files/src_core_engine.js.html#l26"><code>src\core\engine.js:26</code></a>
+                            <a href="../files/src_core_engine.js.html#l25"><code>src\core\engine.js:25</code></a>
                             </p>
                     
                     
@@ -959,6 +1039,135 @@ if (entity.components.hp.quantity &lt;= 0) { //entity is dead, remove
             </div>
 
 
+            <div id="events" class="api-class-tabpanel">
+                <h2 class="off-left">Events</h2>
+
+                    <div id="event_cleared" class="events item">
+                        <h3 class="name"><code>cleared</code></h3>
+                        <span class="type"></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_engine.js.html#l715"><code>src\core\engine.js:715</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Fired at the and of game loop, when the scheduled clearing was performed.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="event_entityAdded" class="events item">
+                        <h3 class="name"><code>entityAdded</code></h3>
+                        <span class="type"></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_engine.js.html#l691"><code>src\core\engine.js:691</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Entity added.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="event_entityRemoved" class="events item">
+                        <h3 class="name"><code>entityRemoved</code></h3>
+                        <span class="type"></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_engine.js.html#l697"><code>src\core\engine.js:697</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Entity removed.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="event_systemAdded" class="events item">
+                        <h3 class="name"><code>systemAdded</code></h3>
+                        <span class="type"></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_engine.js.html#l703"><code>src\core\engine.js:703</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>System added.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="event_systemRemoved" class="events item">
+                        <h3 class="name"><code>systemRemoved</code></h3>
+                        <span class="type"></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_core_engine.js.html#l709"><code>src\core\engine.js:709</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>System removed.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+            </div>
     </div>
 </div>
                     </div>

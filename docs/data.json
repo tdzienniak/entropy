@@ -161,7 +161,7 @@
             "extension_for": [],
             "module": "Entropy",
             "file": "src\\core\\engine.js",
-            "line": 16,
+            "line": 15,
             "description": "Engine class. Class is used internaly. User should not instatiate this class.",
             "extends": "EventEmitter",
             "is_constructor": 1
@@ -393,7 +393,7 @@
     "classitems": [
         {
             "file": "src\\core\\engine.js",
-            "line": 26,
+            "line": 25,
             "description": "Instance of {{#crossLink \"Game\"}}Game{{/crossLink}} class.",
             "itemtype": "property",
             "name": "game",
@@ -402,7 +402,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 34,
+            "line": 33,
             "description": "Indicates the greatest entity ID present in the system.\nUsed to generate new IDs.",
             "itemtype": "property",
             "name": "_greatestEntityID",
@@ -413,7 +413,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 44,
+            "line": 43,
             "description": "Pool of currently not used entity IDs. Will be reused.",
             "itemtype": "property",
             "name": "_idsToReuse",
@@ -424,7 +424,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 53,
+            "line": 52,
             "description": "Systems that are processed every tick.",
             "itemtype": "property",
             "name": "_systems",
@@ -435,8 +435,8 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 62,
-            "description": "Array with entities. Array index corresponds to ID of an entity.",
+            "line": 61,
+            "description": "Array with entities. Array index corresponds to ID of an entity.\nFirst element is empty (equals 0), because entity IDs start from 1.\nEntity with `id` property equal 0 is _officially_ not present in the system (it can be for example present in the pool or waiting for addition to system).",
             "itemtype": "property",
             "name": "_entities",
             "access": "private",
@@ -446,7 +446,29 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 102,
+            "line": 87,
+            "description": "Indicates whether clearing is scheduled.",
+            "itemtype": "property",
+            "name": "_isClearingScheduled",
+            "access": "private",
+            "tagname": "",
+            "type": "{Boolean}",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 96,
+            "description": "Indicates whether clearing was performed.",
+            "itemtype": "property",
+            "name": "_wasClearingPerformed",
+            "access": "private",
+            "tagname": "",
+            "type": "{Boolean}",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 108,
             "description": "Creates new entity using pattern identified by `name` parameter.\nEvery additional parameter will be applied to patterns `create` method.\nPatterns `create` method is called imediatelly after calling this method.",
             "example": [
                 "\n    game.engine.create(\"Ball\", 5, 5, 5); //x, y, radius"
@@ -469,7 +491,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 143,
+            "line": 149,
             "description": "Removes entity from engine.\nEntity removal does not happen imediatelly, but after current update cycle.",
             "example": [
                 "\n    //somwhere in the system 'update' method\n    if (entity.components.hp.quantity <= 0) { //entity is dead, remove\n        game.engine.remove(entity);\n    }"
@@ -491,7 +513,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 171,
+            "line": 177,
             "description": "Returns array of entities satisfying given {{#crossLink \"Query\"}}query{{/crossLink}} conditions.\nReturned arrays length does not correspond with matched entities quantity.\nTo loop over entities start from 0 index, and then check if element is different than 0.\nThis method guaranties, that entities will be arranged as subsequent array slice, starting from 0 index and ending on element equal to 0.\nThe array is in this form for performance reasons.",
             "example": [
                 "\n    //in systems 'initialize' method...\n    this.query = new Entropy.Engine.Query([\"Position\", \"Velocity\"]);\n\n    //in systems 'update' method\n    var movingEntities = this.engine.getEntities(this.query);\n\n    //here do something with entities in loop\n    ..."
@@ -513,7 +535,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 199,
+            "line": 205,
             "description": "Creates new system object and adds it to the engine. System patterns `initialize` method is called (if present).\nIt can be called in two ways - with first argument being either:\n- system name - then system has priority as defined by patterns `priority` property or 0.\n- array with two elements - system name and its desired priority. In this case patterns `priority` property is simply skiped.",
             "example": [
                 "\n    game.engine.addSystem(\"Renderer\", rendererObject);\n\n    //or\n\n    game.engine.addSystem([\"Renderer\", 1], rendererObject);"
@@ -536,18 +558,39 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 332,
+            "line": 338,
+            "description": "Schedules clearing. Clearing is usually not done immediately, because removing entities and systems during game loop is dangerous and\ncan result in some strange system behaviors. Thus, clearing is performed at the end of the game loop, after all systems have updated.\nThe event `cleared` is fired when clearing is done, so it is good idea to, for example, stop the game in this listener.",
             "itemtype": "method",
             "name": "clear",
-            "return": {
-                "description": "[description]",
-                "type": "[type]"
-            },
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 583,
+            "line": 351,
+            "description": "Mark for removal all present entities.",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 364,
+            "description": "Cancel addition of any entities.",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 376,
+            "description": "Cancel addition of any systems.",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 385,
+            "description": "Mark for removal any present systems.",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 635,
             "description": "Returns ID for an entity. Reuses old IDs or creates new.",
             "access": "private",
             "tagname": "",
@@ -561,7 +604,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 599,
+            "line": 651,
             "description": "Initializes new query. Performs initial entity search.",
             "access": "private",
             "tagname": "",
@@ -574,6 +617,46 @@
                     "type": "Object"
                 }
             ],
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 691,
+            "description": "Entity added.",
+            "itemtype": "event",
+            "name": "entityAdded",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 697,
+            "description": "Entity removed.",
+            "itemtype": "event",
+            "name": "entityRemoved",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 703,
+            "description": "System added.",
+            "itemtype": "event",
+            "name": "systemAdded",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 709,
+            "description": "System removed.",
+            "itemtype": "event",
+            "name": "systemRemoved",
+            "class": "Engine"
+        },
+        {
+            "file": "src\\core\\engine.js",
+            "line": 715,
+            "description": "Fired at the and of game loop, when the scheduled clearing was performed.",
+            "itemtype": "event",
+            "name": "cleared",
             "class": "Engine"
         },
         {
@@ -1180,6 +1263,22 @@
         }
     ],
     "warnings": [
+        {
+            "message": "Missing item type\nMark for removal all present entities.",
+            "line": " src\\core\\engine.js:351"
+        },
+        {
+            "message": "Missing item type\nCancel addition of any entities.",
+            "line": " src\\core\\engine.js:364"
+        },
+        {
+            "message": "Missing item type\nCancel addition of any systems.",
+            "line": " src\\core\\engine.js:376"
+        },
+        {
+            "message": "Missing item type\nMark for removal any present systems.",
+            "line": " src\\core\\engine.js:385"
+        },
         {
             "message": "Missing item type\nIf entity id equals 0, it has not yet been added to the system, so we can\nsafely modify it.",
             "line": " src\\core\\entity.js:79"
