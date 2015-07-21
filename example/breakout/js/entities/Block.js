@@ -2,18 +2,19 @@ Entropy.Entity({
     name: "Block",
     create: function (game, x, y, color, material) {
         var body = new p2.Body({
-            id: "block",
             mass: 0,
             position: [x, y],
             angle: 0
         })
+
+        body.entId = 'block'
 
         var blockShape = new p2.Box({
             height: 1.6,
             width: 3.2
         });
 
-        blockShape.material = material;
+        blockShape.material = game.materials.wallMaterial;
 
         body.addShape(blockShape);
         game.world.addBody(body);

@@ -1,6 +1,6 @@
 Entropy.Entity({
     name: "WallTop",
-    create: function (game, material) {
+    create: function (game) {
         var plane = new p2.Body({
             position : [0, 19.2],
             angle: Math.PI,
@@ -8,7 +8,7 @@ Entropy.Entity({
 
         var planeShape = new p2.Plane();
 
-        planeShape.material = material;
+        planeShape.material = game.materials.wallMaterial;
 
         plane.addShape(planeShape);
         

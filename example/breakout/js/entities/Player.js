@@ -1,12 +1,8 @@
 Entropy.Entity({
     name: "Player",
     create: function (game) {
-        
-        this.add("Animation", animation);
-    },
-    remove: function () {
-
-
-
+        this.add("Player", {
+            lives: 3
+        });
     }
 });

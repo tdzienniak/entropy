@@ -42,6 +42,7 @@ Entropy.State({
             .loadFile('./js/systems/PaddleMovement.js')
             .loadFile('./js/systems/BlockHit.js')
             .loadFile('./js/systems/CountdownSystem.js')
+            .loadFile('./js/systems/BallDeathChecker.js')
         //texures
             .loadTextureAtlas('./assets/textures/breakout.json')
         //sounds
@@ -76,18 +77,23 @@ Entropy.State({
             progressBar.style.width = e.progress * 320 + 'px';
         })
 
-        game.loader.on('complete', function () {
-            self.loadingScreen.classList.remove('fade-in')
-            self.loadingScreen.classList.add('fade-out');
+        game.loader.on('complete', function () { 
+            game.state.change('Initialize');
 
-            setTimeout(function () {
-                self.loadingScreen.classList.remove('active');
-                
-                game.state.change('Initialize');
-
-                return done();
-            }, 500)
+            return done();
         });
+    },
+    exit: function (game, done) {
+        var self = this;
+
+        move('.loading-screen')
+            .set('opacity', 0)
+            .duration('0.5s')
+            .end(function () {
+                self.loadingScreen.classList.remove('active');
+                console.log('loading')
+                return done();
+            })
     }
 })
 

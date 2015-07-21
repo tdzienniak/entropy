@@ -9,10 +9,10 @@
         var game = this.game;
 
         var handleBlockHit = function (e) {
-            if (e.bodyA.id === 'ball' && e.bodyB.id === 'block') {
+            if (e.bodyA.entId === 'ball' && e.bodyB.entId === 'block') {
                 var ball = e.bodyA;
                 var blockBody = e.bodyB;
-            } else if(e.bodyA.id === 'block' && e.bodyB.id === 'ball') {
+            } else if(e.bodyA.entId === 'block' && e.bodyB.entId === 'ball') {
                 var ball = e.bodyB;
                 var blockBody = e.bodyA;
             } else {

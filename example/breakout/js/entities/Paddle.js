@@ -3,20 +3,22 @@ Entropy.Entity({
     create: function (game, material) {
 
         var body = new p2.Body({
-            id: "paddle",
             //type: p2.Body.KINEMATIC,
             mass: 0,
             position: [0, -16.8],
             angle: 0,
-            collisionResponse: false
+            dumping: 0
+            //collisionResponse: false
         });
+
+        body.entId = "paddle"
         
         var paddleShape = new p2.Box({
             height: 1.6,
             width: 4.8
         });
 
-        paddleShape.material = material;
+        paddleShape.material = game.materials.wallMaterial;
 
         // Add a circular shape to the body
         body.addShape(paddleShape);

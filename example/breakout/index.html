@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Entropy - Breakouts Game</title>
+    <title>Entropy - Breakout Game</title>
+    <link href='http://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="./css/common.css">
 </head>
 <body>
     <div class="screens">
-        <div class="screen loading-screen active fade-in">
+        <div class="screen loading-screen active">
             <div class="progress-bar-outer">
                 <div class="progress-bar-inner">
                 </div>
@@ -27,6 +28,7 @@
     </footer>
     <!-- Only these four scripts are needed initially, rest will be preloaded later. -->
     <script src="./lib/preloadjs.js"></script>
+    <script src="./lib/move.min.js"></script>
     <script src="../../build/entropy.js" defer></script>
     <script src="../../build/entropy-plugins.js" defer></script>
     <script src="./js/states/Loading.js" defer></script>
@@ -34,10 +36,22 @@
         window.addEventListener('load', function () {
             game = new Entropy.Game();
 
-            /**
-             * Start da loading!
-             */
-            game.state.change('Loading');
+            //Start da loading!
+            move('.loading-screen')
+                .set('top', 1)
+                .end(function () {
+                    console.log('loading')
+                    game.state.change('Loading');
+                    
+                })
+
+            // move('.menu-screen')
+            //     .x(1)
+            //     .end(function () {
+            //         console.log('loading')
+            //         game.state.change('Loading');
+                    
+            //     })
         })
     </script>
 </body>
