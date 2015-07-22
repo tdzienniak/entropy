@@ -1,7 +1,7 @@
  Entropy.System({
     name: "BlockHit",
     initialize: function () {
-        var query = new Entropy.Query({
+        var blocksQuery = new Entropy.Query({
             name: "Block"
         });
 
@@ -13,6 +13,7 @@
         var game = this.game;
 
         var handleBlockHit = function (e) {
+            console.log('dsadasadd')
             if (e.bodyA.entId === 'ball' && e.bodyB.entId === 'block') {
                 var ball = e.bodyA;
                 var blockBody = e.bodyB;
@@ -23,8 +24,15 @@
                 return;
             }
 
+
+            if (blockBody.collisionResponse === false) {
+                return;
+            }
+
             var e, block;
-            var blocks = self.engine.getEntities(query);
+            var player = self.engine.getOne(playerQuery);
+            var blocks = self.engine.getEntities(blocksQuery);
+            var blocksLength = blocksQuery.entitiesLength;
             var i = 0;
 
             while (e = blocks[i]) {
@@ -43,21 +51,36 @@
 
             var animation = block.components.animation.animation;
 
-            animation.on('end', function () {
-                self.engine.remove(block);
-            })
+            player.components.stats.score += 100;
+            player.components.stats.scoreTextNode.text = 'score:' + pad(player.components.stats.score, 4);
 
             blockBody.collisionResponse = false;
             
-            animation.play();
             game.sounds.brickDeath.play();
+            animation.play();
 
-            var player = self.engine.getOne(playerQuery);
+            animation.once('end', function () {
+                //we have removed the last block
+                if (blocksLength === 1) {
+                    var nextLevel = ++player.components.stats.level;
 
-            player.components.playerstats.score += 100;
-            player.components.playerstats.scoreTextNode.text = 'score:' + pad(player.components.playerstats.score, 4);
+                    if (nextLevel <= 2) {
+                        self.engine.addSystem(['InitializeLevel', 0], nextLevel);
+                    } else {
+                        self.engine.clear();
+
+                        self.engine.once('cleared', function () {
+                            self.game.stop();
+                            self.game.state.change('GameOver');
+                        })
+                    }
+                }
+
+                self.engine.remove(block);
+            })
         }
 
+        this.handleBlockHit = handleBlockHit;
         this.game.world.on('beginContact', handleBlockHit);
     },
     update: function (delta, event) {

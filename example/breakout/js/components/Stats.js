@@ -1,5 +1,5 @@
 Entropy.Component({
-    name: "PlayerStats",
+    name: "Stats",
     initialize: function (lives, livesTextNode, scoreTextNode, levelTextNode) {
         this.lives = lives || 3;
         this.score = 0;

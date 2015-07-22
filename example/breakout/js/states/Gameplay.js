@@ -3,7 +3,7 @@ Entropy.State({
     initialize: function (game, done) {
         this.gameplayScreen = document.querySelector('.gameplay-screen');
 
-        this.levels = [
+        game.levels = [
             {
                 blocks: [
                     'XXgogXX',
@@ -27,7 +27,7 @@ Entropy.State({
             }
         ];
 
-        this.colorMap = {
+        game.colorMap = {
             o: 'orange',
             b: 'blue',
             g: 'green',
@@ -37,49 +37,26 @@ Entropy.State({
         return done();
     },
     enter: function (game, done) {
-
         //define some materials
         game.materials = {
             ballMaterial: new p2.Material(),
             wallMaterial: new p2.Material()
         }
-
-        var level = this.levels[0];
-
-        var blocksLineWidth = level.blocks[0].length * 3.2;
-        var firstBlockX = -blocksLineWidth / 2 + 1.6;
-        var firstBlockY = 15;
         
-        for (var y = 0; y < level.blocks.length; y++) {
-            var blocks = level.blocks[y];
-
-            for (var x = 0; x < blocks.length; x++) {
-                var blockLetter = blocks[x];
-
-                if (blockLetter === 'X') {
-                    continue;
-                }
-
-                game.engine.create('Block', firstBlockX + x * 3.2, firstBlockY - y * 1.6, this.colorMap[blockLetter]);
-            }
-        }
-
-        game.engine.addSystem(["Render", 0]);
+        game.engine.addSystem(["Renderer", 0]);
         game.engine.addSystem(["AnimationUpdater", 1]);
         game.engine.addSystem(["SpriteBodyUpdater", 2]);
         game.engine.addSystem(["BlockHit", 3]);
         game.engine.addSystem(["PaddleHit", 3]);
-        game.engine.addSystem(["CountdownSystem", 3]);
         game.engine.addSystem(["PaddleMovement", 3]);
         game.engine.addSystem(["BallDeathChecker", 3])
+        game.engine.addSystem(["LevelChanger", 3])
 
         game.engine.create('Player')
+        game.engine.create('Paddle');
         game.engine.create('WallTop')
         game.engine.create('WallRight')
         game.engine.create('WallLeft')
-        game.engine.create('Ball', -8, 0, 11, -11);
-        game.engine.create('Paddle');
-        game.engine.create('Counter')
 
         game.world.addContactMaterial(new p2.ContactMaterial(game.materials.ballMaterial, game.materials.wallMaterial, {
             restitution : 1.0,
@@ -90,6 +67,9 @@ Entropy.State({
             restitution : 1.0,
             stiffness : Number.MAX_VALUE // We need infinite stiffness to get exact restitution
         }));
+
+
+        game.engine.addSystem(['InitializeLevel', 0], 1)
 
         //Start da game!
         fadeInScreen('.gameplay-screen', function () {

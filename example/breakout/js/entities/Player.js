@@ -31,7 +31,7 @@ Entropy.Entity({
         game.stage.addChild(scoreTextNode)
         game.stage.addChild(levelTextNode)
 
-        this.add("PlayerStats", 3, livesTextNode, scoreTextNode, levelTextNode);
+        this.add("Stats", 3, livesTextNode, scoreTextNode, levelTextNode);
     },
     remove: function (game) {
         game.stage.removeChild(this.components.playerstats.livesTextNode);

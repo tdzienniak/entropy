@@ -38,7 +38,7 @@
             coeficient = 0.95;
         }
 
-        p2.vec2.scale(newVelocity, newVelocity, clamp(currentVelocity * coeficient, 10, 15))
+        p2.vec2.scale(newVelocity, newVelocity, clamp(currentVelocity * coeficient, 11, 16))
 
         ball.velocity = newVelocity;
     },

@@ -29,9 +29,9 @@ Entropy.System({
         }
 
         if (lostBalls === i && i !== 0) {
-            player.components.playerstats.lives--;
+            player.components.stats.lives--;
 
-            if (player.components.playerstats.lives === -1) {
+            if (player.components.stats.lives === -1) {
                 console.log('Wszystko stracone.')
                 this.engine.clear();
 
@@ -40,7 +40,7 @@ Entropy.System({
                     this.game.state.change('GameOver');
                 }, this)
             } else {
-                player.components.playerstats.livesTextNode.text = 'life:' + player.components.playerstats.lives;
+                player.components.stats.livesTextNode.text = 'life:' + player.components.stats.lives;
 
                 this.engine.create('Ball', -8, 0, 11, -11);
                 this.engine.create('Counter');

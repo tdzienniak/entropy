@@ -14,7 +14,7 @@ Entropy.State({
         game.sounds = {};
 
         //some libs
-        game.loader.loadFile('./lib/pixi.js')
+        game.loader.loadFile('./lib/pixi.min.js')
             .loadFile('./lib/howler.min.js')
             .loadFile('./lib/p2.min.js')
         //states
@@ -26,7 +26,7 @@ Entropy.State({
             .loadFile('./js/components/Animation.js')
             .loadFile('./js/components/Body.js')
             .loadFile('./js/components/Sprite.js')
-            .loadFile('./js/components/PlayerStats.js')
+            .loadFile('./js/components/Stats.js')
         //entities
             .loadFile('./js/entities/Player.js')
             .loadFile('./js/entities/Ball.js')
@@ -38,6 +38,7 @@ Entropy.State({
             .loadFile('./js/entities/WallRight.js')
             .loadFile('./js/entities/WallLeft.js')
         //systems
+            .loadFile('./js/systems/Renderer.js')
             .loadFile('./js/systems/AnimationUpdater.js')
             .loadFile('./js/systems/PhysicsStep.js')
             .loadFile('./js/systems/SpriteBodyUpdater.js')
@@ -46,6 +47,8 @@ Entropy.State({
             .loadFile('./js/systems/PaddleHit.js')
             .loadFile('./js/systems/CountdownSystem.js')
             .loadFile('./js/systems/BallDeathChecker.js')
+            .loadFile('./js/systems/InitializeLevel.js')
+            .loadFile('./js/systems/LevelChanger.js')
         //texures
             .loadTextureAtlas('./assets/textures/breakout.json')
         //sounds
@@ -56,18 +59,6 @@ Entropy.State({
             .loadSound({
                 id: 'countdownBlip',
                 src: ['./assets/sounds/countdownBlip.ogg', './assets/sounds/countdownBlip.mp3', './assets/sounds/countdownBlip.wav'],
-            })
-            .loadSound({
-                id: 'powerdown',
-                src: ['./assets/sounds/powerdown.ogg', './assets/sounds/powerdown.mp3', './assets/sounds/powerdown.wav'],
-            })
-            .loadSound({
-                id: 'powerup',
-                src: ['./assets/sounds/powerup.ogg', './assets/sounds/powerup.mp3', './assets/sounds/powerup.wav'],
-            })
-            .loadSound({
-                id: 'recover',
-                src: ['./assets/sounds/recover.ogg', './assets/sounds/recover.mp3', './assets/sounds/recover.wav'],
             })
 
         game.loader.on('fileload', function (e) {
