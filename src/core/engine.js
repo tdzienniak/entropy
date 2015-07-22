@@ -248,11 +248,25 @@ extend(Engine.prototype, {
         }
 
         if (pattern.singleton) {
+            var foundOne = false;
+            
             for (var i = 0, len = this._systems.length; i < len; i++) {
                 if (this._systems[i].name === pattern.name) {
-                    debug.info('System you want to add is a singleton and there is one already present in the engine. Returning...');
-                    return this;
+                    foundOne = true;
+            
+                    break;
                 }
+            }
+
+            this._systemsToAdd.each(function (systemToAdd) {
+                if (systemToAdd.name === pattern.name) {
+                    foundOne = true;
+                }
+            })
+
+            if (foundOne) {
+                debug.info('System you want to add is a singleton and there is one already present in the engine. Returning...');
+                return this;    
             }
         }
 
@@ -287,10 +301,17 @@ extend(Engine.prototype, {
             systemObject = system;
         } else if (is.unemptyString(system)) {
             for (var i = 0; i < this._systems.length; i++) {
-                systemObject = this._systems[i];
-                if (systemObject.name === system) {
+                if (this._systems[i].name === system) {
+                    systemObject = this._systems[i];
+
                     break;
                 }
+            }
+
+            if (systemObject == null) {
+                debug.log('there is no such system: %s', system);
+
+                return this;
             }
         } else {
             debug.warn('System to remove has to be an object or a string (system name).');
@@ -307,6 +328,9 @@ extend(Engine.prototype, {
     },
     disableSystem: function (system) {
         this._toggleSystem(system, true);
+    },
+    hasSystem: function (system, checkWaitingQueue) {
+
     },
     _toggleSystem: function (system, onOff) {
         if (system == null) {

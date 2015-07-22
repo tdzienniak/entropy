@@ -56,6 +56,11 @@ extend(Pool.prototype, {
      */
     size: function () {
         return this._currentSize;
+    },
+    each: function (fn) {
+        for (var i = 0; i < this._currentSize; i++) {
+            fn(this._pool[i], i);
+        }
     }
 });
 
