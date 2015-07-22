@@ -535,7 +535,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 205,
+            "line": 208,
             "description": "Creates new system object and adds it to the engine. System patterns `initialize` method is called (if present).\nIt can be called in two ways - with first argument being either:\n- system name - then system has priority as defined by patterns `priority` property or 0.\n- array with two elements - system name and its desired priority. In this case patterns `priority` property is simply skiped.",
             "example": [
                 "\n    game.engine.addSystem(\"Renderer\", rendererObject);\n\n    //or\n\n    game.engine.addSystem([\"Renderer\", 1], rendererObject);"
@@ -558,7 +558,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 338,
+            "line": 365,
             "description": "Schedules clearing. Clearing is usually not done immediately, because removing entities and systems during game loop is dangerous and\ncan result in some strange system behaviors. Thus, clearing is performed at the end of the game loop, after all systems have updated.\nThe event `cleared` is fired when clearing is done, so it is good idea to, for example, stop the game in this listener.",
             "itemtype": "method",
             "name": "clear",
@@ -566,31 +566,31 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 351,
+            "line": 378,
             "description": "Mark for removal all present entities.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 364,
+            "line": 391,
             "description": "Cancel addition of any entities.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 376,
+            "line": 403,
             "description": "Cancel addition of any systems.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 385,
+            "line": 412,
             "description": "Mark for removal any present systems.",
             "class": "Engine"
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 635,
+            "line": 662,
             "description": "Returns ID for an entity. Reuses old IDs or creates new.",
             "access": "private",
             "tagname": "",
@@ -604,7 +604,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 651,
+            "line": 678,
             "description": "Initializes new query. Performs initial entity search.",
             "access": "private",
             "tagname": "",
@@ -621,7 +621,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 691,
+            "line": 718,
             "description": "Entity added.",
             "itemtype": "event",
             "name": "entityAdded",
@@ -629,7 +629,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 697,
+            "line": 724,
             "description": "Entity removed.",
             "itemtype": "event",
             "name": "entityRemoved",
@@ -637,7 +637,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 703,
+            "line": 730,
             "description": "System added.",
             "itemtype": "event",
             "name": "systemAdded",
@@ -645,7 +645,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 709,
+            "line": 736,
             "description": "System removed.",
             "itemtype": "event",
             "name": "systemRemoved",
@@ -653,7 +653,7 @@
         },
         {
             "file": "src\\core\\engine.js",
-            "line": 715,
+            "line": 742,
             "description": "Fired at the and of game loop, when the scheduled clearing was performed.",
             "itemtype": "event",
             "name": "cleared",
@@ -1265,19 +1265,19 @@
     "warnings": [
         {
             "message": "Missing item type\nMark for removal all present entities.",
-            "line": " src\\core\\engine.js:351"
+            "line": " src\\core\\engine.js:378"
         },
         {
             "message": "Missing item type\nCancel addition of any entities.",
-            "line": " src\\core\\engine.js:364"
+            "line": " src\\core\\engine.js:391"
         },
         {
             "message": "Missing item type\nCancel addition of any systems.",
-            "line": " src\\core\\engine.js:376"
+            "line": " src\\core\\engine.js:403"
         },
         {
             "message": "Missing item type\nMark for removal any present systems.",
-            "line": " src\\core\\engine.js:385"
+            "line": " src\\core\\engine.js:412"
         },
         {
             "message": "Missing item type\nIf entity id equals 0, it has not yet been added to the system, so we can\nsafely modify it.",

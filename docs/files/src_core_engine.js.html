@@ -295,6 +295,9 @@ extend(Engine.prototype, {
 
         return query.entities;
     },
+    getOne: function (query) {
+        return this.getEntities(query)[0];
+    },
     /**
      * Creates new system object and adds it to the engine. System patterns &#x60;initialize&#x60; method is called (if present).
      * It can be called in two ways - with first argument being either:
@@ -338,11 +341,25 @@ extend(Engine.prototype, {
         }
 
         if (pattern.singleton) {
+            var foundOne = false;
+            
             for (var i = 0, len = this._systems.length; i &lt; len; i++) {
                 if (this._systems[i].name === pattern.name) {
-                    debug.info(&#x27;System you want to add is a singleton and there is one already present in the engine. Returning...&#x27;);
-                    return this;
+                    foundOne = true;
+            
+                    break;
                 }
+            }
+
+            this._systemsToAdd.each(function (systemToAdd) {
+                if (systemToAdd.name === pattern.name) {
+                    foundOne = true;
+                }
+            })
+
+            if (foundOne) {
+                debug.info(&#x27;System you want to add is a singleton and there is one already present in the engine. Returning...&#x27;);
+                return this;    
             }
         }
 
@@ -377,10 +394,17 @@ extend(Engine.prototype, {
             systemObject = system;
         } else if (is.unemptyString(system)) {
             for (var i = 0; i &lt; this._systems.length; i++) {
-                systemObject = this._systems[i];
-                if (systemObject.name === system) {
+                if (this._systems[i].name === system) {
+                    systemObject = this._systems[i];
+
                     break;
                 }
+            }
+
+            if (systemObject == null) {
+                debug.log(&#x27;there is no such system: %s&#x27;, system);
+
+                return this;
             }
         } else {
             debug.warn(&#x27;System to remove has to be an object or a string (system name).&#x27;);
@@ -397,6 +421,9 @@ extend(Engine.prototype, {
     },
     disableSystem: function (system) {
         this._toggleSystem(system, true);
+    },
+    hasSystem: function (system, checkWaitingQueue) {
+
     },
     _toggleSystem: function (system, onOff) {
         if (system == null) {
