@@ -29,6 +29,7 @@ and check out examples:
 
 1. [Bunnies (benchmark and PIXI.js rendering)](http://rainphilosopher.github.io/entropy/example/bunnies/)
 2. [Physics (integration with p2.js)](http://rainphilosopher.github.io/entropy/example/physics/)
+3. [Breakout (complete game with p2.js physics, PIXI rendering and plugins)](http://rainphilosopher.github.io/entropy/example/breakout/)
 
 ##Building and testing##
 
