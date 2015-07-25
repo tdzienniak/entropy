@@ -1,11 +1,7 @@
 #Exclude folders
-tests/
 node_modules/
-oldSrc/
 
 #Exclude project config files
 *.sublime-project
 *.sublime-namespace
 *.sublime-workspace
-
-server.js
