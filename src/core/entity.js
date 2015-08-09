@@ -7,7 +7,7 @@ var config = require('./config');
 var register = require('./register');
 var slice = Array.prototype.slice;
 
-var EventEmitter = require('./event');
+var EventEmitter = require('./EventEmitter');
 var BitSet = require('bitset.js').BitSet;
 
 /**
@@ -15,17 +15,16 @@ var BitSet = require('bitset.js').BitSet;
  *
  * @class Entity
  * @constructor
- * @param {String} name    entity name
  * @param {Object} pattern entity pattern
  * @param {Engine} engine  Engine instance
  */
-function Entity(name, pattern, engine) {
+function Entity(pattern, poolManager) {
     EventEmitter.call(this);
 
-    this.engine = engine;
-    this.pattern = pattern;
+    this._pattern = pattern;
+    this._poolManager = poolManager;
 
-    this.bitset = new BitSet(config('max_components_count'));
+    this._bitset = new BitSet(config('max_components_count'));
     this._modifications = [];
 
     this.id = 0;
@@ -38,13 +37,13 @@ function Entity(name, pattern, engine) {
 extend(Entity.prototype, EventEmitter.prototype);
 extend(Entity.prototype, {
     /**
-     * Adds new component to an entity. Component is either created from scratch or reused from pool. In later case, component patterns `reset` method is called (if present).\
+     * Adds new component to entity. Component is either created from scratch or reused from pool. In latter case, component's pattern `reset` method is called (if present).
      * Component patterns `initialize` method is called with additional arguments passed to `add` method.
-     * Addition does not happen imediately, but is postponed to nearest update cycle.
+     * If entity is already added to the system (has id greater than 0) addition doesn't happen imediately, but is postponed to nearest update cycle.
      *
      * @example
      *     //`this` is a reference to Entity instance
-     *     //code like this often can be seen in entity pattern `create` method
+     *     //code like this can be seen in entity's pattern `create` method
      *     this.add("Position", 1, 1);
      *
      * @method add
@@ -54,45 +53,52 @@ extend(Entity.prototype, {
     add: function (name) {
         if (is.not.unemptyString(name)) {
             debug.warn('component name must be a non-empty string');
+
             return this;
         }
 
         var lowercaseName = name.toLowerCase();
+        var component = this._acquireComponent(lowercaseName);
 
-        var component = this.components[lowercaseName];
         if (component == null) {
-            component = this.engine._getNewComponent(lowercaseName);
+            debug.warn('there is no component pattern with name %s', name);
 
-            if (component == null) {
-                debug.warn('there is no component pattern with name %s', name);
-                return this;
-            }
-        } else if (is.function(component._pattern.reset)) {
-            component._pattern.reset.call(component);
+            return this;
         }
 
         var args = slice.call(arguments, 1);
         component._pattern.initialize.apply(component, args);
-
-        this.components[lowercaseName] = component;
 
         /**
          * If entity id equals 0, it has not yet been added to the system, so we can
          * safely modify it.
          */
         if (this.id === 0) {
-            this.bitset.set(register.getComponentID(lowercaseName));
+            this._addComponent(lowercaseName, component);
         } else {
             this._modifications.push({
                 fn: function () {
-                    this.bitset.set(register.getComponentID(lowercaseName));
+                    this._addComponent(lowercaseName, component);
                 }
             });
 
-            this.engine.markModifiedEntity(this);
+            this.emit('queuedModification', this);
         }
 
         return this;
+    },
+    _addComponent: function (lowercaseName, componentToAdd) {
+        this.components[lowercaseName] = componentToAdd;
+
+        if (RESTRICTED_COMPONENt_NAMES.indexOf(lowercaseName) === -1) {
+            this[lowercaseName] = componentToAdd;
+        } else {
+            debug.warn('component name `%s` is restricted for internal use, component will be added only to `components` property', lowercaseName);
+        }
+
+        this._bitset.set(componentToAdd._id);
+
+        this.emit('componentAdded', this, componentToAdd)
     },
     remove: function (name) {
         if (is.not.unemptyString(name)) {
@@ -103,8 +109,9 @@ extend(Entity.prototype, {
         var lowercaseName = name.toLowerCase();
         var componentId = register.getComponentID(lowercaseName);
 
-        if (!this.bitset.get(componentId)) {
+        if (!this._bitset.get(componentId)) {
             debug.warn('this entity does not have such component "%s" - nothing to remove', name);
+            
             return this;
         }
 
@@ -112,28 +119,63 @@ extend(Entity.prototype, {
             this._removeComponent(lowercaseName, componentId);
         } else {
             this._modifications.push({
-                fn: this._removeComponent,
-                args: [lowercaseName, componentId]
+                fn: function () {
+                    this._removeComponent(lowercaseName, componentId);
+                }
             })
 
-            this.engine.markModifiedEntity(this);
+            this.emit('queuedModification', this);
         }
 
         return this;
     },
     _removeComponent: function (lowercaseName, componentId) {
-        this.engine._addComponentToPool(this.components[lowercaseName]);
+        var componentToRemove = this.components[lowercaseName];
+
+        this._poolManager.putComponent(lowercaseName, componentToRemove);
 
         this.components[lowercaseName] = null;
-        this.bitset.clear(componentId);
+        this[lowercaseName] = null;
+
+        this._bitset.clear(componentId);
+
+        this.emit('componentRemoved', this, componentToRemove);
     },
-    get: function (name) {
-         if (is.not.unemptyString(name)) {
+    _acquireComponent: function (name) {
+        var componentPattern = register.getComponentPattern(name);
+        var componentId = register.getComponentID(name);
+
+        if (is.not.object(componentPattern)) {
+            return null;
+        }
+
+        var component = this._poolManager.getComponent(name):
+
+        if (component == null) {
+            component = {
+                _id: componentId,
+                _pattern: componentPattern
+            };
+        } else if (is.function(component._pattern.reset)) {
+            component._pattern.reset.call(component);
+        }
+
+        return component;
+    },
+    getPattern: function () {
+        return this._pattern;
+    },
+    get: function (componentName) {
+         if (is.not.unemptyString(componentName)) {
             debug.warn('component name must be a non-empty string');
+            
             return this;
         }
 
-        return this.components[name.toLowerCase()];
+        return this.components[componentName.toLowerCase()];
+    },
+    has: function (componentName) {
+
     },
     reset: function () {
         if (is.function(this.pattern.reset)) {
@@ -145,17 +187,17 @@ extend(Entity.prototype, {
         return this;
     },
     applyModifications: function () {
-        var mod;
+        var modification;
 
-        while (mod = this._modifications.shift()) {
-            mod.fn.apply(this, mod.args);
+        while (modification = this._modifications.shift()) {
+            modification.fn.apply(this, modification.args);
         }
     },
     clearModifications: function () {
         while (this._modifications.shift());
     },
     _setDefaults: function () {
-        this.bitset.clear();
+        this._bitset.clear();
         this._inFinalState = false;
         this._remainingStateChanges = [];
         this._stateObject = {};

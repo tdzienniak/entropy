@@ -625,40 +625,6 @@ extend(Engine.prototype, {
             query.touched = false;
         }
     },
-    _getNewComponent: function (name) {
-        var component;
-        var componentPattern = register.getComponentPattern(name);
-        var poolJustCreated = false;
-
-        if (is.not.object(componentPattern)) {
-            return null;
-        }
-
-        if (this._componentsPool[name] == null) {
-            this._componentsPool[name] = new Pool(config('initial_components_pool_size'));
-
-            poolJustCreated = true;
-        }
-
-        component = this._componentsPool[name].get();
-
-        if (component == null) {
-            component = {
-                _pattern: componentPattern
-            };
-        } else if (is.function(component._pattern.reset)) {
-            component._pattern.reset.call(component);
-        }
-
-        return component;
-    },
-    _addComponentToPool: function (component) {
-        if (this._componentsPool[name] == null) {
-            this._componentsPool[name] = new Pool(config('initial_components_pool_size'));
-        }
-        
-        this._componentsPool[component._pattern.name].put(component);
-    },
     /**
      * Returns ID for an entity. Reuses old IDs or creates new.
      *
