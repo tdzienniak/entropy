@@ -21,10 +21,10 @@ To start using Entropy just put reference to `entropy.min.js` file in the script
 
 ##Getting started##
 
-Read the [docs](http://rainphilosopher.github.io/entropy/docs/) and check out examples:
+Read the [docs](http://tdzienniak.github.io/entropy/docs/) and check out examples:
 
-1. [Bunnies (benchmark and PIXI.js rendering)](http://rainphilosopher.github.io/entropy/example/bunnies/)
-2. [Breakout (complete game with p2.js physics, PIXI rendering and plugins)](http://rainphilosopher.github.io/entropy/example/breakout/)
+1. [Bunnies (benchmark and PIXI.js rendering)](http://tdzienniak.github.io/entropy/example/bunnies/)
+2. [Breakout (complete game with p2.js physics, PIXI rendering and plugins)](http://tdzienniak.github.io/entropy/example/breakout/)
 
 ##Building and testing##
 
@@ -50,7 +50,7 @@ npm test
 
 ##Docs##
 
-Documentation is located in `docs` folder. You can also read it online: [http://rainphilosopher.github.io/entropy/docs/](http://rainphilosopher.github.io/entropy/docs/).
+Documentation is located in `docs` folder. You can also read it online: [http://rainphilosopher.github.io/entropy/docs/](http://tdzienniak.github.io/entropy/docs/).
 
 ##Testers and people who have helped##
 
