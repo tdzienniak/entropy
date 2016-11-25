@@ -118,7 +118,6 @@ var Entropy =
 	  /**
 	   * @constructs
 	   */
-
 	  init: function init(opts) {
 	    var _this = this;
 
@@ -234,7 +233,6 @@ var Entropy =
 	     * @memberof Entropy#
 	     * @return {Boolean} succesfuly started or not
 	     */
-
 	    start: function start() {
 	      this.ticker.start();
 	      this.emit('start');
@@ -428,7 +426,7 @@ var Entropy =
 
 	'use strict';
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 
@@ -951,7 +949,6 @@ var Entropy =
 	     * @param  {Function}   fn            event listener
 	     * @param  {Boolean}    [once=false]  if set to `true`, listener will be called once, then it will be unregistered
 	     */
-
 	    on: function on(event, fn, once) {
 	      this._events[event] = this._events[event] || [];
 
@@ -1136,7 +1133,6 @@ var Entropy =
 	     * @param {Object} state state object (see example)
 	     * @return {Taste} Taste instance
 	     */
-
 	    define: function define(state) {
 	      this._states[state.name] = Object.assign({}, state, {
 	        _initialized: false,
@@ -1472,7 +1468,6 @@ var Entropy =
 	   * @param {[type]} nameOrEntity [description]
 	   * @param {[type]} ...args      [description]
 	   */
-
 	  addEntity: function addEntity(entity) {
 	    var _this = this;
 
@@ -2134,7 +2129,6 @@ var Entropy =
 	     * @param  {[type]} allEntities [description]
 	     * @return {[type]}             [description]
 	     */
-
 	    initialize: function initialize(allEntities) {
 	      for (var i = 0; i < allEntities.length; i += 1) {
 	        var entity = allEntities.arr[i];
@@ -2698,7 +2692,7 @@ var Entropy =
 	  value: true
 	});
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	var _stampit = __webpack_require__(1);
 
@@ -3055,7 +3049,6 @@ var Entropy =
 	   *   The number of milliseconds that should be simulated by every run of
 	   *   {@link #setUpdate update}().
 	   */
-
 	  getSimulationTimestep: function getSimulationTimestep() {
 	    return this.simulationTimestep;
 	  },
@@ -3339,8 +3332,7 @@ var Entropy =
 	 */
 	var EntityStore = (0, _stampit.compose)({
 	  init: function init(_ref) {
-	    var game = _ref.game,
-	        componentStore = _ref.componentStore;
+	    var game = _ref.game;
 
 	    /**
 	     * Object with different pool for each entity type.
@@ -3381,7 +3373,6 @@ var Entropy =
 	     * @param  {[type]} initFn [description]
 	     * @return {[type]}        [description]
 	     */
-
 	    register: function register(descriptor) {
 	      var _this = this;
 
@@ -3394,6 +3385,7 @@ var Entropy =
 	      this._pools[descriptor.type] = (0, _Pool2.default)({
 	        _new: function _new() {
 	          var entity = _this._factories[descriptor.type]({
+	            game: _this.game,
 	            type: descriptor.type
 	          });
 
@@ -3531,7 +3523,7 @@ var Entropy =
 
 	'use strict';
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	var baseMatches = __webpack_require__(16),
 	    baseMatchesProperty = __webpack_require__(104),
@@ -4260,7 +4252,7 @@ var Entropy =
 
 	'use strict';
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	var freeGlobal = __webpack_require__(39);
 
@@ -4278,7 +4270,7 @@ var Entropy =
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	/** Detect free variable `global` from Node.js. */
 	var freeGlobal = (typeof global === 'undefined' ? 'undefined' : _typeof(global)) == 'object' && global && global.Object === Object && global;
@@ -4374,7 +4366,7 @@ var Entropy =
 
 	'use strict';
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	/**
 	 * Checks if `value` is the
@@ -4817,7 +4809,7 @@ var Entropy =
 
 	'use strict';
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	/**
 	 * Checks if `value` is suitable for use as unique object key.
@@ -5720,7 +5712,7 @@ var Entropy =
 
 	'use strict';
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	/**
 	 * Checks if `value` is object-like. A value is object-like if it's not `null`
@@ -5791,7 +5783,7 @@ var Entropy =
 
 	/* WEBPACK VAR INJECTION */(function(module) {'use strict';
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	var root = __webpack_require__(38),
 	    stubFalse = __webpack_require__(84);
@@ -6059,7 +6051,7 @@ var Entropy =
 
 	/* WEBPACK VAR INJECTION */(function(module) {'use strict';
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	var freeGlobal = __webpack_require__(39);
 
@@ -6566,7 +6558,7 @@ var Entropy =
 
 	'use strict';
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	var isArray = __webpack_require__(81),
 	    isSymbol = __webpack_require__(109);
@@ -6602,7 +6594,7 @@ var Entropy =
 
 	'use strict';
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	var baseGetTag = __webpack_require__(36),
 	    isObjectLike = __webpack_require__(80);
@@ -7792,7 +7784,6 @@ var Entropy =
 	     * @param  {String} type   [description]
 	     * @param  {Function} initFn [description]
 	     */
-
 	    register: function register(descriptor) {
 	      var _this = this;
 
@@ -7983,7 +7974,6 @@ var Entropy =
 	     * @param  {[type]} initFn [description]
 	     * @return {[type]}        [description]
 	     */
-
 	    register: function register(descriptor) {
 	      this._factories[descriptor.type] = (0, _stampit.compose)(_System2.default, {
 	        properties: {

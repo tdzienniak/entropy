@@ -16,7 +16,7 @@ import Pool from './Pool';
  * @param {ComponentStore}  opts.componentStore
  */
 const EntityStore = compose({
-  init({ game, componentStore }) {
+  init({ game }) {
     /**
      * Object with different pool for each entity type.
      * Entity type is a key and {@link Pool} instance is a value.
@@ -63,6 +63,7 @@ const EntityStore = compose({
       this._pools[descriptor.type] = Pool({
         _new: (...args) => {
           const entity = this._factories[descriptor.type]({
+            game: this.game,
             type: descriptor.type,
           });
 
