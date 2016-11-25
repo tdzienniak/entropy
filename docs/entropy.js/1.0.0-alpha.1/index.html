@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Home - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_.html"></a></li><li><a href="Component.html">Component</a></li><li><a href="ComponentStore.html">ComponentStore</a><ul class='methods'><li data-type='method'><a href="ComponentStore.html#register">register</a></li></ul></li><li><a href="Entity.html">Entity</a></li><li><a href="EntityStore.html">EntityStore</a></li><li><a href="Entropy.html">Entropy</a><ul class='methods'><li data-type='method'><a href="Entropy.html#defineState">defineState</a></li><li data-type='method'><a href="Entropy.html#emit">emit</a></li><li data-type='method'><a href="Entropy.html#off">off</a></li><li data-type='method'><a href="Entropy.html#on">on</a></li><li data-type='method'><a href="Entropy.html#once">once</a></li><li data-type='method'><a href="Entropy.html#pause">pause</a></li><li data-type='method'><a href="Entropy.html#registerComponent">registerComponent</a></li><li data-type='method'><a href="Entropy.html#resume">resume</a></li><li data-type='method'><a href="Entropy.html#start">start</a></li><li data-type='method'><a href="Entropy.html#startResponding">startResponding</a></li><li data-type='method'><a href="Entropy.html#stop">stop</a></li><li data-type='method'><a href="Entropy.html#stopResponding">stopResponding</a></li></ul></li><li><a href="EventEmitter.html">EventEmitter</a><ul class='methods'><li data-type='method'><a href="EventEmitter.html#emit">emit</a></li><li data-type='method'><a href="EventEmitter.html#off">off</a></li><li data-type='method'><a href="EventEmitter.html#on">on</a></li><li data-type='method'><a href="EventEmitter.html#once">once</a></li><li data-type='method'><a href="EventEmitter.html#startResponding">startResponding</a></li><li data-type='method'><a href="EventEmitter.html#stopResponding">stopResponding</a></li></ul></li><li><a href="Query.html">Query</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_componentsIdsMap">_componentsIdsMap</a></li><li><a href="global.html#_entities">_entities</a></li><li><a href="global.html#_entitiesCount">_entitiesCount</a></li><li><a href="global.html#_entitiesIdsPool">_entitiesIdsPool</a></li><li><a href="global.html#_entitiesToAdd">_entitiesToAdd</a></li><li><a href="global.html#_entitiesToRemove">_entitiesToRemove</a></li><li><a href="global.html#_events">_events</a></li><li><a href="global.html#_factories">_factories</a></li><li><a href="global.html#_greatestComponentId">_greatestComponentId</a></li><li><a href="global.html#_isClearingScheduled">_isClearingScheduled</a></li><li><a href="global.html#_modifiedEntities">_modifiedEntities</a></li><li><a href="global.html#_pools">_pools</a></li><li><a href="global.html#_queries">_queries</a></li><li><a href="global.html#_systems">_systems</a></li><li><a href="global.html#_systemsToAdd">_systemsToAdd</a></li><li><a href="global.html#_systemsToRemove">_systemsToRemove</a></li><li><a href="global.html#_wasClearingPerformed">_wasClearingPerformed</a></li><li><a href="global.html#add">add</a></li><li><a href="global.html#addEntity">addEntity</a></li><li><a href="global.html#addSystem">addSystem</a></li><li><a href="global.html#change">change</a></li><li><a href="global.html#clear">clear</a></li><li><a href="global.html#current">current</a></li><li><a href="global.html#feed">feed</a></li><li><a href="global.html#getAllEntities">getAllEntities</a></li><li><a href="global.html#getEntities">getEntities</a></li><li><a href="global.html#getFPS">getFPS</a></li><li><a href="global.html#getMaxAllowedFPS">getMaxAllowedFPS</a></li><li><a href="global.html#getSimulationTimestep">getSimulationTimestep</a></li><li><a href="global.html#isIn">isIn</a></li><li><a href="global.html#isRunning">isRunning</a></li><li><a href="global.html#removeEntity">removeEntity</a></li><li><a href="global.html#removeSystem">removeSystem</a></li><li><a href="global.html#resetFrameDelta">resetFrameDelta</a></li><li><a href="global.html#setMaxAllowedFPS">setMaxAllowedFPS</a></li><li><a href="global.html#setSimulationTimestep">setSimulationTimestep</a></li><li><a href="global.html#start">start</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#ticker">ticker</a></li><li><a href="global.html#update">update</a></li></ul>
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><p><strong>Note: this engine is still in active developement. It lacks many tests, documentation is not complete and breaking API changes are very likely to happen. It is not production ready, but I was able to build a bunch of games with it, so if you want to experiment or help with developement, you are welcome.</strong></p>
+<p><strong>Documentation note: all &quot;classes&quot; in docs are not real classes, they are factory functions and should be called without <code>new</code>. JSDocs has no convenient way to describe factory functions.</strong></p>
+<h1>Entropy</h1><p><em>JavaScript entity system framework for games.</em></p>
+<p>Entropy is literally just a framework, variation on an entity system, that can help you organize and write your game in very specific way. It also does many things for you, such as game state management, input handling. It is not tied to any graphics library, sound library, or other fancy stuff. If you are not familiar with entity system idea, check out these articles: <a href="http://www.gamedev.net/page/resources/_/technical/game-programming/understanding-component-entity-systems-r3013">one</a> <a href="http://entity-systems.wikidot.com/es-tutorials">two</a>.</p>
+<h2>Key features</h2><ul>
+<li>entity system, which mean very good game code organization and simple constructs</li>
+<li>easy integration with any library (see examples for p2.js physics library integration)</li>
+<li>stage manager</li>
+</ul>
+<h2>Installation</h2><p>Recommended way to install and use Entropy is to use <code>npm</code>:</p>
+<pre class="prettyprint source"><code>npm install --save entropy.js</code></pre><p>Then require it in your project and use your favourite bundling tool to package your game for browser use.</p>
+<p>If you prefer to just include script as standalone lib, put reference to <code>entropy.min.js</code> file in the script tag or add it to you assets loader. Use global variable <code>Entropy</code> to interact with the framework.</p>
+<h2>Getting started</h2><p>The best way to get a grasp of Entropy is to read the <a href="https://github.com/tdzienniak/entropy/wiki">wiki</a>.</p>
+<p>You can also read the <a href="http://tdzienniak.github.io/entropy/docs/">docs</a> and check out examples:</p>
+<ol>
+<li><a href="http://tdzienniak.github.io/entropy/example/bunnies/">Bunnies (benchmark and PIXI.js rendering)</a></li>
+<li><a href="http://tdzienniak.github.io/entropy/example/breakout/">Breakout (complete game with p2.js physics, PIXI rendering and plugins)</a></li>
+</ol>
+<h2>Building and testing</h2><p>After cloning the repo run:</p>
+<pre class="prettyprint source"><code>npm install</code></pre><p>Then to build and to create minified file for browsers:</p>
+<pre class="prettyprint source"><code>npm run build</code></pre><p>To run tests:</p>
+<pre class="prettyprint source"><code>npm test</code></pre><h2>Docs</h2><p>Documentation is located in <code>docs</code> folder. You can also read it online: <a href="http://tdzienniak.github.io/entropy/docs/">http://tdzienniak.github.io/entropy/docs/</a>.</p>
+<h2>Testers and people who have helped</h2><p><a href="https://github.com/DarkEngineer">@DarkEngineer</a><br><a href="https://github.com/tannernetwork">@Tanner</a></p>
+<h2>License</h2><p>MIT</p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Nov 25 2016 12:38:41 GMT+0100 (CET) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

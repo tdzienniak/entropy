@@ -1,7 +1,12 @@
 #Exclude folders
-node_modules/
+node_modules
+build
+plugins
+
+npm-debug.log
 
 #Exclude project config files
 *.sublime-project
 *.sublime-namespace
 *.sublime-workspace
+.idea

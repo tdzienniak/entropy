@@ -1,1 +1,0 @@
-ComponentFactory.js

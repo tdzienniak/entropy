@@ -1,0 +1,16 @@
+.idea
+example
+plugins
+src
+entropy.png
+docs
+jsdoc.json
+.eslintrc
+.eslintignore
+production.config.js
+development.config.js
+*.sublime-project
+*.sublime-workspace
+node_modules
+test
+.npmignore
