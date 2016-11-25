@@ -1,7 +1,6 @@
 #Exclude folders
 node_modules
 build
-plugins
 
 npm-debug.log
 
