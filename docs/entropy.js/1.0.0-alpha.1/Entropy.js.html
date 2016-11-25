@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Entropy.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_.html"></a></li><li><a href="Component.html">Component</a></li><li><a href="ComponentStore.html">ComponentStore</a><ul class='methods'><li data-type='method'><a href="ComponentStore.html#register">register</a></li></ul></li><li><a href="Entity.html">Entity</a></li><li><a href="EntityStore.html">EntityStore</a></li><li><a href="Entropy.html">Entropy</a><ul class='methods'><li data-type='method'><a href="Entropy.html#defineState">defineState</a></li><li data-type='method'><a href="Entropy.html#emit">emit</a></li><li data-type='method'><a href="Entropy.html#off">off</a></li><li data-type='method'><a href="Entropy.html#on">on</a></li><li data-type='method'><a href="Entropy.html#once">once</a></li><li data-type='method'><a href="Entropy.html#pause">pause</a></li><li data-type='method'><a href="Entropy.html#registerComponent">registerComponent</a></li><li data-type='method'><a href="Entropy.html#resume">resume</a></li><li data-type='method'><a href="Entropy.html#start">start</a></li><li data-type='method'><a href="Entropy.html#startResponding">startResponding</a></li><li data-type='method'><a href="Entropy.html#stop">stop</a></li><li data-type='method'><a href="Entropy.html#stopResponding">stopResponding</a></li></ul></li><li><a href="EventEmitter.html">EventEmitter</a><ul class='methods'><li data-type='method'><a href="EventEmitter.html#emit">emit</a></li><li data-type='method'><a href="EventEmitter.html#off">off</a></li><li data-type='method'><a href="EventEmitter.html#on">on</a></li><li data-type='method'><a href="EventEmitter.html#once">once</a></li><li data-type='method'><a href="EventEmitter.html#startResponding">startResponding</a></li><li data-type='method'><a href="EventEmitter.html#stopResponding">stopResponding</a></li></ul></li><li><a href="Query.html">Query</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_componentsIdsMap">_componentsIdsMap</a></li><li><a href="global.html#_entities">_entities</a></li><li><a href="global.html#_entitiesCount">_entitiesCount</a></li><li><a href="global.html#_entitiesIdsPool">_entitiesIdsPool</a></li><li><a href="global.html#_entitiesToAdd">_entitiesToAdd</a></li><li><a href="global.html#_entitiesToRemove">_entitiesToRemove</a></li><li><a href="global.html#_events">_events</a></li><li><a href="global.html#_factories">_factories</a></li><li><a href="global.html#_greatestComponentId">_greatestComponentId</a></li><li><a href="global.html#_isClearingScheduled">_isClearingScheduled</a></li><li><a href="global.html#_modifiedEntities">_modifiedEntities</a></li><li><a href="global.html#_pools">_pools</a></li><li><a href="global.html#_queries">_queries</a></li><li><a href="global.html#_systems">_systems</a></li><li><a href="global.html#_systemsToAdd">_systemsToAdd</a></li><li><a href="global.html#_systemsToRemove">_systemsToRemove</a></li><li><a href="global.html#_wasClearingPerformed">_wasClearingPerformed</a></li><li><a href="global.html#add">add</a></li><li><a href="global.html#addEntity">addEntity</a></li><li><a href="global.html#addSystem">addSystem</a></li><li><a href="global.html#change">change</a></li><li><a href="global.html#clear">clear</a></li><li><a href="global.html#current">current</a></li><li><a href="global.html#feed">feed</a></li><li><a href="global.html#getAllEntities">getAllEntities</a></li><li><a href="global.html#getEntities">getEntities</a></li><li><a href="global.html#getFPS">getFPS</a></li><li><a href="global.html#getMaxAllowedFPS">getMaxAllowedFPS</a></li><li><a href="global.html#getSimulationTimestep">getSimulationTimestep</a></li><li><a href="global.html#isIn">isIn</a></li><li><a href="global.html#isRunning">isRunning</a></li><li><a href="global.html#removeEntity">removeEntity</a></li><li><a href="global.html#removeSystem">removeSystem</a></li><li><a href="global.html#resetFrameDelta">resetFrameDelta</a></li><li><a href="global.html#setMaxAllowedFPS">setMaxAllowedFPS</a></li><li><a href="global.html#setSimulationTimestep">setSimulationTimestep</a></li><li><a href="global.html#start">start</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#ticker">ticker</a></li><li><a href="global.html#update">update</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Entropy.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { compose } from 'stampit';
+import { isObject } from './helpers';
+
+import EventEmitter from './EventEmitter';
+import State from './State';
+import Engine from './Engine';
+import Ticker from './Ticker';
+import Query from './Query';
+
+import EntityStore from './EntityStore';
+import ComponentStore from './ComponentStore';
+import SystemStore from './SystemStore';
+
+// welcome message
+console.log(...[
+  '%c %c %c Entropy 0.1.0 - Entity System Framework for JavaScript %c %c ',
+  'background: rgb(200, 200,200);',
+  'background: rgb(80, 80, 80);',
+  'color: white; background: black;',
+  'background: rgb(80, 80, 80);',
+  'background: rgb(200, 200, 200);',
+]);
+
+/**
+ * Main framework factory method. This is the only factory, that needs to be called by user.
+ *
+ * @class Entropy
+ * @borrows ComponentStore#register as Entropy#registerComponent
+ * @borrows ComponentStore#registerMany as Entropy#registerComponents
+ * @borrows ComponentStore#create as Entropy#createComponent
+ * @borrows EntityStore#register as Entropy#registerEntity
+ * @borrows EntityStore#registerMany as Entropy#registerEntitys
+ * @borrows EntityStore#create as Entropy#createEntity
+ * @borrows SystemStore#register as Entropy#registerSystem
+ * @borrows SystemStore#registerMany as Entropy#registerSystems
+ * @borrows SystemStore#create as Entropy#createSystem
+ * @extends EventEmitter
+ * @param {Object} config
+ * @param {Boolean} config.pauseOnVisibilityChange
+ *
+ * @example
+ * const game = Entropy() // creating game with default configuration
+ * game.addEntity('Ball', {
+ *   x: 0,
+ *   y: 0,
+ * })
+ */
+const Entropy = compose(EventEmitter, {
+  /**
+   * @constructs
+   */
+  init(opts) {
+    /**
+     * Stores components for later reuse.
+     *
+     * @memberof Entropy#
+     * @name component
+     * @type ComponentStore
+     */
+    this.component = ComponentStore();
+
+    /**
+     * Stores entities for later reuse.
+     *
+     * @memberof Entropy#
+     * @name entity
+     * @type EntityStore
+     */
+    this.entity = EntityStore({
+      game: this,
+    });
+
+    /**
+     *
+     * Stores entities for later reuse.
+     *
+     * @private
+     * @memberOf Entropy#
+     * @name system
+     * @type SystemStore
+     */
+    this.system = SystemStore({
+      game: this,
+    });
+
+    /**
+     * Instance of {@link Engine}.
+     *
+     * @memberof Entropy#
+     * @name engine
+     * @type {Engine}
+     */
+    this.engine = Engine({
+      game: this,
+    });
+
+   /**
+     * Instance of {@link State}.
+     *
+    * @memberof Entropy#
+    * @name state
+    * @type {State}
+     */
+    this.state = State();
+
+    /**
+     * Instance of Ticker class.
+     *
+     * @property ticker
+     * @type {Ticker}
+     */
+    this.ticker = Ticker({
+      game: this,
+    });
+
+    ['update'].forEach((eventName) => {
+      this.ticker.on(eventName, (...args) => {
+        this.engine[eventName](...args);
+      });
+    });
+
+    // Set the name of the hidden property and the change event for visibility
+    let hidden;
+    let visibilityChange;
+
+    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
+      hidden = 'hidden';
+      visibilityChange = 'visibilitychange';
+    } else if (typeof document.msHidden !== 'undefined') {
+      hidden = 'msHidden';
+      visibilityChange = 'msvisibilitychange';
+    } else if (typeof document.webkitHidden !== 'undefined') {
+      hidden = 'webkitHidden';
+      visibilityChange = 'webkitvisibilitychange';
+    }
+
+    document.addEventListener(visibilityChange, (e) => {
+      this.emit('visibilityChange', {
+        originalEvent: e,
+        hidden: document.hidden,
+      });
+    }, false);
+
+    if (opts.pauseOnHide) {
+      this.on('visibilityChange', (e) => {
+        if (e[hidden]) {
+          this.pause();
+        } else {
+          this.resume();
+        }
+      })
+    }
+  },
+  methods: {
+    /**
+     * Starts the game. See Ticker's {@link Ticker#start} method for more details.
+     *
+     * @memberof Entropy#
+     * @return {Boolean} succesfuly started or not
+     */
+    start() {
+      this.ticker.start();
+      this.emit('start');
+    },
+    /**
+     * Pauses the game.
+     *
+     * @memberof Entropy#
+     */
+    pause() {
+      this.ticker.pause();
+    },
+    /**
+     * Resumes paused game.
+     *
+     * @memberof Entropy#
+     */
+    resume() {
+      this.ticker.resume();
+    },
+    /**
+     * Stops the game. See Ticker's {@ink Ticker@stop} method for more details.
+     *
+     * @memberof Entropy#
+     * @param {Boolean} clearEngine if `true`, engine will be cleared before ticker stop
+     * @return {Entropy} game instance for chaining
+     */
+    stop(clearEngine) {
+      if (clearEngine) {
+        this.engine.once('clear', () => this._stopAndEmit());
+
+        // schedule engine clearing
+        this.engine.clear();
+      } else {
+        this._stopAndEmit();
+      }
+    },
+    /**
+     * Defines new state.
+     *
+     * @example
+     * sss
+     *
+     * @memberof Entropy#
+     * @param {Object} state object definig state. See {@link State#define} for more info.
+     */
+    defineState(state) {
+      this.state.define(Object.assign({}, state, {
+        constArgs: [this],
+      }));
+    },
+    registerEntity(...args) {
+      this.entity.register(...args);
+
+      return this;
+    },
+    registerEntities(...args) {
+      this.entity.registerMany(...args);
+
+      return this;
+    },
+    createEntity(...args) {
+      return this.entity.create(...args);
+    },
+    /**
+     * [addEntity description]
+     * @param {[type]} nameOrEntity [description]
+     * @param {[type]} ...args      [description]
+     */
+    addEntity(typeOrEntity, ...args) {
+      const entity = isObject(typeOrEntity) ?
+        typeOrEntity : this.createEntity(typeOrEntity, ...args);
+
+      this.engine.addEntity(entity);
+
+      return this;
+    },
+    /**
+     * [removeEntity description]
+     * @param  {[type]} entity [description]
+     * @return {[type]}        [description]
+     */
+    removeEntity(entity) {
+      this.engine.removeEntity(entity);
+    },
+    registerComponent(...args) {
+      this.component.register(...args);
+
+      return this;
+    },
+    registerComponents(...args) {
+      this.component.registerMany(...args);
+
+      return this;
+    },
+    createComponent(...args) {
+      return this.component.create(...args);
+    },
+    registerSystem(...args) {
+      this.system.register(...args);
+
+      return this;
+    },
+    registerSystems(...args) {
+      this.system.registerMany(...args);
+
+      return this;
+    },
+    createSystem(...args) {
+      return this.system.create(...args);
+    },
+    /**
+     * [addSystem description]
+     * @param {[type]} nameOrSystem [description]
+     * @param {[type]} ...args      [description]
+     */
+    addSystem(typeOrSystem, ...args) {
+      const system = isObject(typeOrSystem) ?
+        typeOrSystem : this.createSystem(typeOrSystem, ...args);
+
+      this.engine.addSystem(system);
+    },
+    /**
+     * [createQuery description]
+     * @param  {[type]} criterions [description]
+     * @return {[type]}            [description]
+     */
+    createQuery(criterions) {
+      const query = Query({
+        componentsIdsMap: this.component._componentsIdsMap,
+        criterions,
+      });
+
+      return query;
+    },
+    getEntities(query) {
+      return this.engine.getEntities(query);
+    },
+    _stopAndEmit() {
+      const stop = this.ticker.stop();
+
+      if (stop) {
+        this.emit('stop');
+      }
+    },
+  },
+});
+
+// will use CJS syntax here, to let browserify bundle it correctly
+module.exports = Entropy;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Nov 25 2016 12:38:41 GMT+0100 (CET) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

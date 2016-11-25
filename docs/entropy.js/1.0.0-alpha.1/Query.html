@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Query - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_.html"></a></li><li><a href="Component.html">Component</a></li><li><a href="ComponentStore.html">ComponentStore</a><ul class='methods'><li data-type='method'><a href="ComponentStore.html#register">register</a></li></ul></li><li><a href="Entity.html">Entity</a></li><li><a href="EntityStore.html">EntityStore</a></li><li><a href="Entropy.html">Entropy</a><ul class='methods'><li data-type='method'><a href="Entropy.html#defineState">defineState</a></li><li data-type='method'><a href="Entropy.html#emit">emit</a></li><li data-type='method'><a href="Entropy.html#off">off</a></li><li data-type='method'><a href="Entropy.html#on">on</a></li><li data-type='method'><a href="Entropy.html#once">once</a></li><li data-type='method'><a href="Entropy.html#pause">pause</a></li><li data-type='method'><a href="Entropy.html#registerComponent">registerComponent</a></li><li data-type='method'><a href="Entropy.html#resume">resume</a></li><li data-type='method'><a href="Entropy.html#start">start</a></li><li data-type='method'><a href="Entropy.html#startResponding">startResponding</a></li><li data-type='method'><a href="Entropy.html#stop">stop</a></li><li data-type='method'><a href="Entropy.html#stopResponding">stopResponding</a></li></ul></li><li><a href="EventEmitter.html">EventEmitter</a><ul class='methods'><li data-type='method'><a href="EventEmitter.html#emit">emit</a></li><li data-type='method'><a href="EventEmitter.html#off">off</a></li><li data-type='method'><a href="EventEmitter.html#on">on</a></li><li data-type='method'><a href="EventEmitter.html#once">once</a></li><li data-type='method'><a href="EventEmitter.html#startResponding">startResponding</a></li><li data-type='method'><a href="EventEmitter.html#stopResponding">stopResponding</a></li></ul></li><li><a href="Query.html">Query</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_componentsIdsMap">_componentsIdsMap</a></li><li><a href="global.html#_entities">_entities</a></li><li><a href="global.html#_entitiesCount">_entitiesCount</a></li><li><a href="global.html#_entitiesIdsPool">_entitiesIdsPool</a></li><li><a href="global.html#_entitiesToAdd">_entitiesToAdd</a></li><li><a href="global.html#_entitiesToRemove">_entitiesToRemove</a></li><li><a href="global.html#_events">_events</a></li><li><a href="global.html#_factories">_factories</a></li><li><a href="global.html#_greatestComponentId">_greatestComponentId</a></li><li><a href="global.html#_isClearingScheduled">_isClearingScheduled</a></li><li><a href="global.html#_modifiedEntities">_modifiedEntities</a></li><li><a href="global.html#_pools">_pools</a></li><li><a href="global.html#_queries">_queries</a></li><li><a href="global.html#_systems">_systems</a></li><li><a href="global.html#_systemsToAdd">_systemsToAdd</a></li><li><a href="global.html#_systemsToRemove">_systemsToRemove</a></li><li><a href="global.html#_wasClearingPerformed">_wasClearingPerformed</a></li><li><a href="global.html#add">add</a></li><li><a href="global.html#addEntity">addEntity</a></li><li><a href="global.html#addSystem">addSystem</a></li><li><a href="global.html#change">change</a></li><li><a href="global.html#clear">clear</a></li><li><a href="global.html#current">current</a></li><li><a href="global.html#feed">feed</a></li><li><a href="global.html#getAllEntities">getAllEntities</a></li><li><a href="global.html#getEntities">getEntities</a></li><li><a href="global.html#getFPS">getFPS</a></li><li><a href="global.html#getMaxAllowedFPS">getMaxAllowedFPS</a></li><li><a href="global.html#getSimulationTimestep">getSimulationTimestep</a></li><li><a href="global.html#isIn">isIn</a></li><li><a href="global.html#isRunning">isRunning</a></li><li><a href="global.html#removeEntity">removeEntity</a></li><li><a href="global.html#removeSystem">removeSystem</a></li><li><a href="global.html#resetFrameDelta">resetFrameDelta</a></li><li><a href="global.html#setMaxAllowedFPS">setMaxAllowedFPS</a></li><li><a href="global.html#setSimulationTimestep">setSimulationTimestep</a></li><li><a href="global.html#start">start</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#ticker">ticker</a></li><li><a href="global.html#update">update</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Query</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        Query
+        </h2>
+        
+            <div class="class-description"><p>Query</p></div>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="Query"><span class="type-signature"></span>new Query<span class="signature">(query)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line31">line 31</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Used to perform matching of entities.
+Only parameter is an array of component names to include or object with <code>include</code> and/or <code>exclude</code> properties,
+witch are arrays of component names to respectively include and/or exclude. Object can also have <code>name</code> property,
+that will match entities with given name.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>//matches entities with 'Position' and 'Velocity' components    var q1 = game.createQuery(["Position", "Velocity"]);    //matches entities with 'Position' and 'Velocity' components and without 'Sprite' component    var q2 = new Entropy.Query({        include: ["Position", "Velocity"],        exclude: ["Sprite"]    });    //matches entities with name 'Ball'    var q3 = new Entropy.Query({        name: "Ball"    });</code></pre>
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>query</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>query conditions</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Nov 25 2016 12:38:41 GMT+0100 (CET) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
