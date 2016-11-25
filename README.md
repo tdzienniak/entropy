@@ -12,7 +12,7 @@ Entropy is literally just a framework, variation on an entity system, that can h
 
 - entity system, which mean very good game code organization and simple constructs
 - easy integration with any library (see examples for p2.js physics library integration)
-- stage manager
+- plugins
 
 ## Installation
 
@@ -29,7 +29,7 @@ If you prefer to just include script as standalone lib, put reference to `entrop
 
 The best way to get a grasp of Entropy is to read the [wiki](https://github.com/tdzienniak/entropy/wiki).
 
-You can also read the [docs](http://tdzienniak.github.io/entropy/docs/) and check out examples:
+You can also read the [docs](http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.1/) and check out examples:
 
 1. [Bunnies (benchmark and PIXI.js rendering)](http://tdzienniak.github.io/entropy/example/bunnies/)
 2. [Breakout (complete game with p2.js physics, PIXI rendering and plugins)](http://tdzienniak.github.io/entropy/example/breakout/)
