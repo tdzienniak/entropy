@@ -1,67 +1,3 @@
-// some globals, this is bad practice but in this simple example we can do that
-var scene, stage, renderer, game;
-
-var CONST = {
-  WIDTH: 600,
-  HEIGHT: 400,
-  GRAVITY: 200
-}
-
-function defineStates(game) {
-  game.defineState({
-    name: "initialize",
-    initialize: function (game, done) {
-      var view = document.getElementsByTagName("canvas")[0];
-
-      renderer = new PIXI.autoDetectRenderer(CONST.WIDTH, CONST.HEIGHT, {
-          view: view,
-          transparent: true,
-          antialias: false
-      });
-
-      scene = new PIXI.Container();
-      stage = new PIXI.ParticleContainer(2000000);
-
-      scene.addChild(stage);
-
-      var bunniesCount = document.getElementById("bunnies-count");
-      var bunnyTexture = new PIXI.Texture.fromImage("img/bunny.png");
-      var bunnyAdder;
-
-      view.addEventListener("mousedown", function (e) {
-        var bunnyAdderFn = function () {
-          for (var i = 0; i < 50; i++) {
-            // console.log(i)
-            game.addEntity("Bunny", 10, 10, bunnyTexture);
-          }
-
-          bunniesCount.innerText = game.engine._entitiesCount;
-
-          bunnyAdder = setTimeout(bunnyAdderFn, 1);
-        }
-
-        bunnyAdderFn()
-      });
-
-      view.addEventListener("mouseup", function () {
-        clearTimeout(bunnyAdder);
-      });
-
-      return done();
-    },
-    enter: function (game, done) {
-      game.addSystem(game.createSystem("Render"));
-      game.addSystem(game.createSystem("BunnyMovement"));
-
-
-      console.log(game)
-      game.start();
-
-      return done();
-    }
-  })
-}
-
 function registerComponents(game) {
   game.registerComponent({
     type: 'Position',
@@ -157,15 +93,64 @@ function registerSystems(game) {
   });
 }
 
+// some globals, this is bad practice but in this simple example we can do that
+var scene, stage, renderer, game;
+
+var CONST = {
+  WIDTH: 600,
+  HEIGHT: 400,
+  GRAVITY: 200
+}
+
+
 window.addEventListener("load", function () {
+  var view = document.getElementsByTagName("canvas")[0];
+
+
   game = Entropy({
     pauseOnHide: true,
   });
 
-  defineStates(game);
   registerComponents(game);
   registerEntities(game);
   registerSystems(game);
 
-  game.state.change('initialize');
+  renderer = new PIXI.autoDetectRenderer(CONST.WIDTH, CONST.HEIGHT, {
+      view: view,
+      transparent: true,
+      antialias: false
+  });
+
+  scene = new PIXI.Container();
+  stage = new PIXI.ParticleContainer(2000000);
+
+  scene.addChild(stage);
+
+  var bunniesCount = document.getElementById("bunnies-count");
+  var bunnyTexture = new PIXI.Texture.fromImage("img/bunny.png");
+  var bunnyAdder;
+
+  view.addEventListener("mousedown", function (e) {
+    var bunnyAdderFn = function () {
+      for (var i = 0; i < 50; i++) {
+        // console.log(i)
+        game.addEntity("Bunny", 10, 10, bunnyTexture);
+      }
+
+      bunniesCount.innerText = game.engine._entitiesCount;
+
+      bunnyAdder = setTimeout(bunnyAdderFn, 1);
+    }
+
+    bunnyAdderFn()
+  });
+
+  view.addEventListener("mouseup", function () {
+    clearTimeout(bunnyAdder);
+  });
+
+  game.addSystem(game.createSystem("Render"));
+  game.addSystem(game.createSystem("BunnyMovement"));
+
+  game.start();
 }, false);
