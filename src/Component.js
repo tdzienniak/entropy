@@ -35,6 +35,7 @@ const Component = compose({
 
     /**
      * Lowercase component type, which is used to identify component's instance when added to entity.
+     * For type 'Position' propName is `position`. For type 'LifeTime' propName is `lifeTime`.
      *
      * @private
      * @memberof Component#
@@ -44,15 +45,38 @@ const Component = compose({
     this._propName = toLowerFirstCase(opts.type);
   },
   methods: {
-    onCreate(...args) {
-      if (args.length === 1 && isObject(args[0])) {
-        Object.assign(this, args[0]);
+    /**
+     * Run when component is created. Can be overriedden on component registration.
+     * Default implementation coppies properties from first argument, if it's an object.
+     *
+     * @example
+     * game.component.register({
+     *   type: 'Position',
+     * }) // component registered without `onCreate` method
+     *
+     * const c = game.component.create('Position', { x: 1, y: 2 }); // default `onCreate` is used
+     *
+     * c.x // 1
+     * c.y // 2
+     *
+     * @memberof Component#
+     * @param {Object} [opts] object with proprties to assign to component instance
+     */
+    onCreate(opts) {
+      if (isObject(opts)) {
+        Object.assign(this, opts);
       }
     },
+    /**
+     * Returns component type.
+     *
+     * @memberof Component#
+     * @returns component type
+     */
     getType() {
       return this._type;
-    }
-  }
+    },
+  },
 });
 
 export default Component;
