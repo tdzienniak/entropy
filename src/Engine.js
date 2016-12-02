@@ -128,10 +128,10 @@ const Engine = stampit().init(function initEngine(opts) {
    * @param {[type]} ...args      [description]
    */
   addEntity(entity) {
-    if (!entity.isUsed()) {
+      if (!entity.isRecycled()) {
       entity.on('queueModification', () => {
         this._markModifiedEntity(entity);
-      })
+        });
     }
 
     this._entitiesToAdd.push(entity);

@@ -98,7 +98,7 @@ const EntityStore = compose({
       return this._pools[type].allocate(...args);
     },
     free(entity) {
-      entity.markAsUsed();
+      entity.markAsRecycled();
 
       this._pools[entity.type].free(entity);
     },

@@ -139,12 +139,12 @@ const Entity = stampit({
     is(type) {
       return this.type === type;
     },
-    markAsUsed() {
+    markAsRecycled() {
       this._used = true;
     },
-    isUsed() {
+    isRecycled() {
       return this._used;
-    }
+    },
   },
 })
 .compose(EventEmitter);
