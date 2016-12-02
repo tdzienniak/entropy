@@ -29,6 +29,7 @@ const Entity = stampit({
     onCreate() {},
     onRemove() {},
     onReuse() {},
+    onComponentRemove() {},
     /**
      * Adds new component to entity. Component is either created from scratch or reused from pool. In latter case, component's pattern `reset` method is called (if present).
      * Component patterns `initialize` method is called with additional arguments passed to `add` method.
@@ -43,7 +44,7 @@ const Entity = stampit({
      * @param {String} ...name name of component to add. Addidtional parameters are applied to component patterns `initialize` method.
      * @return {Entity} Entity instance
      */
-    add(componentTypeOrComponent, ...args) {
+    addComponent(componentTypeOrComponent, ...args) {
       const componentToAdd = isObject(componentTypeOrComponent) ?
         componentTypeOrComponent : this.game.component.create(componentTypeOrComponent, ...args);
 
@@ -71,6 +72,7 @@ const Entity = stampit({
       this.emit('componentAdd', this, componentToAdd);
     },
     remove(componentType) {
+    removeComponent(componentType) {
       const componentPropName = toLowerFirstCase(componentType);
       const componentToRemove = this.components[componentPropName];
 
@@ -90,14 +92,14 @@ const Entity = stampit({
     },
     removeAllComponents() {
       Object.keys(this.components).forEach(propName =>
-        this._removeComponent(this.components[propName])
+        this.removeComponent(propName)
       );
     },
     _removeComponent(componentToRemove) {
       this.game.component.free(componentToRemove);
       this.components[componentToRemove._propName] = null;
       this.bitset.remove(componentToRemove._id);
-      this.emit('componentRemove', this, componentToRemove);
+      this.onComponentRemove(componentToRemove);
     },
     applyModifications() {
       while (this._modifications.length) {
