@@ -135,7 +135,11 @@ const Engine = compose({
         });
     }
 
+      if (this.game.isRunning()) {
     this._entitiesToAdd.push(entity);
+      } else {
+        this._addEntity(entity);
+      }
   },
   /**
    * [removeEntity description]
@@ -143,9 +147,12 @@ const Engine = compose({
    * @return {[type]}        [description]
    */
   removeEntity(entity) {
+      if (this.game.isRunning()) {
     this._entitiesToRemove.push(entity);
+      } else {
+        this._removeEntity();
+      }
   },
-
   /**
    * [addSystem description]
    * @param {[type]} nameOrSystem [description]
@@ -226,7 +233,11 @@ const Engine = compose({
   },
   _markModifiedEntity(entity) {
     if (entity.id !== 0 && this._modifiedEntities.indexOf(entity) === -1) {
+        if (this.game.isRunning()) {
       this._modifiedEntities.push(entity);
+        } else {
+          this._modifyEntity(entity);
+        }
     }
   },
   _updateSystems(...args) {
@@ -240,113 +251,115 @@ const Engine = compose({
   },
   _removeEntities() {
     while (this._entitiesToRemove.length) {
-      const entityToRemove = this._entitiesToRemove.pop();
-
-      if (entityToRemove.id === 0) {
-        continue;
+        this._removeEntity(this._entitiesToRemove.pop());
+      }
+    },
+    _removeEntity(entity) {
+      if (entity.id === 0) {
+        return;
       }
 
       for (let i = 0; i < this._queries.length; i += 1) {
         const query = this._queries[i];
 
-        if (query.satisfiedBy(entityToRemove)) {
-          query.removeFromIndex(entityToRemove.id);
+        if (query.satisfiedBy(entity)) {
+          query.removeFromIndex(entity.id);
         }
       }
 
-      entityToRemove.onRemove(entityToRemove);
+      entity.onRemove(entity);
 
       // remove entity from global index
-      this._entities.unsetAtIndex(entityToRemove.id);
+      this._entities.unsetAtIndex(entity.id);
 
       // send unused entity ID to pool for later reuse
-      this._entitiesIdsPool.free(entityToRemove.id);
+      this._entitiesIdsPool.free(entity.id);
 
-      entityToRemove.removeAllComponents();
+      entity.removeAllComponents();
 
       // id = 0 indicates inactive entity
-      entityToRemove.id = 0;
+      entity.id = 0;
 
-      this.game.entity.free(entityToRemove);
+      this.game.entity.free(entity);
 
       this._entitiesCount -= 1;
 
-      this.emit('entityRemove', entityToRemove);
-    }
+      this.emit('entityRemove', entity);
   },
   _addEntities() {
     while (this._entitiesToAdd.length) {
-      const entityToAdd = this._entitiesToAdd.pop();
-
+        this._addEntity(this._entitiesToAdd.pop());
+      }
+    },
+    _addEntity(entity) {
       const newEntityId = this._entitiesIdsPool.allocate();
 
-      entityToAdd.id = newEntityId;
+      entity.id = newEntityId;
 
-      this._entities.insertAtIndex(newEntityId, entityToAdd);
+      this._entities.insertAtIndex(newEntityId, entity);
 
       for (let i = 0; i < this._queries.length; i += 1) {
         const query = this._queries[i];
 
-        if (query.satisfiedBy(entityToAdd)) {
+        if (query.satisfiedBy(entity)) {
           query.addToIndex(newEntityId);
         }
       }
 
-      entityToAdd.emit('add', entityToAdd);
-
       this._entitiesCount += 1;
 
-      this.emit('entityAdd', entityToAdd);
-    }
+      this.emit('entityAdd', entity);
   },
-  _modifyEntities() {
-    while (this._modifiedEntities.length) {
-      const modifiedEntity = this._modifiedEntities.pop();
-
+    _modifyEntity(entity) {
       for (let i = 0; i < this._queries.length; i += 1) {
         const query = this._queries[i];
 
-        const satisfiedBeforeModification = query.satisfiedBy(modifiedEntity);
+        const satisfiedBeforeModification = query.satisfiedBy(entity);
 
-        modifiedEntity.applyModifications();
+        entity.applyModifications();
 
-        const satisfiesAfterModification = query.satisfiedBy(modifiedEntity);
+        const satisfiesAfterModification = query.satisfiedBy(entity);
 
         if (!satisfiedBeforeModification && satisfiesAfterModification) {
-          query.addToIndex(modifiedEntity.id);
+          query.addToIndex(entity.id);
         } else if (satisfiedBeforeModification && !satisfiesAfterModification) {
-          query.removeFromIndex(modifiedEntity.id);
+          query.removeFromIndex(entity.id);
         }
       }
+    },
+    _modifyEntities() {
+      while (this._modifiedEntities.length) {
+        this._modifyEntity(this._modifiedEntities.pop());
     }
   },
-  _addSystems() {
-    while (this._systemsToAdd.length) {
-      const systemToAdd = this._systemsToAdd.shift();
-
+    _addSystem(system) {
       let insertionIndex = 0;
       for (;insertionIndex < this._systems.length; insertionIndex += 1) {
-        if (this._systems.arr[insertionIndex].priority > systemToAdd.priority) {
+        if (this._systems.arr[insertionIndex].priority > system.priority) {
           break;
         }
       }
 
-      this._systems.insertBefore(insertionIndex, systemToAdd);
+      this._systems.insertBefore(insertionIndex, system);
+    },
+    _addSystems() {
+      while (this._systemsToAdd.length) {
+        this._addSystem(this._systemsToAdd.shift());
     }
   },
-  _removeSystems() {
-    while (this._systemsToRemove.length) {
-      const systemToRemove = this._systemsToRemove.shift();
-      const indexOfSystem = this._systems.indexOf(systemToRemove);
+    _removeSystem(system) {
+      const indexOfSystem = this._systems.indexOf(system);
 
       if (indexOfSystem !== -1) {
-        systemToRemove.onRemove();
+        system.onRemove();
 
-        this._systems.unsetAtIndex(indexOfSystem);
+        this._systems.removeAtIndex(indexOfSystem);
       }
+    },
+    _removeSystems() {
+      while (this._systemsToRemove.length) {
+        this._removeSystem(this._systemsToRemove.shift());
     }
-
-    this._systems.compact();
   },
   _updateQueries() {
     for (let i = 0; i < this._queries.length; i += 1) {

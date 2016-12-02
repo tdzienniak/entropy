@@ -303,6 +303,9 @@ const Entropy = compose(EventEmitter, {
         this.emit('stop');
       }
     },
+    isRunning() {
+      return this.ticker.isRunning();
+    },
   },
 });
 
