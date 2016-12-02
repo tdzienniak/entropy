@@ -6,14 +6,14 @@ import FastArray from 'fast-array';
 import EventEmitter from './EventEmitter';
 
 /**
- * Entity class. Class is used internaly. User should not instatiate this class.
+ * Entity factory.
  *
  * @class Entity
- * @constructor
- * @param {Object} pattern entity pattern
- * @param {Engine} engine  Engine instance
  */
 const Entity = stampit({
+  /**
+   * @constructs
+   */
   init(opts) {
     this._modifications = FastArray();
     this._used = false;
@@ -25,23 +25,44 @@ const Entity = stampit({
     this.components = this.cs = {};
   },
   methods: {
-    initialize() {},
+    /**
+     * Called when entity is created. Could be overriden (see {@link EntityStore#register}).
+     *
+     * @memberof Entity#
+     */
     onCreate() {},
+    /**
+     * Called when entity is removed. Could be overriden (see {@link EntityStore#register}).
+     *
+     * @memberof Entity#
+     */
     onRemove() {},
+    /**
+     * Called when entity is reused from pool. Could be overriden (see {@link EntityStore#register}).
+     *
+     * @memberof Entity#
+     */
     onReuse() {},
     onComponentRemove() {},
     /**
-     * Adds new component to entity. Component is either created from scratch or reused from pool. In latter case, component's pattern `reset` method is called (if present).
-     * Component patterns `initialize` method is called with additional arguments passed to `add` method.
-     * If entity is already added to the system (has id greater than 0) addition doesn't happen imediately, but is postponed to nearest update cycle.
+     * Adds new component to entity.
+     *
+     * If first argument is component type, component is either created from scratch or reused from pool. In latter case, component's pattern `onReuse` method is called (if present).
+     * Component patterns `onCreate` method is called with additional arguments passed to `add` method.
+     * If entity is already added to the system (has id greater than 0) addition doesn't happen immediately, but is postponed to nearest update cycle.
      *
      * @example
-     *     //`this` is a reference to Entity instance
-     *     //code like this can be seen in entity's pattern `create` method
-     *     this.add("Position", 1, 1);
+     * // `this` is a reference to Entity instance
+     * // code like this can be seen in entity's `onCreate` method
+     * this.add('Position', 1, 1);
      *
-     * @method add
-     * @param {String} ...name name of component to add. Addidtional parameters are applied to component patterns `initialize` method.
+     * // or
+     *
+     * this.add(game.createComponent('Position', 1, 1));
+     *
+     * @memberof Entity#
+     * @param {String|Component} componentTypeOrComponent component instance or component type
+     * @param {...Any} args arguments passed to `onCreate` method of component
      * @return {Entity} Entity instance
      */
     addComponent(componentTypeOrComponent, ...args) {
@@ -71,7 +92,11 @@ const Entity = stampit({
 
       this.emit('componentAdd', this, componentToAdd);
     },
-    remove(componentType) {
+    /**
+     * Removes components.
+     *
+     * @memberof Entity#
+     */
     removeComponent(componentType) {
       const componentPropName = toLowerFirstCase(componentType);
       const componentToRemove = this.components[componentPropName];
