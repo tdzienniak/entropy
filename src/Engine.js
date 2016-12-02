@@ -4,253 +4,297 @@ import FastArray from 'fast-array';
 
 import EventEmitter from './EventEmitter';
 import Pool from './Pool';
-import Query from './Query';
 import { isNonEmptyString } from './helpers';
 
+/**
+ * This module manages the state of entities, components and systems. The heart of Entropy.
+ *
+ * @class Engine
+ * @extends EventEmitter
+ */
 const Engine = compose({
   init(opts) {
-  // entity ids start from 1, 0 means uninitailized or disabled entity
-  let greatestEntityID = 1;
+    // entity ids start from 1, 0 means uninitailized or disabled entity
+    let greatestEntityID = 1;
 
-  /**
-   * [Pool description]
-   * @param {[type]} {    _new( [description]
-   */
-  this._entitiesIdsPool = Pool({
-    _new() {
-      return greatestEntityID++;
-    },
-  });
+    /**
+     * When entity is removed, it's ID can be reused by new entities. This pool stores old IDs ready to reuse.
+     *
+     * @private
+     * @name _entitiesIdsPool
+     * @memberof Engine#
+     * @type Pool
+     */
+    this._entitiesIdsPool = Pool({
+      _new() {
+        return greatestEntityID++;
+      },
+    });
 
-  /**
-   * Systems that are processed every tick.
-   *
-   * @property _systems
-   * @private
-   * @type FastArray
-   */
-  this._systems = FastArray({
-    initialSize: 10,
-  });
+    /**
+     * Systems that are processed every tick.
+     *
+     * @private
+     * @name _systems
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._systems = FastArray({
+      initialSize: 10,
+    });
 
-  /**
-   * Array with entities. Array index corresponds to ID of an entity.
-   * First element is empty (equals 0), because entity IDs start from 1.
-   * Entity with `id` property equal 0 is _officially_ not present
-   * in the system (it can be for example present in the pool or waiting
-   * for addition to system).
-   *
-   * @property _entities
-   * @private
-   * @type Array
-   */
-  this._entities = FastArray();
+    /**
+     * Array with entities. Array index corresponds to ID of an entity.
+     * First element is empty (equals 0), because entity IDs start from 1.
+     * Entity with `id` property equal 0 is _officially_ not present
+     * in the system (it can be for example present in the pool or waiting
+     * for addition to system).
+     *
+     * @private
+     * @name _entities
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._entities = FastArray();
 
-  /**
-   * [FastArray description]
-   *
-   * @property _modifiedEntities
-   * @private
-   * @type {FastArray}
-   */
-  this._modifiedEntities = FastArray();
+    /**
+     * List of modified entities.
+     *
+     * When entity is modified it is added to this list. After each frame modifications are applied to every entity on the list.
+     *
+     * @private
+     * @name _modifiedEntities
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._modifiedEntities = FastArray();
 
-  /**
-   * [FastArray description]
-   *
-   * @property _entitiesToAdd
-   * @private
-   * @type {FastArray}
-   */
-  this._entitiesToAdd = FastArray();
+    /**
+     * Queue of entities ready to be added on next tick.
+     *
+     * @private
+     * @name _entitiesToAdd
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._entitiesToAdd = FastArray();
 
-  /**
-   * [FastArray description]
-   * @private
-   */
-  this._entitiesToRemove = FastArray();
+    /**
+     * Queue of entities ready to be removed on next tick.
+     *
+     * @private
+     * @name _entitiesToRemove
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._entitiesToRemove = FastArray();
 
-  /**
-   * [FastArray description]
-   * @param {[type]} {                 initialSize: 10 [description]
-   * @param {[type]} } [description]
-   */
-  this._systemsToAdd = FastArray({
-    initialSize: 10,
-  });
+    /**
+     * Queue of systems ready to be added on next tick.
+     *
+     * @private
+     * @name _systemsToAdd
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._systemsToAdd = FastArray({
+      initialSize: 10,
+    });
 
-  /**
-   * [FastArray description]
-   * @private
-   * @type {FastArray}
-   */
-  this._systemsToRemove = FastArray({
-    initialSize: 10,
-  });
+    /**
+     * Queue of systems ready to be removed on next tick.
+     *
+     * @private
+     * @name _systemsToRemove
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._systemsToRemove = FastArray({
+      initialSize: 10,
+    });
 
-  /**
-   * [_queries description]
-   * @private
-   * @type {Array}
-   */
-  this._queries = [];
+    /**
+     * Array of queries. Every query that was used is stored here and updated when engine state changes.
+     *
+     * @private
+     * @name _queries
+     * @memberof Engine#
+     * @type {Array}
+     */
+    this._queries = [];
 
-  /**
-   * [_entitiesCount description]
-   * @private
-   * @type {Number}
-   */
-  this._entitiesCount = 0;
+    /**
+     * Current number of entities active.
+     *
+     * @private
+     * @name _entitiesCount
+     * @memberof Engine#
+     * @type {Number}
+     */
+    this._entitiesCount = 0;
 
-  /**
-   * Indicates whether clearing is scheduled.
-   *
-   * @property _isClearingScheduled
-   * @private
-   * @type {Boolean}
-   */
-  this._isClearingScheduled = false;
+    /**
+     * Indicates whether clearing is scheduled.
+     *
+     * @private
+     * @name _isClearingScheduled
+     * @memberof Engine#
+     * @type {Boolean}
+     */
+    this._isClearingScheduled = false;
 
-  /**
-   * Indicates whether clearing was performed.
-   *
-   * @property _wasClearingPerformed
-   * @private
-   * @type {Boolean}
-   */
-  this._wasClearingPerformed = false;
+    /**
+     * Indicates whether clearing was performed.
+     *
+     * @private
+     * @name _wasClearingPerformed
+     * @memberof Engine#
+     * @type {Boolean}
+     */
+    this._wasClearingPerformed = false;
 
-  this.game = opts.game;
+    this.game = opts.game;
   },
   methods: {
-  /**
-   * [addEntity description]
-   * @param {[type]} nameOrEntity [description]
-   * @param {[type]} ...args      [description]
-   */
-  addEntity(entity) {
+    /**
+     * Adds entity to adding queue.
+     * If entity is new (not recycled), adds event listener for modifications.
+     *
+     * @memberof Engine#
+     * @param {Entity} entity entity to add
+     */
+    addEntity(entity) {
       if (!entity.isRecycled()) {
-      entity.on('queueModification', () => {
-        this._markModifiedEntity(entity);
+        entity.on('queueModification', () => {
+          this._markModifiedEntity(entity);
         });
-    }
+      }
 
       if (this.game.isRunning()) {
-    this._entitiesToAdd.push(entity);
+        this._entitiesToAdd.push(entity);
       } else {
         this._addEntity(entity);
       }
-  },
-  /**
-   * [removeEntity description]
-   * @param  {[type]} entity [description]
-   * @return {[type]}        [description]
-   */
-  removeEntity(entity) {
+    },
+    /**
+     * Adds entity to removing queue.
+     *
+     * @memberof Engine#
+     * @param {Entity} entity entity to remove
+     */
+    removeEntity(entity) {
       if (this.game.isRunning()) {
-    this._entitiesToRemove.push(entity);
+        this._entitiesToRemove.push(entity);
       } else {
         this._removeEntity();
       }
-  },
-  /**
-   * [addSystem description]
-   * @param {[type]} nameOrSystem [description]
-   * @param {[type]} ...args      [description]
-   */
-  addSystem(system) {
-    this._systemsToAdd.push(system);
-  },
-  /**
-   * [removeSystem description]
-   * @param  {[type]} systemOrName [description]
-   * @return {[type]}              [description]
-   */
-  removeSystem(systemOrType) {
-    let system;
+    },
+    /**
+     * Adds system to adding queue.
+     *
+     * @memberof Engine#
+     * @param {System} system to add
+     */
+    addSystem(system) {
+      this._systemsToAdd.push(system);
+    },
+    /**
+     * Adds system to removing queue.
+     *
+     * @memberof Engine#
+     * @param {String|System} systemOrType system instance or system type to remove
+     */
+    removeSystem(systemOrType) {
+      let system;
 
-    if (isStamp(systemOrType)) {
-      system = systemOrType;
-    } else if (isNonEmptyString(systemOrType)) {
-      system = this._systems.find(s => s.type === systemOrType);
-    }
+      if (isStamp(systemOrType)) {
+        system = systemOrType;
+      } else if (isNonEmptyString(systemOrType)) {
+        system = this._systems.find(s => s.type === systemOrType);
+      }
 
-    if (system) {
-      this._systemsToRemove.push(system);
-    }
-  },
-  /**
-   * [getEntities description]
-   * @param  {[type]} query [description]
-   * @return {[type]}       [description]
-   */
-  getEntities(query) {
-    if (this._queries.indexOf(query) === -1) {
-      this._initializeQuery(query);
-    }
+      if (system) {
+        this._systemsToRemove.push(system);
+      }
+    },
+    /**
+     * Gets entities matching query criterions.
+     *
+     * @memberof Engine#
+     * @param {Query} query query
+     * @return {Object} object with `entities` and `length` properties
+     */
+    getEntities(query) {
+      if (this._queries.indexOf(query) === -1) {
+        this._initializeQuery(query);
+      }
 
-    return query.getEntities();
-  },
-  /**
-   * [getAllEntities description]
-   * @return {[type]} [description]
-   */
-  getAllEntities() {
-    return this._entities;
-  },
-  /**
-   * [update description]
-   * @param  {[type]} ...args [description]
-   * @return {[type]}         [description]
-   */
-  update(...args) {
-    this._updateSystems(...args);
+      return query.getEntities();
+    },
+    /**
+     * Updates the engine:
+     * - updates systems (calls `onUpdate` method of every active system)
+     * - performs clearing, if scheduled
+     * - applies engine modifications (adding/removing entities/systems, updating queries)
+     *
+     * @memberof Engine#
+     * @fires Engine#clear
+     * @param {...Any} args arguments passed to systems `onUpdate` methods
+     */
+    update(...args) {
+      this._updateSystems(...args);
 
-    if (this._isClearingScheduled) {
-      this._performScheduledClearing();
-    }
+      if (this._isClearingScheduled) {
+        this._performScheduledClearing();
+      }
 
-    this._removeEntities();
-    this._addEntities();
-    this._modifyEntities();
-    this._removeSystems();
-    this._addSystems();
-    this._updateQueries();
+      this._removeEntities();
+      this._addEntities();
+      this._modifyEntities();
+      this._removeSystems();
+      this._addSystems();
+      this._updateQueries();
 
-    if (this._wasClearingPerformed) {
-      this.emit('clear');
+      if (this._wasClearingPerformed) {
+        /**
+         * Engine was cleared.
+         *
+         * @event Engine#clear
+         */
+        this.emit('clear');
 
-      this._wasClearingPerformed = false;
-      this._isClearingScheduled = false;
-    }
-  },
-  /**
-   * [clear description]
-   * @return {[type]} [description]
-   */
-  clear() {
-    this._isClearingScheduled = true;
-  },
-  _markModifiedEntity(entity) {
-    if (entity.id !== 0 && this._modifiedEntities.indexOf(entity) === -1) {
+        this._wasClearingPerformed = false;
+        this._isClearingScheduled = false;
+      }
+    },
+    /**
+     * Schedules clearing. Clearing is done on next frame.
+     *
+     * @memberof Engine#
+     */
+    clear() {
+      this._isClearingScheduled = true;
+    },
+    _markModifiedEntity(entity) {
+      if (entity.id !== 0 && this._modifiedEntities.indexOf(entity) === -1) {
         if (this.game.isRunning()) {
-      this._modifiedEntities.push(entity);
+          this._modifiedEntities.push(entity);
         } else {
           this._modifyEntity(entity);
         }
-    }
-  },
-  _updateSystems(...args) {
-    for (let i = 0; i < this._systems.length; i += 1) {
-      const system = this._systems.arr[i];
-
-      if (!system._disabled) {
-        system.onUpdate(...args);
       }
-    }
-  },
-  _removeEntities() {
-    while (this._entitiesToRemove.length) {
+    },
+    _updateSystems(...args) {
+      for (let i = 0; i < this._systems.length; i += 1) {
+        const system = this._systems.arr[i];
+
+        if (!system._disabled) {
+          system.onUpdate(...args);
+        }
+      }
+    },
+    _removeEntities() {
+      while (this._entitiesToRemove.length) {
         this._removeEntity(this._entitiesToRemove.pop());
       }
     },
@@ -285,9 +329,9 @@ const Engine = compose({
       this._entitiesCount -= 1;
 
       this.emit('entityRemove', entity);
-  },
-  _addEntities() {
-    while (this._entitiesToAdd.length) {
+    },
+    _addEntities() {
+      while (this._entitiesToAdd.length) {
         this._addEntity(this._entitiesToAdd.pop());
       }
     },
@@ -309,7 +353,7 @@ const Engine = compose({
       this._entitiesCount += 1;
 
       this.emit('entityAdd', entity);
-  },
+    },
     _modifyEntity(entity) {
       for (let i = 0; i < this._queries.length; i += 1) {
         const query = this._queries[i];
@@ -330,8 +374,8 @@ const Engine = compose({
     _modifyEntities() {
       while (this._modifiedEntities.length) {
         this._modifyEntity(this._modifiedEntities.pop());
-    }
-  },
+      }
+    },
     _addSystem(system) {
       let insertionIndex = 0;
       for (;insertionIndex < this._systems.length; insertionIndex += 1) {
@@ -345,8 +389,8 @@ const Engine = compose({
     _addSystems() {
       while (this._systemsToAdd.length) {
         this._addSystem(this._systemsToAdd.shift());
-    }
-  },
+      }
+    },
     _removeSystem(system) {
       const indexOfSystem = this._systems.indexOf(system);
 
@@ -359,20 +403,20 @@ const Engine = compose({
     _removeSystems() {
       while (this._systemsToRemove.length) {
         this._removeSystem(this._systemsToRemove.shift());
-    }
-  },
-  _updateQueries() {
-    for (let i = 0; i < this._queries.length; i += 1) {
-      this._queries[i].update(this._entities);
-    }
-  },
-  _performScheduledClearing() {
-    this._wasClearingPerformed = true;
-  },
-  _initializeQuery(query) {
-    query.initialize(this._entities);
+      }
+    },
+    _updateQueries() {
+      for (let i = 0; i < this._queries.length; i += 1) {
+        this._queries[i].update(this._entities);
+      }
+    },
+    _performScheduledClearing() {
+      this._wasClearingPerformed = true;
+    },
+    _initializeQuery(query) {
+      query.initialize(this._entities);
 
-    this._queries.push(query);
+      this._queries.push(query);
     },
   },
 }, EventEmitter);
