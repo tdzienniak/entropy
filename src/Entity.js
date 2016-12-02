@@ -103,9 +103,9 @@ const Entity = stampit({
     },
     applyModifications() {
       while (this._modifications.length) {
-        const modification = this._entitiesToAdd.shift();
+        const modification = this._modifications.shift();
 
-        modification.fn(...modification.args);
+        modification.fn();
       }
     },
     clearModifications() {
