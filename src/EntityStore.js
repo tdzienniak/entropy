@@ -67,7 +67,6 @@ const EntityStore = compose({
             type: descriptor.type,
           });
 
-          entity.initialize();
           entity.onCreate(...args);
 
           return entity;
