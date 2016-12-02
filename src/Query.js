@@ -71,6 +71,11 @@ const Query = stampit({
     this._entitiesIndex = FastArray();
     this._matchedEntities = FastArray();
 
+    this._result = {
+      entities: this._matchedEntities.arr,
+      length: 0,
+    };
+
     this._includes = includeBitset;
     this._excludes = excludeBitset;
   },
@@ -146,7 +151,8 @@ const Query = stampit({
      * @return {[type]} [description]
      */
     getEntities() {
-      return this._matchedEntities;
+      this._result.length = this._matchedEntities.length;
+      return this._result;
     },
     /**
      * [update description]
