@@ -44,6 +44,7 @@
   "main": "./build/Entropy.js",
   "scripts": {
     "test": "babel-tape-runner test/* | tap-spec",
+    "docs": "jsdoc -c jsdoc.json",
     "clean": "rimraf build/* && mkdirp build && rimraf dist/* && mkdirp dist",
     "babel": "babel src --out-dir build --presets=es2015",
     "prebublish": "npm run clean && npm run babel && npm run bundle:production && npm run bundle:development",
