@@ -53,7 +53,7 @@ npm test
 
 ## Docs
 
-Documentation is located in `docs` folder. You can also read it online: [http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.1/](http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.1/.
+Documentation is located in `docs` folder. You can also read it online: [http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.1/](http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.1/).
 
 ## Testers and people who have helped
 
