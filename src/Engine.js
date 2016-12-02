@@ -1,5 +1,4 @@
-
-import stampit from 'stampit';
+import { compose } from 'stampit';
 import isStamp from 'stampit/isStamp';
 import FastArray from 'fast-array';
 
@@ -8,7 +7,8 @@ import Pool from './Pool';
 import Query from './Query';
 import { isNonEmptyString } from './helpers';
 
-const Engine = stampit().init(function initEngine(opts) {
+const Engine = compose({
+  init(opts) {
   // entity ids start from 1, 0 means uninitailized or disabled entity
   let greatestEntityID = 1;
 
@@ -121,7 +121,8 @@ const Engine = stampit().init(function initEngine(opts) {
   this._wasClearingPerformed = false;
 
   this.game = opts.game;
-}).methods({
+  },
+  methods: {
   /**
    * [addEntity description]
    * @param {[type]} nameOrEntity [description]
@@ -359,7 +360,8 @@ const Engine = stampit().init(function initEngine(opts) {
     query.initialize(this._entities);
 
     this._queries.push(query);
+    },
   },
-}).compose(EventEmitter);
+}, EventEmitter);
 
 export default Engine;
