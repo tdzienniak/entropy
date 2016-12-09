@@ -1,6 +1,6 @@
 {
   "name": "entropy.js",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "author": "Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>",
   "description": "Framework for making games and not only games in entity system manner.",
   "keywords": [
