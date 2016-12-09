@@ -36,9 +36,9 @@ function registerEntities(game) {
 
       stage.addChild(sprite);
 
-      this.add("Position", x, y)
-        .add("Velocity", Math.round(Math.random() * 150), Math.round(Math.random() * 150))
-        .add("Sprite", sprite);
+      this.addComponent("Position", x, y)
+        .addComponent("Velocity", Math.round(Math.random() * 150), Math.round(Math.random() * 150))
+        .addComponent("Sprite", sprite);
     },
   });
 }
