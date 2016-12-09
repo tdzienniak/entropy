@@ -47,10 +47,11 @@
     "docs": "jsdoc -c jsdoc.json",
     "clean": "rimraf build/* && mkdirp build && rimraf dist/* && mkdirp dist",
     "babel": "babel src --out-dir build --presets=es2015",
-    "prebublish": "npm run clean && npm run babel && npm run bundle:production && npm run bundle:development",
+    "prebublish": "npm run clean && npm run babel && npm run bundle",
     "bundle:development": "webpack --config development.config.js",
     "bundle:production": "webpack --config production.config.js",
-    "bundle:watch": "npm run bundle:development -- --watch"
+    "bundle:watch": "npm run bundle:development -- --watch",
+    "bundle": "npm run bundle:production && npm run bundle:development"
   },
   "bugs": {
     "url": "https://github.com/tdzienniak/entropy/issues"
