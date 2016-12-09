@@ -1,6 +1,6 @@
 {
   "name": "entropy.js",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.3",
   "author": "Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>",
   "description": "Framework for making games and not only games in entity system manner.",
   "keywords": [
@@ -47,7 +47,7 @@
     "docs": "jsdoc -c jsdoc.json",
     "clean": "rimraf build/* && mkdirp build && rimraf dist/* && mkdirp dist",
     "babel": "babel src --out-dir build --presets=es2015",
-    "prebublish": "npm run clean && npm run babel && npm run bundle",
+    "prepublish": "npm run clean && npm run babel && npm run bundle",
     "bundle:development": "webpack --config development.config.js",
     "bundle:production": "webpack --config production.config.js",
     "bundle:watch": "npm run bundle:development -- --watch",
