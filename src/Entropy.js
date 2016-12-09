@@ -1,4 +1,4 @@
-import { compose } from 'stampit';
+import * as stampit from 'stampit';
 import { isObject } from './helpers';
 
 import EventEmitter from './EventEmitter';
@@ -45,7 +45,10 @@ console.log(...[
  *   y: 0,
  * })
  */
-const Entropy = compose(EventEmitter, {
+const Entropy = stampit.compose(EventEmitter, {
+  statics: {
+    stampit,
+  },
   /**
    * @constructs
    */
