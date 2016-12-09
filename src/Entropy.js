@@ -11,15 +11,7 @@ import EntityStore from './EntityStore';
 import ComponentStore from './ComponentStore';
 import SystemStore from './SystemStore';
 
-// welcome message
-console.log(...[
-  '%c %c %c Entropy 0.1.0 - Entity System Framework for JavaScript %c %c ',
-  'background: rgb(200, 200,200);',
-  'background: rgb(80, 80, 80);',
-  'color: white; background: black;',
-  'background: rgb(80, 80, 80);',
-  'background: rgb(200, 200, 200);',
-]);
+const PLUGINS = [];
 
 /**
  * Main framework factory method. This is the only factory, that needs to be called by user.
@@ -48,11 +40,26 @@ console.log(...[
 const Entropy = stampit.compose(EventEmitter, {
   statics: {
     stampit,
+    registerPlugin(factoryFunction) {
+      PLUGINS.push(factoryFunction);
+    },
   },
   /**
    * @constructs
    */
-  init(opts) {
+  init(config = {}) {
+    // welcome message
+    const styles = `
+      background: white;
+      display: block;
+      color: black;
+      box-shadow: 1px 1px 3px black;
+      padding: 5px;
+      text-align: center;
+      font-weight: bold;`;
+
+    console.log('%cEntropy 1.0.0-alpha.1 - Entity System Framework for JavaScript', styles);
+
     /**
      * Stores components for later reuse.
      *
@@ -116,11 +123,16 @@ const Entropy = stampit.compose(EventEmitter, {
       game: this,
     });
 
-    ['update'].forEach((eventName) => {
-      this.ticker.on(eventName, (...args) => {
-        this.engine[eventName](...args);
+    // initialize plugins
+    PLUGINS.forEach((factoryFunction) => {
+      this[factoryFunction.propName] = factoryFunction({
+        game: this,
+        config: config[factoryFunction.propName],
       });
     });
+
+    // update engine when ticker updates
+    this.ticker.on('update', (...args) => this.engine.update(...args));
 
     // Set the name of the hidden property and the change event for visibility
     let hidden;
@@ -144,7 +156,7 @@ const Entropy = stampit.compose(EventEmitter, {
       });
     }, false);
 
-    if (opts.pauseOnHide) {
+    if (config.pauseOnHide) {
       this.on('visibilityChange', (e) => {
         if (e[hidden]) {
           this.pause();
