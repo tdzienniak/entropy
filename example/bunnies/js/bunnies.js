@@ -60,7 +60,7 @@ function registerSystems(game) {
       var bunnies = this.game.getEntities(this.bunniesQuery);
 
       for (var i = 0; i < bunnies.length; i++) {
-        var bunny = bunnies.arr[i].cs;
+        var bunny = bunnies.entities[i].cs;
 
         //update position
         bunny.position.x += delta / 1000 * bunny.velocity.vx;
