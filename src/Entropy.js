@@ -2,7 +2,6 @@ import * as stampit from 'stampit';
 import { isObject } from './helpers';
 
 import EventEmitter from './EventEmitter';
-import State from './State';
 import Engine from './Engine';
 import Ticker from './Ticker';
 import Query from './Query';
@@ -104,15 +103,6 @@ const Entropy = stampit.compose(EventEmitter, {
       game: this,
     });
 
-   /**
-     * Instance of {@link State}.
-     *
-    * @memberof Entropy#
-    * @name state
-    * @type {State}
-     */
-    this.state = State();
-
     /**
      * Instance of Ticker class.
      *
@@ -134,36 +124,39 @@ const Entropy = stampit.compose(EventEmitter, {
     // update engine when ticker updates
     this.ticker.on('update', (...args) => this.engine.update(...args));
 
-    // Set the name of the hidden property and the change event for visibility
-    let hidden;
-    let visibilityChange;
+    // browser only code
+    if (typeof window !== 'undefined') {
+      // Set the name of the hidden property and the change event for visibility
+      let hidden;
+      let visibilityChange;
 
-    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
-      hidden = 'hidden';
-      visibilityChange = 'visibilitychange';
-    } else if (typeof document.msHidden !== 'undefined') {
-      hidden = 'msHidden';
-      visibilityChange = 'msvisibilitychange';
-    } else if (typeof document.webkitHidden !== 'undefined') {
-      hidden = 'webkitHidden';
-      visibilityChange = 'webkitvisibilitychange';
-    }
+      if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
+        hidden = 'hidden';
+        visibilityChange = 'visibilitychange';
+      } else if (typeof document.msHidden !== 'undefined') {
+        hidden = 'msHidden';
+        visibilityChange = 'msvisibilitychange';
+      } else if (typeof document.webkitHidden !== 'undefined') {
+        hidden = 'webkitHidden';
+        visibilityChange = 'webkitvisibilitychange';
+      }
 
-    document.addEventListener(visibilityChange, (e) => {
-      this.emit('visibilityChange', {
-        originalEvent: e,
-        hidden: document.hidden,
-      });
-    }, false);
+      document.addEventListener(visibilityChange, (e) => {
+        this.emit('visibilityChange', {
+          originalEvent: e,
+          hidden: document.hidden,
+        });
+      }, false);
 
-    if (config.pauseOnHide) {
-      this.on('visibilityChange', (e) => {
-        if (e[hidden]) {
-          this.pause();
-        } else {
-          this.resume();
-        }
-      })
+      if (config.pauseOnHide) {
+        this.on('visibilityChange', (e) => {
+          if (e[hidden]) {
+            this.pause();
+          } else {
+            this.resume();
+          }
+        });
+      }
     }
   },
   methods: {
