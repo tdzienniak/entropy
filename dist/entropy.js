@@ -47,9 +47,9 @@ var Entropy =
 
 	'use strict';
 
-	var _console;
-
 	var _stampit = __webpack_require__(1);
+
+	var stampit = _interopRequireWildcard(_stampit);
 
 	var _helpers = __webpack_require__(2);
 
@@ -57,15 +57,11 @@ var Entropy =
 
 	var _EventEmitter2 = _interopRequireDefault(_EventEmitter);
 
-	var _State = __webpack_require__(4);
-
-	var _State2 = _interopRequireDefault(_State);
-
-	var _Engine = __webpack_require__(5);
+	var _Engine = __webpack_require__(4);
 
 	var _Engine2 = _interopRequireDefault(_Engine);
 
-	var _Ticker = __webpack_require__(11);
+	var _Ticker = __webpack_require__(8);
 
 	var _Ticker2 = _interopRequireDefault(_Ticker);
 
@@ -73,22 +69,23 @@ var Entropy =
 
 	var _Query2 = _interopRequireDefault(_Query);
 
-	var _EntityStore = __webpack_require__(12);
+	var _EntityStore = __webpack_require__(11);
 
 	var _EntityStore2 = _interopRequireDefault(_EntityStore);
 
-	var _ComponentStore = __webpack_require__(139);
+	var _ComponentStore = __webpack_require__(138);
 
 	var _ComponentStore2 = _interopRequireDefault(_ComponentStore);
 
-	var _SystemStore = __webpack_require__(141);
+	var _SystemStore = __webpack_require__(140);
 
 	var _SystemStore2 = _interopRequireDefault(_SystemStore);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	// welcome message
-	(_console = console).log.apply(_console, ['%c %c %c Entropy 0.1.0 - Entity System Framework for JavaScript %c %c ', 'background: rgb(200, 200,200);', 'background: rgb(80, 80, 80);', 'color: white; background: black;', 'background: rgb(80, 80, 80);', 'background: rgb(200, 200, 200);']);
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	var PLUGINS = [];
 
 	/**
 	 * Main framework factory method. This is the only factory, that needs to be called by user.
@@ -114,12 +111,25 @@ var Entropy =
 	 *   y: 0,
 	 * })
 	 */
-	var Entropy = (0, _stampit.compose)(_EventEmitter2.default, {
+	var Entropy = stampit.compose(_EventEmitter2.default, {
+	  statics: {
+	    stampit: stampit,
+	    registerPlugin: function registerPlugin(factoryFunction) {
+	      PLUGINS.push(factoryFunction);
+	    }
+	  },
 	  /**
 	   * @constructs
 	   */
-	  init: function init(opts) {
+	  init: function init() {
 	    var _this = this;
+
+	    var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	    // welcome message
+	    var styles = '\n      background: white;\n      display: block;\n      color: black;\n      box-shadow: 1px 1px 3px black;\n      padding: 5px;\n      text-align: center;\n      font-weight: bold;';
+
+	    console.log('%cEntropy 1.0.0-alpha.1 - Entity System Framework for JavaScript', styles);
 
 	    /**
 	     * Stores components for later reuse.
@@ -166,15 +176,6 @@ var Entropy =
 	    });
 
 	    /**
-	      * Instance of {@link State}.
-	      *
-	     * @memberof Entropy#
-	     * @name state
-	     * @type {State}
-	      */
-	    this.state = (0, _State2.default)();
-
-	    /**
 	     * Instance of Ticker class.
 	     *
 	     * @property ticker
@@ -184,45 +185,57 @@ var Entropy =
 	      game: this
 	    });
 
-	    ['update'].forEach(function (eventName) {
-	      _this.ticker.on(eventName, function () {
-	        var _engine;
-
-	        (_engine = _this.engine)[eventName].apply(_engine, arguments);
+	    // initialize plugins
+	    PLUGINS.forEach(function (factoryFunction) {
+	      _this[factoryFunction.propName] = factoryFunction({
+	        game: _this,
+	        config: config[factoryFunction.propName]
 	      });
 	    });
 
-	    // Set the name of the hidden property and the change event for visibility
-	    var hidden = void 0;
-	    var visibilityChange = void 0;
+	    // update engine when ticker updates
+	    this.ticker.on('update', function () {
+	      var _engine;
 
-	    if (typeof document.hidden !== 'undefined') {
-	      // Opera 12.10 and Firefox 18 and later support
-	      hidden = 'hidden';
-	      visibilityChange = 'visibilitychange';
-	    } else if (typeof document.msHidden !== 'undefined') {
-	      hidden = 'msHidden';
-	      visibilityChange = 'msvisibilitychange';
-	    } else if (typeof document.webkitHidden !== 'undefined') {
-	      hidden = 'webkitHidden';
-	      visibilityChange = 'webkitvisibilitychange';
-	    }
+	      return (_engine = _this.engine).update.apply(_engine, arguments);
+	    });
 
-	    document.addEventListener(visibilityChange, function (e) {
-	      _this.emit('visibilityChange', {
-	        originalEvent: e,
-	        hidden: document.hidden
-	      });
-	    }, false);
+	    // browser only code
+	    if (typeof window !== 'undefined') {
+	      (function () {
+	        // Set the name of the hidden property and the change event for visibility
+	        var hidden = void 0;
+	        var visibilityChange = void 0;
 
-	    if (opts.pauseOnHide) {
-	      this.on('visibilityChange', function (e) {
-	        if (e[hidden]) {
-	          _this.pause();
-	        } else {
-	          _this.resume();
+	        if (typeof document.hidden !== 'undefined') {
+	          // Opera 12.10 and Firefox 18 and later support
+	          hidden = 'hidden';
+	          visibilityChange = 'visibilitychange';
+	        } else if (typeof document.msHidden !== 'undefined') {
+	          hidden = 'msHidden';
+	          visibilityChange = 'msvisibilitychange';
+	        } else if (typeof document.webkitHidden !== 'undefined') {
+	          hidden = 'webkitHidden';
+	          visibilityChange = 'webkitvisibilitychange';
 	        }
-	      });
+
+	        document.addEventListener(visibilityChange, function (e) {
+	          _this.emit('visibilityChange', {
+	            originalEvent: e,
+	            hidden: document.hidden
+	          });
+	        }, false);
+
+	        if (config.pauseOnHide) {
+	          _this.on('visibilityChange', function (e) {
+	            if (e[hidden]) {
+	              _this.pause();
+	            } else {
+	              _this.resume();
+	            }
+	          });
+	        }
+	      })();
 	    }
 	  },
 
@@ -413,6 +426,9 @@ var Entropy =
 	      if (stop) {
 	        this.emit('stop');
 	      }
+	    },
+	    isRunning: function isRunning() {
+	      return this.ticker.isRunning();
 	    }
 	  }
 	});
@@ -931,11 +947,13 @@ var Entropy =
 	var EventEmitter = (0, _stampit2.default)({
 	  init: function init() {
 	    /**
-	    * Object with registered event listeners. Keys are event names.
-	    *
-	    * @private
-	    * @property {Object} _events
-	    */
+	     * Object with registered event listeners. Keys are event names.
+	     *
+	     * @private
+	     * @memberof EventEmitter#
+	     * @name _events
+	     * @type Object
+	     */
 	    this._events = {};
 	    this._responding = true;
 	  },
@@ -1061,275 +1079,11 @@ var Entropy =
 
 	var _stampit = __webpack_require__(1);
 
-	var _stampit2 = _interopRequireDefault(_stampit);
-
-	var _helpers = __webpack_require__(2);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-	var State = (0, _stampit2.default)({
-	  deepProperties: {
-	    _states: {},
-	    _queue: [],
-	    _shifting: false,
-	    _currentState: {
-	      name: 'dummy',
-	      transitions: {},
-	      constArgs: []
-	    }
-	  },
-	  init: function init() {
-	    this._states = {};
-	    this._queue = [];
-	    this._shifting = false;
-	    this._currentState = {
-	      name: '__dummy',
-	      transitions: {},
-	      constArgs: []
-	    };
-	  },
-
-	  methods: {
-	    /**
-	     * Registers new state. Registered states are shared between State instances.
-	     * State methods are asynchronous. Their last argument is always a callback function, that must be called
-	     * when the function finishes. This is handy when you want implement smooth transitions
-	     * between states using animations (for example, jQuery animations), that are very often asynchronous.
-	     *
-	     * @example
-	     *     let machinka = Taste();
-	     *
-	     *     mackinka.feed({
-	     *         name: "initialize",
-	     *         initialize: function (done) {
-	     *             console.log('State initialized.');
-	     *
-	     *             return done();
-	     *         },
-	     *         enter: function (done) {
-	     *             console.log('State entered.');
-	     *
-	     *             return done();
-	     *         },
-	     *         exit: function (done) {
-	     *             console.log('State exited.');
-	     *
-	     *             return done();
-	     *         },
-	     *         transitions: {
-	     *             menu: function (game, nextState, done) {
-	     *                 console.log('Transitioning from `initialize` to `menu`.');
-	     *
-	     *                 return done();
-	     *             }
-	     *         }
-	     *     });
-	     *
-	     *     mackinka.change('initialize');
-	     * @method feed
-	     * @chainable
-	     * @param {Object} state state object (see example)
-	     * @return {Taste} Taste instance
-	     */
-	    define: function define(state) {
-	      this._states[state.name] = Object.assign({}, state, {
-	        _initialized: false,
-	        manager: this,
-	        transitions: state.transitions || {},
-	        constArgs: state.constArgs || []
-	      });
-
-	      return this;
-	    },
-
-	    /**
-	     * Changes state to one identified by `name` parameter.
-	     * Changing state process looks roughly like this:
-	     *  1. calling current state's `exit` method (if present)
-	     *  2. calling next state's `initialize` method (if present and state wasn't initialized)
-	     *  3. calling transition function (if present)
-	     *  4. calling next state's `enter` method (if present)
-	     *
-	     * Transition functions are called when transitionig from one state to another. They are called after current state
-	     * `exit` method and before next state's `enter` method. If the next state is not initailizes, its `initialize` method is
-	     * called after `exit` and before transition method. Transition arguments are (in order):
-	     *  - next state object
-	     *  - [here come constant state arguments]
-	     *  - [here come arguments given after `stateName`]
-	     *  - done callback
-	     *
-	     * @method change
-	     * @chainable
-	     * @param {String}  stateName   state to change into
-	     * @param {Any}     ...args     addidtional parameters will be applied to transition method
-	     * @return {Taste}              Taste instance
-	     */
-	    change: function change(stateName) {
-	      var _this = this;
-
-	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-	        args[_key - 1] = arguments[_key];
-	      }
-
-	      if (!(0, _helpers.isString)(stateName) || !(stateName in this._states)) {
-	        return this;
-	      }
-
-	      var nextState = this._states[stateName];
-	      var doneCallback = function doneCallback() {
-	        return _this._shift();
-	      };
-
-	      this._queue.push({
-	        fn: function fn() {
-	          return _this._exitState(_this._currentState, doneCallback);
-	        }
-	      });
-
-	      if (!nextState._initialized) {
-	        this._queue.push({
-	          fn: function fn() {
-	            return _this._initializeState(nextState, doneCallback);
-	          }
-	        });
-
-	        this._queue.push({
-	          fn: function fn() {
-	            return _this._setInitialized(nextState, doneCallback);
-	          }
-	        });
-	      }
-
-	      this._queue.push({
-	        fn: function fn() {
-	          return _this._doTransition.apply(_this, [_this._currentState, stateName, nextState].concat(args, [doneCallback]));
-	        }
-	      });
-
-	      this._queue.push({
-	        fn: function fn() {
-	          return _this._enterState(nextState, doneCallback);
-	        }
-	      });
-
-	      this._queue.push({
-	        fn: function fn() {
-	          return _this._setCurrentState(nextState, doneCallback);
-	        }
-	      });
-
-	      if (!this._shifting) {
-	        this._shift();
-	      }
-
-	      return this;
-	    },
-
-	    /**
-	     * Returns name of the current state.
-	     *
-	     * @method current
-	     * @return {String} name of the current state
-	     */
-	    current: function current() {
-	      return this._currentState.name;
-	    },
-
-	    /**
-	     * Checks whether state machine is in state identified by name.
-	     *
-	     * @method isIn
-	     * @param  {String}  stateName state's name
-	     * @return {Boolean}
-	     */
-	    isIn: function isIn(stateName) {
-	      return stateName === this._currentState.name;
-	    },
-	    _shift: function _shift() {
-	      var queueHead = this._queue.shift();
-
-	      if (queueHead == null) {
-	        this._shifting = false;
-
-	        return;
-	      }
-
-	      this._shifting = true;
-
-	      return queueHead.fn();
-	    },
-	    _setCurrentState: function _setCurrentState(state, done) {
-	      this._currentState = state;
-
-	      return done();
-	    },
-	    _setInitialized: function _setInitialized(state, done) {
-	      state._initialized = true;
-
-	      return done();
-	    },
-	    _initializeState: function _initializeState(state, done) {
-	      if ((0, _helpers.isFunction)(state.initialize)) {
-	        return state.initialize.apply(state, _toConsumableArray(state.constArgs).concat([done]));
-	      }
-
-	      return done();
-	    },
-	    _enterState: function _enterState(state, done) {
-	      if ((0, _helpers.isFunction)(state.enter)) {
-	        return state.enter.apply(state, _toConsumableArray(state.constArgs).concat([done]));
-	      }
-
-	      return done();
-	    },
-	    _exitState: function _exitState(state, done) {
-	      if ((0, _helpers.isFunction)(state.exit)) {
-	        return state.exit.apply(state, _toConsumableArray(state.constArgs).concat([done]));
-	      }
-
-	      return done();
-	    },
-	    _doTransition: function _doTransition(currentState, nextStateName, nextState) {
-	      for (var _len2 = arguments.length, args = Array(_len2 > 3 ? _len2 - 3 : 0), _key2 = 3; _key2 < _len2; _key2++) {
-	        args[_key2 - 3] = arguments[_key2];
-	      }
-
-	      if (nextStateName in currentState.transitions && (0, _helpers.isFunction)(currentState.transitions[nextStateName])) {
-	        var _currentState$transit;
-
-	        return (_currentState$transit = currentState.transitions)[nextStateName].apply(_currentState$transit, [nextState].concat(_toConsumableArray(nextState.constArgs), args));
-	      }
-
-	      var done = args.pop();
-
-	      return done();
-	    }
-	  }
-	});
-
-	exports.default = State;
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _stampit = __webpack_require__(1);
-
-	var _stampit2 = _interopRequireDefault(_stampit);
-
-	var _isStamp = __webpack_require__(6);
+	var _isStamp = __webpack_require__(5);
 
 	var _isStamp2 = _interopRequireDefault(_isStamp);
 
-	var _fastArray = __webpack_require__(7);
+	var _fastArray = __webpack_require__(6);
 
 	var _fastArray2 = _interopRequireDefault(_fastArray);
 
@@ -1337,387 +1091,444 @@ var Entropy =
 
 	var _EventEmitter2 = _interopRequireDefault(_EventEmitter);
 
-	var _Pool = __webpack_require__(8);
+	var _Pool = __webpack_require__(7);
 
 	var _Pool2 = _interopRequireDefault(_Pool);
-
-	var _Query = __webpack_require__(9);
-
-	var _Query2 = _interopRequireDefault(_Query);
 
 	var _helpers = __webpack_require__(2);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var Engine = (0, _stampit2.default)().init(function initEngine(opts) {
-	  // entity ids start from 1, 0 means uninitailized or disabled entity
-	  var greatestEntityID = 1;
+	/**
+	 * This module manages the state of entities, components and systems. The heart of Entropy.
+	 *
+	 * @class Engine
+	 * @extends EventEmitter
+	 */
+	var Engine = (0, _stampit.compose)({
+	  init: function init(opts) {
+	    // entity ids start from 1, 0 means uninitailized or disabled entity
+	    var greatestEntityID = 1;
 
-	  /**
-	   * [Pool description]
-	   * @param {[type]} {    _new( [description]
-	   */
-	  this._entitiesIdsPool = (0, _Pool2.default)({
-	    _new: function _new() {
-	      return greatestEntityID++;
-	    }
-	  });
-
-	  /**
-	   * Systems that are processed every tick.
-	   *
-	   * @property _systems
-	   * @private
-	   * @type FastArray
-	   */
-	  this._systems = (0, _fastArray2.default)({
-	    initialSize: 10
-	  });
-
-	  /**
-	   * Array with entities. Array index corresponds to ID of an entity.
-	   * First element is empty (equals 0), because entity IDs start from 1.
-	   * Entity with `id` property equal 0 is _officially_ not present
-	   * in the system (it can be for example present in the pool or waiting
-	   * for addition to system).
-	   *
-	   * @property _entities
-	   * @private
-	   * @type Array
-	   */
-	  this._entities = (0, _fastArray2.default)();
-
-	  /**
-	   * [FastArray description]
-	   *
-	   * @property _modifiedEntities
-	   * @private
-	   * @type {FastArray}
-	   */
-	  this._modifiedEntities = (0, _fastArray2.default)();
-
-	  /**
-	   * [FastArray description]
-	   *
-	   * @property _entitiesToAdd
-	   * @private
-	   * @type {FastArray}
-	   */
-	  this._entitiesToAdd = (0, _fastArray2.default)();
-
-	  /**
-	   * [FastArray description]
-	   * @private
-	   */
-	  this._entitiesToRemove = (0, _fastArray2.default)();
-
-	  /**
-	   * [FastArray description]
-	   * @param {[type]} {                 initialSize: 10 [description]
-	   * @param {[type]} } [description]
-	   */
-	  this._systemsToAdd = (0, _fastArray2.default)({
-	    initialSize: 10
-	  });
-
-	  /**
-	   * [FastArray description]
-	   * @private
-	   * @type {FastArray}
-	   */
-	  this._systemsToRemove = (0, _fastArray2.default)({
-	    initialSize: 10
-	  });
-
-	  /**
-	   * [_queries description]
-	   * @private
-	   * @type {Array}
-	   */
-	  this._queries = [];
-
-	  /**
-	   * [_entitiesCount description]
-	   * @private
-	   * @type {Number}
-	   */
-	  this._entitiesCount = 0;
-
-	  /**
-	   * Indicates whether clearing is scheduled.
-	   *
-	   * @property _isClearingScheduled
-	   * @private
-	   * @type {Boolean}
-	   */
-	  this._isClearingScheduled = false;
-
-	  /**
-	   * Indicates whether clearing was performed.
-	   *
-	   * @property _wasClearingPerformed
-	   * @private
-	   * @type {Boolean}
-	   */
-	  this._wasClearingPerformed = false;
-
-	  this.game = opts.game;
-	}).methods({
-	  /**
-	   * [addEntity description]
-	   * @param {[type]} nameOrEntity [description]
-	   * @param {[type]} ...args      [description]
-	   */
-	  addEntity: function addEntity(entity) {
-	    var _this = this;
-
-	    if (!entity.isUsed()) {
-	      entity.on('queueModification', function () {
-	        _this._markModifiedEntity(entity);
-	      });
-	    }
-
-	    this._entitiesToAdd.push(entity);
-	  },
-
-	  /**
-	   * [removeEntity description]
-	   * @param  {[type]} entity [description]
-	   * @return {[type]}        [description]
-	   */
-	  removeEntity: function removeEntity(entity) {
-	    this._entitiesToRemove.push(entity);
-	  },
-
-
-	  /**
-	   * [addSystem description]
-	   * @param {[type]} nameOrSystem [description]
-	   * @param {[type]} ...args      [description]
-	   */
-	  addSystem: function addSystem(system) {
-	    this._systemsToAdd.push(system);
-	  },
-
-	  /**
-	   * [removeSystem description]
-	   * @param  {[type]} systemOrName [description]
-	   * @return {[type]}              [description]
-	   */
-	  removeSystem: function removeSystem(systemOrType) {
-	    var system = void 0;
-
-	    if ((0, _isStamp2.default)(systemOrType)) {
-	      system = systemOrType;
-	    } else if ((0, _helpers.isNonEmptyString)(systemOrType)) {
-	      system = this._systems.find(function (s) {
-	        return s.type === systemOrType;
-	      });
-	    }
-
-	    if (system) {
-	      this._systemsToRemove.push(system);
-	    }
-	  },
-
-	  /**
-	   * [getEntities description]
-	   * @param  {[type]} query [description]
-	   * @return {[type]}       [description]
-	   */
-	  getEntities: function getEntities(query) {
-	    if (this._queries.indexOf(query) === -1) {
-	      this._initializeQuery(query);
-	    }
-
-	    return query.getEntities();
-	  },
-
-	  /**
-	   * [getAllEntities description]
-	   * @return {[type]} [description]
-	   */
-	  getAllEntities: function getAllEntities() {
-	    return this._entities;
-	  },
-
-	  /**
-	   * [update description]
-	   * @param  {[type]} ...args [description]
-	   * @return {[type]}         [description]
-	   */
-	  update: function update() {
-	    this._updateSystems.apply(this, arguments);
-
-	    if (this._isClearingScheduled) {
-	      this._performScheduledClearing();
-	    }
-
-	    this._removeEntities();
-	    this._addEntities();
-	    this._modifyEntities();
-	    this._removeSystems();
-	    this._addSystems();
-	    this._updateQueries();
-
-	    if (this._wasClearingPerformed) {
-	      this.emit('clear');
-
-	      this._wasClearingPerformed = false;
-	      this._isClearingScheduled = false;
-	    }
-	  },
-
-	  /**
-	   * [clear description]
-	   * @return {[type]} [description]
-	   */
-	  clear: function clear() {
-	    this._isClearingScheduled = true;
-	  },
-	  _markModifiedEntity: function _markModifiedEntity(entity) {
-	    if (entity.id !== 0 && this._modifiedEntities.indexOf(entity) === -1) {
-	      this._modifiedEntities.push(entity);
-	    }
-	  },
-	  _updateSystems: function _updateSystems() {
-	    for (var i = 0; i < this._systems.length; i += 1) {
-	      var system = this._systems.arr[i];
-
-	      if (!system._disabled) {
-	        system.onUpdate.apply(system, arguments);
+	    /**
+	     * When entity is removed, it's ID can be reused by new entities. This pool stores old IDs ready to reuse.
+	     *
+	     * @private
+	     * @name _entitiesIdsPool
+	     * @memberof Engine#
+	     * @type Pool
+	     */
+	    this._entitiesIdsPool = (0, _Pool2.default)({
+	      _new: function _new() {
+	        return greatestEntityID++;
 	      }
-	    }
-	  },
-	  _removeEntities: function _removeEntities() {
-	    while (this._entitiesToRemove.length) {
-	      var entityToRemove = this._entitiesToRemove.pop();
+	    });
 
-	      if (entityToRemove.id === 0) {
-	        continue;
+	    /**
+	     * Systems that are processed every tick.
+	     *
+	     * @private
+	     * @name _systems
+	     * @memberof Engine#
+	     * @type FastArray
+	     */
+	    this._systems = (0, _fastArray2.default)({
+	      initialSize: 10
+	    });
+
+	    /**
+	     * Array with entities. Array index corresponds to ID of an entity.
+	     * First element is empty (equals 0), because entity IDs start from 1.
+	     * Entity with `id` property equal 0 is _officially_ not present
+	     * in the system (it can be for example present in the pool or waiting
+	     * for addition to system).
+	     *
+	     * @private
+	     * @name _entities
+	     * @memberof Engine#
+	     * @type FastArray
+	     */
+	    this._entities = (0, _fastArray2.default)();
+
+	    /**
+	     * List of modified entities.
+	     *
+	     * When entity is modified it is added to this list. After each frame modifications are applied to every entity on the list.
+	     *
+	     * @private
+	     * @name _modifiedEntities
+	     * @memberof Engine#
+	     * @type FastArray
+	     */
+	    this._modifiedEntities = (0, _fastArray2.default)();
+
+	    /**
+	     * Queue of entities ready to be added on next tick.
+	     *
+	     * @private
+	     * @name _entitiesToAdd
+	     * @memberof Engine#
+	     * @type FastArray
+	     */
+	    this._entitiesToAdd = (0, _fastArray2.default)();
+
+	    /**
+	     * Queue of entities ready to be removed on next tick.
+	     *
+	     * @private
+	     * @name _entitiesToRemove
+	     * @memberof Engine#
+	     * @type FastArray
+	     */
+	    this._entitiesToRemove = (0, _fastArray2.default)();
+
+	    /**
+	     * Queue of systems ready to be added on next tick.
+	     *
+	     * @private
+	     * @name _systemsToAdd
+	     * @memberof Engine#
+	     * @type FastArray
+	     */
+	    this._systemsToAdd = (0, _fastArray2.default)({
+	      initialSize: 10
+	    });
+
+	    /**
+	     * Queue of systems ready to be removed on next tick.
+	     *
+	     * @private
+	     * @name _systemsToRemove
+	     * @memberof Engine#
+	     * @type FastArray
+	     */
+	    this._systemsToRemove = (0, _fastArray2.default)({
+	      initialSize: 10
+	    });
+
+	    /**
+	     * Array of queries. Every query that was used is stored here and updated when engine state changes.
+	     *
+	     * @private
+	     * @name _queries
+	     * @memberof Engine#
+	     * @type {Array}
+	     */
+	    this._queries = [];
+
+	    /**
+	     * Current number of entities active.
+	     *
+	     * @private
+	     * @name _entitiesCount
+	     * @memberof Engine#
+	     * @type {Number}
+	     */
+	    this._entitiesCount = 0;
+
+	    /**
+	     * Indicates whether clearing is scheduled.
+	     *
+	     * @private
+	     * @name _isClearingScheduled
+	     * @memberof Engine#
+	     * @type {Boolean}
+	     */
+	    this._isClearingScheduled = false;
+
+	    /**
+	     * Indicates whether clearing was performed.
+	     *
+	     * @private
+	     * @name _wasClearingPerformed
+	     * @memberof Engine#
+	     * @type {Boolean}
+	     */
+	    this._wasClearingPerformed = false;
+
+	    this.game = opts.game;
+	  },
+
+	  methods: {
+	    /**
+	     * Adds entity to adding queue.
+	     * If entity is new (not recycled), adds event listener for modifications.
+	     *
+	     * @memberof Engine#
+	     * @param {Entity} entity entity to add
+	     */
+	    addEntity: function addEntity(entity) {
+	      var _this = this;
+
+	      if (!entity.isRecycled()) {
+	        entity.on('queueModification', function () {
+	          _this._markModifiedEntity(entity);
+	        });
+	      }
+
+	      if (this.game.isRunning()) {
+	        this._entitiesToAdd.push(entity);
+	      } else {
+	        this._addEntity(entity);
+	      }
+	    },
+
+	    /**
+	     * Adds entity to removing queue.
+	     *
+	     * @memberof Engine#
+	     * @param {Entity} entity entity to remove
+	     */
+	    removeEntity: function removeEntity(entity) {
+	      if (this.game.isRunning()) {
+	        this._entitiesToRemove.push(entity);
+	      } else {
+	        this._removeEntity();
+	      }
+	    },
+
+	    /**
+	     * Adds system to adding queue.
+	     *
+	     * @memberof Engine#
+	     * @param {System} system to add
+	     */
+	    addSystem: function addSystem(system) {
+	      this._systemsToAdd.push(system);
+	    },
+
+	    /**
+	     * Adds system to removing queue.
+	     *
+	     * @memberof Engine#
+	     * @param {String|System} systemOrType system instance or system type to remove
+	     */
+	    removeSystem: function removeSystem(systemOrType) {
+	      var system = void 0;
+
+	      if ((0, _isStamp2.default)(systemOrType)) {
+	        system = systemOrType;
+	      } else if ((0, _helpers.isNonEmptyString)(systemOrType)) {
+	        system = this._systems.find(function (s) {
+	          return s.type === systemOrType;
+	        });
+	      }
+
+	      if (system) {
+	        this._systemsToRemove.push(system);
+	      }
+	    },
+
+	    /**
+	     * Gets entities matching query criterions.
+	     *
+	     * @memberof Engine#
+	     * @param {Query} query query
+	     * @return {Object} object with `entities` and `length` properties
+	     */
+	    getEntities: function getEntities(query) {
+	      if (this._queries.indexOf(query) === -1) {
+	        this._initializeQuery(query);
+	      }
+
+	      return query.getEntities();
+	    },
+
+	    /**
+	     * Updates the engine:
+	     * - updates systems (calls `onUpdate` method of every active system)
+	     * - performs clearing, if scheduled
+	     * - applies engine modifications (adding/removing entities/systems, updating queries)
+	     *
+	     * @memberof Engine#
+	     * @fires Engine#clear
+	     * @param {...Any} args arguments passed to systems `onUpdate` methods
+	     */
+	    update: function update() {
+	      this._updateSystems.apply(this, arguments);
+
+	      if (this._isClearingScheduled) {
+	        this._performScheduledClearing();
+	      }
+
+	      this._removeEntities();
+	      this._addEntities();
+	      this._modifyEntities();
+	      this._removeSystems();
+	      this._addSystems();
+	      this._updateQueries();
+
+	      if (this._wasClearingPerformed) {
+	        /**
+	         * Engine was cleared.
+	         *
+	         * @event Engine#clear
+	         */
+	        this.emit('clear');
+
+	        this._wasClearingPerformed = false;
+	        this._isClearingScheduled = false;
+	      }
+	    },
+
+	    /**
+	     * Schedules clearing. Clearing is done on next frame.
+	     *
+	     * @memberof Engine#
+	     */
+	    clear: function clear() {
+	      this._isClearingScheduled = true;
+	    },
+	    _markModifiedEntity: function _markModifiedEntity(entity) {
+	      if (entity.id !== 0 && this._modifiedEntities.indexOf(entity) === -1) {
+	        if (this.game.isRunning()) {
+	          this._modifiedEntities.push(entity);
+	        } else {
+	          this._modifyEntity(entity);
+	        }
+	      }
+	    },
+	    _updateSystems: function _updateSystems() {
+	      for (var i = 0; i < this._systems.length; i += 1) {
+	        var system = this._systems.arr[i];
+
+	        if (!system._disabled) {
+	          system.onUpdate.apply(system, arguments);
+	        }
+	      }
+	    },
+	    _removeEntities: function _removeEntities() {
+	      while (this._entitiesToRemove.length) {
+	        this._removeEntity(this._entitiesToRemove.pop());
+	      }
+	    },
+	    _removeEntity: function _removeEntity(entity) {
+	      if (entity.id === 0) {
+	        return;
 	      }
 
 	      for (var i = 0; i < this._queries.length; i += 1) {
 	        var query = this._queries[i];
 
-	        if (query.satisfiedBy(entityToRemove)) {
-	          query.removeFromIndex(entityToRemove.id);
+	        if (query.satisfiedBy(entity)) {
+	          query.removeFromIndex(entity.id);
 	        }
 	      }
 
-	      entityToRemove.onRemove(entityToRemove);
+	      entity.onRemove(entity);
 
 	      // remove entity from global index
-	      this._entities.unsetAtIndex(entityToRemove.id);
+	      this._entities.unsetAtIndex(entity.id);
 
 	      // send unused entity ID to pool for later reuse
-	      this._entitiesIdsPool.free(entityToRemove.id);
+	      this._entitiesIdsPool.free(entity.id);
 
-	      entityToRemove.removeAllComponents();
+	      entity.removeAllComponents();
 
 	      // id = 0 indicates inactive entity
-	      entityToRemove.id = 0;
+	      entity.id = 0;
 
-	      this.game.entity.free(entityToRemove);
+	      this.game.entity.free(entity);
 
 	      this._entitiesCount -= 1;
 
-	      this.emit('entityRemove', entityToRemove);
-	    }
-	  },
-	  _addEntities: function _addEntities() {
-	    while (this._entitiesToAdd.length) {
-	      var entityToAdd = this._entitiesToAdd.pop();
-
+	      this.emit('entityRemove', entity);
+	    },
+	    _addEntities: function _addEntities() {
+	      while (this._entitiesToAdd.length) {
+	        this._addEntity(this._entitiesToAdd.pop());
+	      }
+	    },
+	    _addEntity: function _addEntity(entity) {
 	      var newEntityId = this._entitiesIdsPool.allocate();
 
-	      entityToAdd.id = newEntityId;
+	      entity.id = newEntityId;
 
-	      this._entities.insertAtIndex(newEntityId, entityToAdd);
+	      this._entities.insertAtIndex(newEntityId, entity);
 
 	      for (var i = 0; i < this._queries.length; i += 1) {
 	        var query = this._queries[i];
 
-	        if (query.satisfiedBy(entityToAdd)) {
+	        if (query.satisfiedBy(entity)) {
 	          query.addToIndex(newEntityId);
 	        }
 	      }
 
-	      entityToAdd.emit('add', entityToAdd);
-
 	      this._entitiesCount += 1;
 
-	      this.emit('entityAdd', entityToAdd);
-	    }
-	  },
-	  _modifyEntities: function _modifyEntities() {
-	    while (this._modifiedEntities.length) {
-	      var modifiedEntity = this._modifiedEntities.pop();
-
+	      this.emit('entityAdd', entity);
+	    },
+	    _modifyEntity: function _modifyEntity(entity) {
 	      for (var i = 0; i < this._queries.length; i += 1) {
 	        var query = this._queries[i];
 
-	        var satisfiedBeforeModification = query.satisfiedBy(modifiedEntity);
+	        var satisfiedBeforeModification = query.satisfiedBy(entity);
 
-	        modifiedEntity.applyModifications();
+	        entity.applyModifications();
 
-	        var satisfiesAfterModification = query.satisfiedBy(modifiedEntity);
+	        var satisfiesAfterModification = query.satisfiedBy(entity);
 
 	        if (!satisfiedBeforeModification && satisfiesAfterModification) {
-	          query.addToIndex(modifiedEntity.id);
+	          query.addToIndex(entity.id);
 	        } else if (satisfiedBeforeModification && !satisfiesAfterModification) {
-	          query.removeFromIndex(modifiedEntity.id);
+	          query.removeFromIndex(entity.id);
 	        }
 	      }
-	    }
-	  },
-	  _addSystems: function _addSystems() {
-	    while (this._systemsToAdd.length) {
-	      var systemToAdd = this._systemsToAdd.shift();
-
+	    },
+	    _modifyEntities: function _modifyEntities() {
+	      while (this._modifiedEntities.length) {
+	        this._modifyEntity(this._modifiedEntities.pop());
+	      }
+	    },
+	    _addSystem: function _addSystem(system) {
 	      var insertionIndex = 0;
 	      for (; insertionIndex < this._systems.length; insertionIndex += 1) {
-	        if (this._systems.arr[insertionIndex].priority > systemToAdd.priority) {
+	        if (this._systems.arr[insertionIndex].priority > system.priority) {
 	          break;
 	        }
 	      }
 
-	      this._systems.insertBefore(insertionIndex, systemToAdd);
-	    }
-	  },
-	  _removeSystems: function _removeSystems() {
-	    while (this._systemsToRemove.length) {
-	      var systemToRemove = this._systemsToRemove.shift();
-	      var indexOfSystem = this._systems.indexOf(systemToRemove);
+	      this._systems.insertBefore(insertionIndex, system);
+	    },
+	    _addSystems: function _addSystems() {
+	      while (this._systemsToAdd.length) {
+	        this._addSystem(this._systemsToAdd.shift());
+	      }
+	    },
+	    _removeSystem: function _removeSystem(system) {
+	      var indexOfSystem = this._systems.indexOf(system);
 
 	      if (indexOfSystem !== -1) {
-	        systemToRemove.onRemove();
+	        system.onRemove();
 
-	        this._systems.unsetAtIndex(indexOfSystem);
+	        this._systems.removeAtIndex(indexOfSystem);
 	      }
-	    }
+	    },
+	    _removeSystems: function _removeSystems() {
+	      while (this._systemsToRemove.length) {
+	        this._removeSystem(this._systemsToRemove.shift());
+	      }
+	    },
+	    _updateQueries: function _updateQueries() {
+	      for (var i = 0; i < this._queries.length; i += 1) {
+	        this._queries[i].update(this._entities);
+	      }
+	    },
+	    _performScheduledClearing: function _performScheduledClearing() {
+	      this._wasClearingPerformed = true;
+	    },
+	    _initializeQuery: function _initializeQuery(query) {
+	      query.initialize(this._entities);
 
-	    this._systems.compact();
-	  },
-	  _updateQueries: function _updateQueries() {
-	    for (var i = 0; i < this._queries.length; i += 1) {
-	      this._queries[i].update(this._entities);
+	      this._queries.push(query);
 	    }
-	  },
-	  _performScheduledClearing: function _performScheduledClearing() {
-	    this._wasClearingPerformed = true;
-	  },
-	  _initializeQuery: function _initializeQuery(query) {
-	    query.initialize(this._entities);
-
-	    this._queries.push(query);
 	  }
-	}).compose(_EventEmitter2.default);
+	}, _EventEmitter2.default);
 
 	exports.default = Engine;
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1742,7 +1553,7 @@ var Entropy =
 	//# sourceMappingURL=isStamp.js.map
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1966,7 +1777,7 @@ var Entropy =
 	exports.default = FastArray;
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1979,7 +1790,7 @@ var Entropy =
 
 	var _stampit2 = _interopRequireDefault(_stampit);
 
-	var _fastArray = __webpack_require__(7);
+	var _fastArray = __webpack_require__(6);
 
 	var _fastArray2 = _interopRequireDefault(_fastArray);
 
@@ -2026,664 +1837,7 @@ var Entropy =
 	exports.default = Pool;
 
 /***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _helpers = __webpack_require__(2);
-
-	var _stampit = __webpack_require__(1);
-
-	var _stampit2 = _interopRequireDefault(_stampit);
-
-	var _fastbitset = __webpack_require__(10);
-
-	var _fastbitset2 = _interopRequireDefault(_fastbitset);
-
-	var _fastArray = __webpack_require__(7);
-
-	var _fastArray2 = _interopRequireDefault(_fastArray);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	/**
-	 * Used to perform matching of entities.
-	 * Only parameter is an array of component names to include or object with `include` and/or `exclude` properties,
-	 * witch are arrays of component names to respectively include and/or exclude. Object can also have `name` property,
-	 * that will match entities with given name.
-	 *
-	 * @example
-	 *     //matches entities with 'Position' and 'Velocity' components
-	 *     var q1 = game.createQuery(["Position", "Velocity"]);
-	 *
-	 *     //matches entities with 'Position' and 'Velocity' components and without 'Sprite' component
-	 *     var q2 = new Entropy.Query({
-	 *         include: ["Position", "Velocity"],
-	 *         exclude: ["Sprite"]
-	 *     });
-	 *
-	 *     //matches entities with name 'Ball'
-	 *     var q3 = new Entropy.Query({
-	 *         name: "Ball"
-	 *     });
-	 *
-	 * @class Query
-	 * @constructor
-	 * @param {Object|Array} query query conditions
-	 */
-	var Query = (0, _stampit2.default)({
-	  deepProps: {
-	    _shouldUpdate: false
-	  },
-	  init: function init(opts) {
-	    var include = [];
-	    var exclude = [];
-	    var includeBitset = void 0;
-	    var excludeBitset = void 0;
-
-	    if ((0, _helpers.isArray)(opts.criterions)) {
-	      include = opts.criterions;
-	    } else if ((0, _helpers.isObject)(opts.criterions)) {
-	      if ((0, _helpers.isNonEmptyString)(opts.criterions.entityType)) {
-	        this._matchType = opts.criterions.entityType;
-	      }
-
-	      if ((0, _helpers.isArray)(opts.criterions.include)) {
-	        include = opts.criterions.include;
-	      }
-
-	      if ((0, _helpers.isArray)(opts.criterions.exclude)) {
-	        exclude = opts.criterions.exclude;
-	      }
-	    }
-
-	    if (include.length > 0) {
-	      includeBitset = new _fastbitset2.default();
-	      for (var i = 0; i < include.length; i += 1) {
-	        includeBitset.add(opts.componentsIdsMap[include[i]]);
-	      }
-	    }
-
-	    if (exclude) {
-	      excludeBitset = new _fastbitset2.default();
-	      for (var e = 0; e < exclude.length; e += 1) {
-	        excludeBitset.add(opts.componentsIdsMap[exclude[e]]);
-	      }
-	    }
-
-	    this._entitiesIndex = (0, _fastArray2.default)();
-	    this._matchedEntities = (0, _fastArray2.default)();
-
-	    this._includes = includeBitset;
-	    this._excludes = excludeBitset;
-	  },
-
-	  methods: {
-	    /**
-	     * [initialize description]
-	     * @param  {[type]} allEntities [description]
-	     * @return {[type]}             [description]
-	     */
-	    initialize: function initialize(allEntities) {
-	      for (var i = 0; i < allEntities.length; i += 1) {
-	        var entity = allEntities.arr[i];
-
-	        if (entity !== 0 && this.satisfiedBy(entity)) {
-	          this.addToIndex(entity.id);
-	        }
-	      }
-
-	      this.update(allEntities);
-	    },
-
-	    /**
-	     * [satisfiedBy description]
-	     * @param  {[type]} entity [description]
-	     * @return {[type]}        [description]
-	     */
-	    satisfiedBy: function satisfiedBy(entity) {
-	      var satisfies = true;
-
-	      if ((0, _helpers.isString)(this._matchType)) {
-	        satisfies = entity.type === this._matchType;
-	      }
-
-	      if (satisfies && this._includes) {
-	        satisfies = this._includes.intersection_size(entity.bitset) === this._includes.size();
-	      }
-
-	      if (satisfies && this._excludes) {
-	        satisfies = this._excludes.intersection_size(entity.bitset) === 0;
-	      }
-
-	      return satisfies;
-	    },
-
-	    /**
-	     * [shouldUpdate description]
-	     * @return {[type]} [description]
-	     */
-	    shouldUpdate: function shouldUpdate() {
-	      return this._shouldUpdate;
-	    },
-
-	    /**
-	     * [addToIndex description]
-	     * @param {[type]} entityId [description]
-	     */
-	    addToIndex: function addToIndex(entityId) {
-	      this._shouldUpdate = true;
-	      this._entitiesIndex.push(entityId);
-	    },
-
-	    /**
-	     * [removeFromIndex description]
-	     * @param  {[type]} entityId [description]
-	     * @return {[type]}          [description]
-	     */
-	    removeFromIndex: function removeFromIndex(entityId) {
-	      var indexOfEntity = this._entitiesIndex.indexOf(entityId);
-
-	      if (indexOfEntity !== -1) {
-	        this._shouldUpdate = true;
-	        this._entitiesIndex.unsetAtIndex(indexOfEntity);
-	      }
-	    },
-
-	    /**
-	     * [getEntities description]
-	     * @return {[type]} [description]
-	     */
-	    getEntities: function getEntities() {
-	      return this._matchedEntities;
-	    },
-
-	    /**
-	     * [update description]
-	     * @param  {[type]} allEntities [description]
-	     * @return {[type]}             [description]
-	     */
-	    update: function update(allEntities) {
-	      if (!this._shouldUpdate) {
-	        return;
-	      }
-
-	      this._entitiesIndex.compact();
-	      this._matchedEntities.clear();
-
-	      for (var i = 0; i < this._entitiesIndex.length; i += 1) {
-	        var entityId = this._entitiesIndex.arr[i];
-
-	        this._matchedEntities.push(allEntities.arr[entityId]);
-	      }
-
-	      this._shouldUpdate = false;
-	    }
-	  }
-	});
-
-	exports.default = Query;
-
-/***/ },
-/* 10 */
-/***/ function(module, exports) {
-
-	/**
-	 * FastBitSet.js : a fast bit set implementation in JavaScript.
-	 * (c) the authors
-	 * Licensed under the Apache License, Version 2.0.
-	 *
-	 * Speed-optimized BitSet implementation for modern browsers and JavaScript engines.
-	 *
-	 * A BitSet is an ideal data structure to implement a Set when values being stored are
-	 * reasonably small integers. It can be orders of magnitude faster than a generic set implementation.
-	 * The FastBitSet implementation optimizes for speed, leveraging commonly available features
-	 * like typed arrays.
-	 *
-	 * Simple usage :
-	 *  // var FastBitSet = require("fastbitset");// if you use node
-	 *  var b = new FastBitSet();// initially empty
-	 *  b.add(1);// add the value "1"
-	 *  b.has(1); // check that the value is present! (will return true)
-	 *  b.add(2);
-	 *  console.log(""+b);// should display {1,2}
-	 *  b.add(10);
-	 *  b.array(); // would return [1,2,10]
-	 *
-	 *  var c = new FastBitSet([1,2,3,10]); // create bitset initialized with values 1,2,3,10
-	 *  c.difference(b); // from c, remove elements that are in b
-	 *  var su = c.union_size(b);// compute the size of the union (bitsets are unchanged)
-	 * c.union(b); // c will contain all elements that are in c and b
-	 * var s1 = c.intersection_size(b);// compute the size of the intersection (bitsets are unchanged)
-	 * c.intersection(b); // c will only contain elements that are in both c and b
-	 * c = b.clone(); // create a (deep) copy of b and assign it to c.
-	 * c.equals(b); // check whether c and b are equal
-	 *
-	 *   See README.md file for a more complete description.
-	 *
-	 * You can install the library under node with the command line
-	 *   npm install fastbitset
-	 */
-	'use strict';
-
-	function isIterable(obj) {
-	  if (obj == null) {
-	    return false;
-	  }
-	  return obj[Symbol.iterator] !== undefined;
-	}
-	// you can provide an iterable
-	function FastBitSet(iterable) {
-	  this.count = 0 | 0;
-	  this.words = new Array(8);
-	  for (var i = 0; i < this.words.length; i++) {
-	    this.words[i] = 0;
-	  }
-	  if (isIterable(iterable)) {
-	    var _iteratorNormalCompletion = true;
-	    var _didIteratorError = false;
-	    var _iteratorError = undefined;
-
-	    try {
-	      for (var _iterator = iterable[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	        var key = _step.value;
-
-	        this.add(key);
-	      }
-	    } catch (err) {
-	      _didIteratorError = true;
-	      _iteratorError = err;
-	    } finally {
-	      try {
-	        if (!_iteratorNormalCompletion && _iterator.return) {
-	          _iterator.return();
-	        }
-	      } finally {
-	        if (_didIteratorError) {
-	          throw _iteratorError;
-	        }
-	      }
-	    }
-	  }
-	}
-
-	// Add the value (Set the bit at index to true)
-	FastBitSet.prototype.add = function (index) {
-	  if (this.count << 5 <= index) {
-	    this.resize(index);
-	  }
-	  this.words[index >>> 5] |= 1 << index;
-	};
-
-	// If the value was not in the set, add it, otherwise remove it (flip bit at index)
-	FastBitSet.prototype.flip = function (index) {
-	  if (this.count << 5 <= index) {
-	    this.resize(index);
-	  }
-	  this.words[index >>> 5] ^= 1 << index;
-	};
-
-	// Remove all values, reset memory usage
-	FastBitSet.prototype.clear = function () {
-	  this.count = 0 | 0;
-	  this.words = new Array(count);
-	};
-
-	// Set the bit at index to false
-	FastBitSet.prototype.remove = function (index) {
-	  if (this.count << 5 <= index) {
-	    this.resize(index);
-	  }
-	  this.words[index >>> 5] &= ~(1 << index);
-	};
-
-	// Return true if no bit is set
-	FastBitSet.prototype.isEmpty = function (index) {
-	  var c = this.count;
-	  for (var i = 0; i < c; i++) {
-	    if (this.words[i] !== 0) return false;
-	  }
-	  return true;
-	};
-
-	// Is the value contained in the set? Is the bit at index true or false? Returns a boolean
-	FastBitSet.prototype.has = function (index) {
-	  return (this.words[index >>> 5] & 1 << index) !== 0;
-	};
-
-	// Reduce the memory usage to a minimum
-	FastBitSet.prototype.trim = function (index) {
-	  while (this.count > 0) {
-	    if (this.words[this.count - 1] === 0) this.count--;
-	  }
-	  this.words = this.words.slice(0, this.count);
-	};
-
-	// Resize the bitset so that we can write a value at index
-	FastBitSet.prototype.resize = function (index) {
-	  if (this.count << 5 > index) {
-	    return; //nothing to do
-	  }
-	  this.count = index + 32 >>> 5; // just what is needed
-	  if (this.words.length << 5 <= index) {
-	    var newwords = new Array(this.count << 1);
-	    var c = this.words.length;
-	    for (var i = 0; i < c; i++) {
-	      newwords[i] = this.words[i];
-	    }
-	    var cn = newwords.length;
-	    for (var i = c; i < cn; i++) {
-	      newwords[i] = 0;
-	    }
-	    this.words = newwords;
-	  }
-	};
-
-	// fast function to compute the Hamming weight of a 32-bit unsigned integer
-	FastBitSet.prototype.hammingWeight = function (v) {
-	  v -= v >>> 1 & 0x55555555; // works with signed or unsigned shifts
-	  v = (v & 0x33333333) + (v >>> 2 & 0x33333333);
-	  return (v + (v >>> 4) & 0xF0F0F0F) * 0x1010101 >>> 24;
-	};
-
-	// fast function to compute the Hamming weight of four 32-bit unsigned integers
-	FastBitSet.prototype.hammingWeight4 = function (v1, v2, v3, v4) {
-	  v1 -= v1 >>> 1 & 0x55555555; // works with signed or unsigned shifts
-	  v2 -= v2 >>> 1 & 0x55555555; // works with signed or unsigned shifts
-	  v3 -= v3 >>> 1 & 0x55555555; // works with signed or unsigned shifts
-	  v4 -= v4 >>> 1 & 0x55555555; // works with signed or unsigned shifts
-
-	  v1 = (v1 & 0x33333333) + (v1 >>> 2 & 0x33333333);
-	  v2 = (v2 & 0x33333333) + (v2 >>> 2 & 0x33333333);
-	  v3 = (v3 & 0x33333333) + (v3 >>> 2 & 0x33333333);
-	  v4 = (v4 & 0x33333333) + (v4 >>> 2 & 0x33333333);
-
-	  v1 = v1 + (v1 >>> 4) & 0xF0F0F0F;
-	  v2 = v2 + (v2 >>> 4) & 0xF0F0F0F;
-	  v3 = v3 + (v3 >>> 4) & 0xF0F0F0F;
-	  v4 = v4 + (v4 >>> 4) & 0xF0F0F0F;
-	  return (v1 + v2 + v3 + v4) * 0x1010101 >>> 24;
-	};
-
-	// How many values stored in the set? How many set bits?
-	FastBitSet.prototype.size = function () {
-	  var answer = 0;
-	  var c = this.count;
-	  var w = this.words;
-	  var i = 0;
-	  for (; i < c; i++) {
-	    answer += this.hammingWeight(w[i]);
-	  }
-	  return answer;
-	};
-
-	// Return an array with the set bit locations (values)
-	FastBitSet.prototype.array = function () {
-	  var answer = new Array(this.size());
-	  var pos = 0 | 0;
-	  var c = this.count | 0;
-	  for (var k = 0; k < c; ++k) {
-	    var w = this.words[k];
-	    while (w != 0) {
-	      var t = w & -w;
-	      answer[pos++] = (k << 5) + this.hammingWeight(t - 1 | 0);
-	      w ^= t;
-	    }
-	  }
-	  return answer;
-	};
-
-	// Return an array with the set bit locations (values)
-	FastBitSet.prototype.forEach = function (fnc) {
-	  var c = this.count | 0;
-	  for (var k = 0; k < c; ++k) {
-	    var w = this.words[k];
-	    while (w != 0) {
-	      var t = w & -w;
-	      fnc.call((k << 5) + this.hammingWeight(t - 1 | 0));
-	      w ^= t;
-	    }
-	  }
-	};
-
-	// Creates a copy of this bitmap
-	FastBitSet.prototype.clone = function () {
-	  var clone = Object.create(FastBitSet.prototype);
-	  clone.count = this.count;
-	  clone.words = this.words.slice();
-	  return clone;
-	};
-
-	// Check if this bitset intersects with another one,
-	// no bitmap is modified
-	FastBitSet.prototype.intersects = function (otherbitmap) {
-	  var newcount = Math.min(this.count, otherbitmap.count);
-	  for (var k = 0 | 0; k < newcount; ++k) {
-	    if ((this.words[k] & otherbitmap.words[k]) !== 0) return true;
-	  }
-	  return false;
-	};
-
-	// Computes the intersection between this bitset and another one,
-	// the current bitmap is modified  (and returned by the function)
-	FastBitSet.prototype.intersection = function (otherbitmap) {
-	  var newcount = Math.min(this.count, otherbitmap.count);
-	  var k = 0 | 0;
-	  for (; k + 7 < newcount; k += 8) {
-	    this.words[k] &= otherbitmap.words[k];
-	    this.words[k + 1] &= otherbitmap.words[k + 1];
-	    this.words[k + 2] &= otherbitmap.words[k + 2];
-	    this.words[k + 3] &= otherbitmap.words[k + 3];
-	    this.words[k + 4] &= otherbitmap.words[k + 4];
-	    this.words[k + 5] &= otherbitmap.words[k + 5];
-	    this.words[k + 6] &= otherbitmap.words[k + 6];
-	    this.words[k + 7] &= otherbitmap.words[k + 7];
-	  }
-	  for (; k < newcount; ++k) {
-	    this.words[k] &= otherbitmap.words[k];
-	  }
-	  var c = this.count;
-	  for (var k = newcount; k < c; ++k) {
-	    this.words[k] = 0;
-	  }
-	  this.count = newcount;
-	  return this;
-	};
-
-	// Computes the size of the intersection between this bitset and another one
-	FastBitSet.prototype.intersection_size = function (otherbitmap) {
-	  var newcount = Math.min(this.count, otherbitmap.count);
-	  var answer = 0 | 0;
-	  for (var k = 0 | 0; k < newcount; ++k) {
-	    answer += this.hammingWeight(this.words[k] & otherbitmap.words[k]);
-	  }
-
-	  return answer;
-	};
-
-	// Computes the intersection between this bitset and another one,
-	// a new bitmap is generated
-	FastBitSet.prototype.new_intersection = function (otherbitmap) {
-	  var answer = Object.create(FastBitSet.prototype);
-	  answer.count = Math.min(this.count, otherbitmap.count);
-	  answer.words = new Array(answer.count);
-	  var c = answer.count;
-	  var k = 0 | 0;
-	  for (; k + 7 < c; k += 8) {
-	    answer.words[k] = this.words[k] & otherbitmap.words[k];
-	    answer.words[k + 1] = this.words[k + 1] & otherbitmap.words[k + 1];
-	    answer.words[k + 2] = this.words[k + 2] & otherbitmap.words[k + 2];
-	    answer.words[k + 3] = this.words[k + 3] & otherbitmap.words[k + 3];
-	    answer.words[k + 4] = this.words[k + 4] & otherbitmap.words[k + 4];
-	    answer.words[k + 5] = this.words[k + 5] & otherbitmap.words[k + 5];
-	    answer.words[k + 6] = this.words[k + 6] & otherbitmap.words[k + 6];
-	    answer.words[k + 7] = this.words[k + 7] & otherbitmap.words[k + 7];
-	  }
-	  for (; k < c; ++k) {
-	    answer.words[k] = this.words[k] & otherbitmap.words[k];
-	  }
-	  return answer;
-	};
-
-	// Computes the intersection between this bitset and another one,
-	// the current bitmap is modified
-	FastBitSet.prototype.equals = function (otherbitmap) {
-	  var mcount = Math.min(this.count, otherbitmap.count);
-	  for (var k = 0 | 0; k < mcount; ++k) {
-	    if (this.words[k] != otherbitmap.words[k]) return false;
-	  }
-	  if (this.count < otherbitmap.count) {
-	    var c = otherbitmap.count;
-	    for (var k = this.count; k < c; ++k) {
-	      if (otherbitmap.words[k] != 0) return false;
-	    }
-	  } else if (otherbitmap.count < this.count) {
-	    var c = this.count;
-	    for (var k = otherbitmap.count; k < c; ++k) {
-	      if (this.words[k] != 0) return false;
-	    }
-	  }
-	  return true;
-	};
-
-	// Computes the difference between this bitset and another one,
-	// the current bitset is modified (and returned by the function)
-	FastBitSet.prototype.difference = function (otherbitmap) {
-	  var newcount = Math.min(this.count, otherbitmap.count);
-	  var k = 0 | 0;
-	  for (; k + 7 < newcount; k += 8) {
-	    this.words[k] &= ~otherbitmap.words[k];
-	    this.words[k + 1] &= ~otherbitmap.words[k + 1];
-	    this.words[k + 2] &= ~otherbitmap.words[k + 2];
-	    this.words[k + 3] &= ~otherbitmap.words[k + 3];
-	    this.words[k + 4] &= ~otherbitmap.words[k + 4];
-	    this.words[k + 5] &= ~otherbitmap.words[k + 5];
-	    this.words[k + 6] &= ~otherbitmap.words[k + 6];
-	    this.words[k + 7] &= ~otherbitmap.words[k + 7];
-	  }
-	  for (; k < newcount; ++k) {
-	    this.words[k] &= ~otherbitmap.words[k];
-	  }
-	  return this;
-	};
-
-	// Computes the size of the difference between this bitset and another one
-	FastBitSet.prototype.difference_size = function (otherbitmap) {
-	  var newcount = Math.min(this.count, otherbitmap.count);
-	  var answer = 0 | 0;
-	  var k = 0 | 0;
-	  for (; k < newcount; ++k) {
-	    answer += this.hammingWeight(this.words[k] & ~otherbitmap.words[k]);
-	  }
-	  var c = this.count;
-	  for (; k < c; ++k) {
-	    answer += this.hammingWeight(this.words[k]);
-	  }
-	  return answer;
-	};
-
-	// Returns a string representation
-	FastBitSet.prototype.toString = function () {
-	  return '{' + this.array().join(',') + '}';
-	};
-
-	// Computes the union between this bitset and another one,
-	// the current bitset is modified  (and returned by the function)
-	FastBitSet.prototype.union = function (otherbitmap) {
-	  var mcount = Math.min(this.count, otherbitmap.count);
-	  var k = 0 | 0;
-	  for (; k + 7 < mcount; k += 8) {
-	    this.words[k] |= otherbitmap.words[k];
-	    this.words[k + 1] |= otherbitmap.words[k + 1];
-	    this.words[k + 2] |= otherbitmap.words[k + 2];
-	    this.words[k + 3] |= otherbitmap.words[k + 3];
-	    this.words[k + 4] |= otherbitmap.words[k + 4];
-	    this.words[k + 5] |= otherbitmap.words[k + 5];
-	    this.words[k + 6] |= otherbitmap.words[k + 6];
-	    this.words[k + 7] |= otherbitmap.words[k + 7];
-	  }
-	  for (; k < mcount; ++k) {
-	    this.words[k] |= otherbitmap.words[k];
-	  }
-	  if (this.count < otherbitmap.count) {
-	    this.resize((otherbitmap.count << 5) - 1);
-	    var c = otherbitmap.count;
-	    for (var k = mcount; k < c; ++k) {
-	      this.words[k] = otherbitmap.words[k];
-	    }
-	    this.count = otherbitmap.count;
-	  }
-	  return this;
-	};
-
-	FastBitSet.prototype.new_union = function (otherbitmap) {
-	  var answer = Object.create(FastBitSet.prototype);
-	  answer.count = Math.max(this.count, otherbitmap.count);
-	  answer.words = new Array(answer.count);
-	  var mcount = Math.min(this.count, otherbitmap.count);
-	  var k = 0;
-	  for (; k + 7 < mcount; k += 8) {
-	    answer.words[k] = this.words[k] | otherbitmap.words[k];
-	    answer.words[k + 1] = this.words[k + 1] | otherbitmap.words[k + 1];
-	    answer.words[k + 2] = this.words[k + 2] | otherbitmap.words[k + 2];
-	    answer.words[k + 3] = this.words[k + 3] | otherbitmap.words[k + 3];
-	    answer.words[k + 4] = this.words[k + 4] | otherbitmap.words[k + 4];
-	    answer.words[k + 5] = this.words[k + 5] | otherbitmap.words[k + 5];
-	    answer.words[k + 6] = this.words[k + 6] | otherbitmap.words[k + 6];
-	    answer.words[k + 7] = this.words[k + 7] | otherbitmap.words[k + 7];
-	  }
-	  for (; k < mcount; ++k) {
-	    answer.words[k] = this.words[k] | otherbitmap.words[k];
-	  }
-	  var c = this.count;
-	  for (var k = mcount; k < c; ++k) {
-	    answer.words[k] = this.words[k];
-	  }
-	  var c2 = otherbitmap.count;
-	  for (var k = mcount; k < c2; ++k) {
-	    answer.words[k] = otherbitmap.words[k];
-	  }
-	  return answer;
-	};
-
-	// Computes the difference between this bitset and another one,
-	// a new bitmap is generated
-	FastBitSet.prototype.new_difference = function (otherbitmap) {
-	  return this.clone().difference(otherbitmap); // should be fast enough
-	};
-
-	// Computes the size union between this bitset and another one
-	FastBitSet.prototype.union_size = function (otherbitmap) {
-	  var mcount = Math.min(this.count, otherbitmap.count);
-	  var answer = 0 | 0;
-	  for (var k = 0 | 0; k < mcount; ++k) {
-	    answer += this.hammingWeight(this.words[k] | otherbitmap.words[k]);
-	  }
-	  if (this.count < otherbitmap.count) {
-	    var c = otherbitmap.count;
-	    for (var k = this.count; k < c; ++k) {
-	      answer += this.hammingWeight(otherbitmap.words[k] | 0);
-	    }
-	  } else {
-	    var c = this.count;
-	    for (var k = otherbitmap.count; k < c; ++k) {
-	      answer += this.hammingWeight(this.words[k] | 0);
-	    }
-	  }
-	  return answer;
-	};
-
-	///////////////
-
-	module.exports = FastBitSet;
-
-/***/ },
-/* 11 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
@@ -3293,7 +2447,670 @@ var Entropy =
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 12 */
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _helpers = __webpack_require__(2);
+
+	var _stampit = __webpack_require__(1);
+
+	var _stampit2 = _interopRequireDefault(_stampit);
+
+	var _fastbitset = __webpack_require__(10);
+
+	var _fastbitset2 = _interopRequireDefault(_fastbitset);
+
+	var _fastArray = __webpack_require__(6);
+
+	var _fastArray2 = _interopRequireDefault(_fastArray);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	/**
+	 * Used to perform matching of entities.
+	 * Only parameter is an array of component names to include or object with `include` and/or `exclude` properties,
+	 * witch are arrays of component names to respectively include and/or exclude. Object can also have `name` property,
+	 * that will match entities with given name.
+	 *
+	 * @example
+	 *     //matches entities with 'Position' and 'Velocity' components
+	 *     var q1 = game.createQuery(["Position", "Velocity"]);
+	 *
+	 *     //matches entities with 'Position' and 'Velocity' components and without 'Sprite' component
+	 *     var q2 = new Entropy.Query({
+	 *         include: ["Position", "Velocity"],
+	 *         exclude: ["Sprite"]
+	 *     });
+	 *
+	 *     //matches entities with name 'Ball'
+	 *     var q3 = new Entropy.Query({
+	 *         name: "Ball"
+	 *     });
+	 *
+	 * @class Query
+	 * @constructor
+	 * @param {Object|Array} query query conditions
+	 */
+	var Query = (0, _stampit2.default)({
+	  deepProps: {
+	    _shouldUpdate: false
+	  },
+	  init: function init(opts) {
+	    var include = [];
+	    var exclude = [];
+	    var includeBitset = void 0;
+	    var excludeBitset = void 0;
+
+	    if ((0, _helpers.isArray)(opts.criterions)) {
+	      include = opts.criterions;
+	    } else if ((0, _helpers.isObject)(opts.criterions)) {
+	      if ((0, _helpers.isNonEmptyString)(opts.criterions.entityType)) {
+	        this._matchType = opts.criterions.entityType;
+	      }
+
+	      if ((0, _helpers.isArray)(opts.criterions.include)) {
+	        include = opts.criterions.include;
+	      }
+
+	      if ((0, _helpers.isArray)(opts.criterions.exclude)) {
+	        exclude = opts.criterions.exclude;
+	      }
+	    }
+
+	    if (include.length > 0) {
+	      includeBitset = new _fastbitset2.default();
+	      for (var i = 0; i < include.length; i += 1) {
+	        includeBitset.add(opts.componentsIdsMap[include[i]]);
+	      }
+	    }
+
+	    if (exclude) {
+	      excludeBitset = new _fastbitset2.default();
+	      for (var e = 0; e < exclude.length; e += 1) {
+	        excludeBitset.add(opts.componentsIdsMap[exclude[e]]);
+	      }
+	    }
+
+	    this._entitiesIndex = (0, _fastArray2.default)();
+	    this._matchedEntities = (0, _fastArray2.default)();
+
+	    this._result = {
+	      entities: this._matchedEntities.arr,
+	      length: 0
+	    };
+
+	    this._includes = includeBitset;
+	    this._excludes = excludeBitset;
+	  },
+
+	  methods: {
+	    /**
+	     * [initialize description]
+	     * @param  {[type]} allEntities [description]
+	     * @return {[type]}             [description]
+	     */
+	    initialize: function initialize(allEntities) {
+	      for (var i = 0; i < allEntities.length; i += 1) {
+	        var entity = allEntities.arr[i];
+
+	        if (entity !== 0 && this.satisfiedBy(entity)) {
+	          this.addToIndex(entity.id);
+	        }
+	      }
+
+	      this.update(allEntities);
+	    },
+
+	    /**
+	     * [satisfiedBy description]
+	     * @param  {[type]} entity [description]
+	     * @return {[type]}        [description]
+	     */
+	    satisfiedBy: function satisfiedBy(entity) {
+	      var satisfies = true;
+
+	      if ((0, _helpers.isString)(this._matchType)) {
+	        satisfies = entity.type === this._matchType;
+	      }
+
+	      if (satisfies && this._includes) {
+	        satisfies = this._includes.intersection_size(entity.bitset) === this._includes.size();
+	      }
+
+	      if (satisfies && this._excludes) {
+	        satisfies = this._excludes.intersection_size(entity.bitset) === 0;
+	      }
+
+	      return satisfies;
+	    },
+
+	    /**
+	     * [shouldUpdate description]
+	     * @return {[type]} [description]
+	     */
+	    shouldUpdate: function shouldUpdate() {
+	      return this._shouldUpdate;
+	    },
+
+	    /**
+	     * [addToIndex description]
+	     * @param {[type]} entityId [description]
+	     */
+	    addToIndex: function addToIndex(entityId) {
+	      this._shouldUpdate = true;
+	      this._entitiesIndex.push(entityId);
+	    },
+
+	    /**
+	     * [removeFromIndex description]
+	     * @param  {[type]} entityId [description]
+	     * @return {[type]}          [description]
+	     */
+	    removeFromIndex: function removeFromIndex(entityId) {
+	      var indexOfEntity = this._entitiesIndex.indexOf(entityId);
+
+	      if (indexOfEntity !== -1) {
+	        this._shouldUpdate = true;
+	        this._entitiesIndex.unsetAtIndex(indexOfEntity);
+	      }
+	    },
+
+	    /**
+	     * [getEntities description]
+	     * @return {[type]} [description]
+	     */
+	    getEntities: function getEntities() {
+	      this._result.length = this._matchedEntities.length;
+	      return this._result;
+	    },
+
+	    /**
+	     * [update description]
+	     * @param  {[type]} allEntities [description]
+	     * @return {[type]}             [description]
+	     */
+	    update: function update(allEntities) {
+	      if (!this._shouldUpdate) {
+	        return;
+	      }
+
+	      this._entitiesIndex.compact();
+	      this._matchedEntities.clear();
+
+	      for (var i = 0; i < this._entitiesIndex.length; i += 1) {
+	        var entityId = this._entitiesIndex.arr[i];
+
+	        this._matchedEntities.push(allEntities.arr[entityId]);
+	      }
+
+	      this._shouldUpdate = false;
+	    }
+	  }
+	});
+
+	exports.default = Query;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+	/**
+	 * FastBitSet.js : a fast bit set implementation in JavaScript.
+	 * (c) the authors
+	 * Licensed under the Apache License, Version 2.0.
+	 *
+	 * Speed-optimized BitSet implementation for modern browsers and JavaScript engines.
+	 *
+	 * A BitSet is an ideal data structure to implement a Set when values being stored are
+	 * reasonably small integers. It can be orders of magnitude faster than a generic set implementation.
+	 * The FastBitSet implementation optimizes for speed, leveraging commonly available features
+	 * like typed arrays.
+	 *
+	 * Simple usage :
+	 *  // var FastBitSet = require("fastbitset");// if you use node
+	 *  var b = new FastBitSet();// initially empty
+	 *  b.add(1);// add the value "1"
+	 *  b.has(1); // check that the value is present! (will return true)
+	 *  b.add(2);
+	 *  console.log(""+b);// should display {1,2}
+	 *  b.add(10);
+	 *  b.array(); // would return [1,2,10]
+	 *
+	 *  var c = new FastBitSet([1,2,3,10]); // create bitset initialized with values 1,2,3,10
+	 *  c.difference(b); // from c, remove elements that are in b
+	 *  var su = c.union_size(b);// compute the size of the union (bitsets are unchanged)
+	 * c.union(b); // c will contain all elements that are in c and b
+	 * var s1 = c.intersection_size(b);// compute the size of the intersection (bitsets are unchanged)
+	 * c.intersection(b); // c will only contain elements that are in both c and b
+	 * c = b.clone(); // create a (deep) copy of b and assign it to c.
+	 * c.equals(b); // check whether c and b are equal
+	 *
+	 *   See README.md file for a more complete description.
+	 *
+	 * You can install the library under node with the command line
+	 *   npm install fastbitset
+	 */
+	'use strict';
+
+	function isIterable(obj) {
+	  if (obj == null) {
+	    return false;
+	  }
+	  return obj[Symbol.iterator] !== undefined;
+	}
+	// you can provide an iterable
+	function FastBitSet(iterable) {
+	  this.count = 0 | 0;
+	  this.words = new Array(8);
+	  for (var i = 0; i < this.words.length; i++) {
+	    this.words[i] = 0;
+	  }
+	  if (isIterable(iterable)) {
+	    var _iteratorNormalCompletion = true;
+	    var _didIteratorError = false;
+	    var _iteratorError = undefined;
+
+	    try {
+	      for (var _iterator = iterable[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	        var key = _step.value;
+
+	        this.add(key);
+	      }
+	    } catch (err) {
+	      _didIteratorError = true;
+	      _iteratorError = err;
+	    } finally {
+	      try {
+	        if (!_iteratorNormalCompletion && _iterator.return) {
+	          _iterator.return();
+	        }
+	      } finally {
+	        if (_didIteratorError) {
+	          throw _iteratorError;
+	        }
+	      }
+	    }
+	  }
+	}
+
+	// Add the value (Set the bit at index to true)
+	FastBitSet.prototype.add = function (index) {
+	  if (this.count << 5 <= index) {
+	    this.resize(index);
+	  }
+	  this.words[index >>> 5] |= 1 << index;
+	};
+
+	// If the value was not in the set, add it, otherwise remove it (flip bit at index)
+	FastBitSet.prototype.flip = function (index) {
+	  if (this.count << 5 <= index) {
+	    this.resize(index);
+	  }
+	  this.words[index >>> 5] ^= 1 << index;
+	};
+
+	// Remove all values, reset memory usage
+	FastBitSet.prototype.clear = function () {
+	  this.count = 0 | 0;
+	  this.words = new Array(count);
+	};
+
+	// Set the bit at index to false
+	FastBitSet.prototype.remove = function (index) {
+	  if (this.count << 5 <= index) {
+	    this.resize(index);
+	  }
+	  this.words[index >>> 5] &= ~(1 << index);
+	};
+
+	// Return true if no bit is set
+	FastBitSet.prototype.isEmpty = function (index) {
+	  var c = this.count;
+	  for (var i = 0; i < c; i++) {
+	    if (this.words[i] !== 0) return false;
+	  }
+	  return true;
+	};
+
+	// Is the value contained in the set? Is the bit at index true or false? Returns a boolean
+	FastBitSet.prototype.has = function (index) {
+	  return (this.words[index >>> 5] & 1 << index) !== 0;
+	};
+
+	// Reduce the memory usage to a minimum
+	FastBitSet.prototype.trim = function (index) {
+	  while (this.count > 0) {
+	    if (this.words[this.count - 1] === 0) this.count--;
+	  }
+	  this.words = this.words.slice(0, this.count);
+	};
+
+	// Resize the bitset so that we can write a value at index
+	FastBitSet.prototype.resize = function (index) {
+	  if (this.count << 5 > index) {
+	    return; //nothing to do
+	  }
+	  this.count = index + 32 >>> 5; // just what is needed
+	  if (this.words.length << 5 <= index) {
+	    var newwords = new Array(this.count << 1);
+	    var c = this.words.length;
+	    for (var i = 0; i < c; i++) {
+	      newwords[i] = this.words[i];
+	    }
+	    var cn = newwords.length;
+	    for (var i = c; i < cn; i++) {
+	      newwords[i] = 0;
+	    }
+	    this.words = newwords;
+	  }
+	};
+
+	// fast function to compute the Hamming weight of a 32-bit unsigned integer
+	FastBitSet.prototype.hammingWeight = function (v) {
+	  v -= v >>> 1 & 0x55555555; // works with signed or unsigned shifts
+	  v = (v & 0x33333333) + (v >>> 2 & 0x33333333);
+	  return (v + (v >>> 4) & 0xF0F0F0F) * 0x1010101 >>> 24;
+	};
+
+	// fast function to compute the Hamming weight of four 32-bit unsigned integers
+	FastBitSet.prototype.hammingWeight4 = function (v1, v2, v3, v4) {
+	  v1 -= v1 >>> 1 & 0x55555555; // works with signed or unsigned shifts
+	  v2 -= v2 >>> 1 & 0x55555555; // works with signed or unsigned shifts
+	  v3 -= v3 >>> 1 & 0x55555555; // works with signed or unsigned shifts
+	  v4 -= v4 >>> 1 & 0x55555555; // works with signed or unsigned shifts
+
+	  v1 = (v1 & 0x33333333) + (v1 >>> 2 & 0x33333333);
+	  v2 = (v2 & 0x33333333) + (v2 >>> 2 & 0x33333333);
+	  v3 = (v3 & 0x33333333) + (v3 >>> 2 & 0x33333333);
+	  v4 = (v4 & 0x33333333) + (v4 >>> 2 & 0x33333333);
+
+	  v1 = v1 + (v1 >>> 4) & 0xF0F0F0F;
+	  v2 = v2 + (v2 >>> 4) & 0xF0F0F0F;
+	  v3 = v3 + (v3 >>> 4) & 0xF0F0F0F;
+	  v4 = v4 + (v4 >>> 4) & 0xF0F0F0F;
+	  return (v1 + v2 + v3 + v4) * 0x1010101 >>> 24;
+	};
+
+	// How many values stored in the set? How many set bits?
+	FastBitSet.prototype.size = function () {
+	  var answer = 0;
+	  var c = this.count;
+	  var w = this.words;
+	  var i = 0;
+	  for (; i < c; i++) {
+	    answer += this.hammingWeight(w[i]);
+	  }
+	  return answer;
+	};
+
+	// Return an array with the set bit locations (values)
+	FastBitSet.prototype.array = function () {
+	  var answer = new Array(this.size());
+	  var pos = 0 | 0;
+	  var c = this.count | 0;
+	  for (var k = 0; k < c; ++k) {
+	    var w = this.words[k];
+	    while (w != 0) {
+	      var t = w & -w;
+	      answer[pos++] = (k << 5) + this.hammingWeight(t - 1 | 0);
+	      w ^= t;
+	    }
+	  }
+	  return answer;
+	};
+
+	// Return an array with the set bit locations (values)
+	FastBitSet.prototype.forEach = function (fnc) {
+	  var c = this.count | 0;
+	  for (var k = 0; k < c; ++k) {
+	    var w = this.words[k];
+	    while (w != 0) {
+	      var t = w & -w;
+	      fnc.call((k << 5) + this.hammingWeight(t - 1 | 0));
+	      w ^= t;
+	    }
+	  }
+	};
+
+	// Creates a copy of this bitmap
+	FastBitSet.prototype.clone = function () {
+	  var clone = Object.create(FastBitSet.prototype);
+	  clone.count = this.count;
+	  clone.words = this.words.slice();
+	  return clone;
+	};
+
+	// Check if this bitset intersects with another one,
+	// no bitmap is modified
+	FastBitSet.prototype.intersects = function (otherbitmap) {
+	  var newcount = Math.min(this.count, otherbitmap.count);
+	  for (var k = 0 | 0; k < newcount; ++k) {
+	    if ((this.words[k] & otherbitmap.words[k]) !== 0) return true;
+	  }
+	  return false;
+	};
+
+	// Computes the intersection between this bitset and another one,
+	// the current bitmap is modified  (and returned by the function)
+	FastBitSet.prototype.intersection = function (otherbitmap) {
+	  var newcount = Math.min(this.count, otherbitmap.count);
+	  var k = 0 | 0;
+	  for (; k + 7 < newcount; k += 8) {
+	    this.words[k] &= otherbitmap.words[k];
+	    this.words[k + 1] &= otherbitmap.words[k + 1];
+	    this.words[k + 2] &= otherbitmap.words[k + 2];
+	    this.words[k + 3] &= otherbitmap.words[k + 3];
+	    this.words[k + 4] &= otherbitmap.words[k + 4];
+	    this.words[k + 5] &= otherbitmap.words[k + 5];
+	    this.words[k + 6] &= otherbitmap.words[k + 6];
+	    this.words[k + 7] &= otherbitmap.words[k + 7];
+	  }
+	  for (; k < newcount; ++k) {
+	    this.words[k] &= otherbitmap.words[k];
+	  }
+	  var c = this.count;
+	  for (var k = newcount; k < c; ++k) {
+	    this.words[k] = 0;
+	  }
+	  this.count = newcount;
+	  return this;
+	};
+
+	// Computes the size of the intersection between this bitset and another one
+	FastBitSet.prototype.intersection_size = function (otherbitmap) {
+	  var newcount = Math.min(this.count, otherbitmap.count);
+	  var answer = 0 | 0;
+	  for (var k = 0 | 0; k < newcount; ++k) {
+	    answer += this.hammingWeight(this.words[k] & otherbitmap.words[k]);
+	  }
+
+	  return answer;
+	};
+
+	// Computes the intersection between this bitset and another one,
+	// a new bitmap is generated
+	FastBitSet.prototype.new_intersection = function (otherbitmap) {
+	  var answer = Object.create(FastBitSet.prototype);
+	  answer.count = Math.min(this.count, otherbitmap.count);
+	  answer.words = new Array(answer.count);
+	  var c = answer.count;
+	  var k = 0 | 0;
+	  for (; k + 7 < c; k += 8) {
+	    answer.words[k] = this.words[k] & otherbitmap.words[k];
+	    answer.words[k + 1] = this.words[k + 1] & otherbitmap.words[k + 1];
+	    answer.words[k + 2] = this.words[k + 2] & otherbitmap.words[k + 2];
+	    answer.words[k + 3] = this.words[k + 3] & otherbitmap.words[k + 3];
+	    answer.words[k + 4] = this.words[k + 4] & otherbitmap.words[k + 4];
+	    answer.words[k + 5] = this.words[k + 5] & otherbitmap.words[k + 5];
+	    answer.words[k + 6] = this.words[k + 6] & otherbitmap.words[k + 6];
+	    answer.words[k + 7] = this.words[k + 7] & otherbitmap.words[k + 7];
+	  }
+	  for (; k < c; ++k) {
+	    answer.words[k] = this.words[k] & otherbitmap.words[k];
+	  }
+	  return answer;
+	};
+
+	// Computes the intersection between this bitset and another one,
+	// the current bitmap is modified
+	FastBitSet.prototype.equals = function (otherbitmap) {
+	  var mcount = Math.min(this.count, otherbitmap.count);
+	  for (var k = 0 | 0; k < mcount; ++k) {
+	    if (this.words[k] != otherbitmap.words[k]) return false;
+	  }
+	  if (this.count < otherbitmap.count) {
+	    var c = otherbitmap.count;
+	    for (var k = this.count; k < c; ++k) {
+	      if (otherbitmap.words[k] != 0) return false;
+	    }
+	  } else if (otherbitmap.count < this.count) {
+	    var c = this.count;
+	    for (var k = otherbitmap.count; k < c; ++k) {
+	      if (this.words[k] != 0) return false;
+	    }
+	  }
+	  return true;
+	};
+
+	// Computes the difference between this bitset and another one,
+	// the current bitset is modified (and returned by the function)
+	FastBitSet.prototype.difference = function (otherbitmap) {
+	  var newcount = Math.min(this.count, otherbitmap.count);
+	  var k = 0 | 0;
+	  for (; k + 7 < newcount; k += 8) {
+	    this.words[k] &= ~otherbitmap.words[k];
+	    this.words[k + 1] &= ~otherbitmap.words[k + 1];
+	    this.words[k + 2] &= ~otherbitmap.words[k + 2];
+	    this.words[k + 3] &= ~otherbitmap.words[k + 3];
+	    this.words[k + 4] &= ~otherbitmap.words[k + 4];
+	    this.words[k + 5] &= ~otherbitmap.words[k + 5];
+	    this.words[k + 6] &= ~otherbitmap.words[k + 6];
+	    this.words[k + 7] &= ~otherbitmap.words[k + 7];
+	  }
+	  for (; k < newcount; ++k) {
+	    this.words[k] &= ~otherbitmap.words[k];
+	  }
+	  return this;
+	};
+
+	// Computes the size of the difference between this bitset and another one
+	FastBitSet.prototype.difference_size = function (otherbitmap) {
+	  var newcount = Math.min(this.count, otherbitmap.count);
+	  var answer = 0 | 0;
+	  var k = 0 | 0;
+	  for (; k < newcount; ++k) {
+	    answer += this.hammingWeight(this.words[k] & ~otherbitmap.words[k]);
+	  }
+	  var c = this.count;
+	  for (; k < c; ++k) {
+	    answer += this.hammingWeight(this.words[k]);
+	  }
+	  return answer;
+	};
+
+	// Returns a string representation
+	FastBitSet.prototype.toString = function () {
+	  return '{' + this.array().join(',') + '}';
+	};
+
+	// Computes the union between this bitset and another one,
+	// the current bitset is modified  (and returned by the function)
+	FastBitSet.prototype.union = function (otherbitmap) {
+	  var mcount = Math.min(this.count, otherbitmap.count);
+	  var k = 0 | 0;
+	  for (; k + 7 < mcount; k += 8) {
+	    this.words[k] |= otherbitmap.words[k];
+	    this.words[k + 1] |= otherbitmap.words[k + 1];
+	    this.words[k + 2] |= otherbitmap.words[k + 2];
+	    this.words[k + 3] |= otherbitmap.words[k + 3];
+	    this.words[k + 4] |= otherbitmap.words[k + 4];
+	    this.words[k + 5] |= otherbitmap.words[k + 5];
+	    this.words[k + 6] |= otherbitmap.words[k + 6];
+	    this.words[k + 7] |= otherbitmap.words[k + 7];
+	  }
+	  for (; k < mcount; ++k) {
+	    this.words[k] |= otherbitmap.words[k];
+	  }
+	  if (this.count < otherbitmap.count) {
+	    this.resize((otherbitmap.count << 5) - 1);
+	    var c = otherbitmap.count;
+	    for (var k = mcount; k < c; ++k) {
+	      this.words[k] = otherbitmap.words[k];
+	    }
+	    this.count = otherbitmap.count;
+	  }
+	  return this;
+	};
+
+	FastBitSet.prototype.new_union = function (otherbitmap) {
+	  var answer = Object.create(FastBitSet.prototype);
+	  answer.count = Math.max(this.count, otherbitmap.count);
+	  answer.words = new Array(answer.count);
+	  var mcount = Math.min(this.count, otherbitmap.count);
+	  var k = 0;
+	  for (; k + 7 < mcount; k += 8) {
+	    answer.words[k] = this.words[k] | otherbitmap.words[k];
+	    answer.words[k + 1] = this.words[k + 1] | otherbitmap.words[k + 1];
+	    answer.words[k + 2] = this.words[k + 2] | otherbitmap.words[k + 2];
+	    answer.words[k + 3] = this.words[k + 3] | otherbitmap.words[k + 3];
+	    answer.words[k + 4] = this.words[k + 4] | otherbitmap.words[k + 4];
+	    answer.words[k + 5] = this.words[k + 5] | otherbitmap.words[k + 5];
+	    answer.words[k + 6] = this.words[k + 6] | otherbitmap.words[k + 6];
+	    answer.words[k + 7] = this.words[k + 7] | otherbitmap.words[k + 7];
+	  }
+	  for (; k < mcount; ++k) {
+	    answer.words[k] = this.words[k] | otherbitmap.words[k];
+	  }
+	  var c = this.count;
+	  for (var k = mcount; k < c; ++k) {
+	    answer.words[k] = this.words[k];
+	  }
+	  var c2 = otherbitmap.count;
+	  for (var k = mcount; k < c2; ++k) {
+	    answer.words[k] = otherbitmap.words[k];
+	  }
+	  return answer;
+	};
+
+	// Computes the difference between this bitset and another one,
+	// a new bitmap is generated
+	FastBitSet.prototype.new_difference = function (otherbitmap) {
+	  return this.clone().difference(otherbitmap); // should be fast enough
+	};
+
+	// Computes the size union between this bitset and another one
+	FastBitSet.prototype.union_size = function (otherbitmap) {
+	  var mcount = Math.min(this.count, otherbitmap.count);
+	  var answer = 0 | 0;
+	  for (var k = 0 | 0; k < mcount; ++k) {
+	    answer += this.hammingWeight(this.words[k] | otherbitmap.words[k]);
+	  }
+	  if (this.count < otherbitmap.count) {
+	    var c = otherbitmap.count;
+	    for (var k = this.count; k < c; ++k) {
+	      answer += this.hammingWeight(otherbitmap.words[k] | 0);
+	    }
+	  } else {
+	    var c = this.count;
+	    for (var k = otherbitmap.count; k < c; ++k) {
+	      answer += this.hammingWeight(this.words[k] | 0);
+	    }
+	  }
+	  return answer;
+	};
+
+	///////////////
+
+	module.exports = FastBitSet;
+
+/***/ },
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3304,17 +3121,17 @@ var Entropy =
 
 	var _stampit = __webpack_require__(1);
 
-	var _pickBy = __webpack_require__(13);
+	var _pickBy = __webpack_require__(12);
 
 	var _pickBy2 = _interopRequireDefault(_pickBy);
 
 	var _helpers = __webpack_require__(2);
 
-	var _Entity = __webpack_require__(138);
+	var _Entity = __webpack_require__(137);
 
 	var _Entity2 = _interopRequireDefault(_Entity);
 
-	var _Pool = __webpack_require__(8);
+	var _Pool = __webpack_require__(7);
 
 	var _Pool2 = _interopRequireDefault(_Pool);
 
@@ -3389,7 +3206,6 @@ var Entropy =
 	            type: descriptor.type
 	          });
 
-	          entity.initialize();
 	          entity.onCreate.apply(entity, arguments);
 
 	          return entity;
@@ -3436,7 +3252,7 @@ var Entropy =
 	      return (_pools$type = this._pools[type]).allocate.apply(_pools$type, args);
 	    },
 	    free: function free(entity) {
-	      entity.markAsUsed();
+	      entity.markAsRecycled();
 
 	      this._pools[entity.type].free(entity);
 	    }
@@ -3446,15 +3262,15 @@ var Entropy =
 	exports.default = EntityStore;
 
 /***/ },
-/* 13 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var arrayMap = __webpack_require__(14),
-	    baseIteratee = __webpack_require__(15),
-	    basePickBy = __webpack_require__(123),
-	    getAllKeysIn = __webpack_require__(128);
+	var arrayMap = __webpack_require__(13),
+	    baseIteratee = __webpack_require__(14),
+	    basePickBy = __webpack_require__(122),
+	    getAllKeysIn = __webpack_require__(127);
 
 	/**
 	 * Creates an object composed of the `object` properties `predicate` returns
@@ -3490,7 +3306,7 @@ var Entropy =
 	module.exports = pickBy;
 
 /***/ },
-/* 14 */
+/* 13 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -3518,18 +3334,18 @@ var Entropy =
 	module.exports = arrayMap;
 
 /***/ },
-/* 15 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-	var baseMatches = __webpack_require__(16),
-	    baseMatchesProperty = __webpack_require__(104),
-	    identity = __webpack_require__(119),
-	    isArray = __webpack_require__(81),
-	    property = __webpack_require__(120);
+	var baseMatches = __webpack_require__(15),
+	    baseMatchesProperty = __webpack_require__(103),
+	    identity = __webpack_require__(118),
+	    isArray = __webpack_require__(80),
+	    property = __webpack_require__(119);
 
 	/**
 	 * The base implementation of `_.iteratee`.
@@ -3556,14 +3372,14 @@ var Entropy =
 	module.exports = baseIteratee;
 
 /***/ },
-/* 16 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseIsMatch = __webpack_require__(17),
-	    getMatchData = __webpack_require__(101),
-	    matchesStrictComparable = __webpack_require__(103);
+	var baseIsMatch = __webpack_require__(16),
+	    getMatchData = __webpack_require__(100),
+	    matchesStrictComparable = __webpack_require__(102);
 
 	/**
 	 * The base implementation of `_.matches` which doesn't clone `source`.
@@ -3585,13 +3401,13 @@ var Entropy =
 	module.exports = baseMatches;
 
 /***/ },
-/* 17 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Stack = __webpack_require__(18),
-	    baseIsEqual = __webpack_require__(62);
+	var Stack = __webpack_require__(17),
+	    baseIsEqual = __webpack_require__(61);
 
 	/** Used to compose bitmasks for value comparisons. */
 	var COMPARE_PARTIAL_FLAG = 1,
@@ -3648,17 +3464,17 @@ var Entropy =
 	module.exports = baseIsMatch;
 
 /***/ },
-/* 18 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var ListCache = __webpack_require__(19),
-	    stackClear = __webpack_require__(27),
-	    stackDelete = __webpack_require__(28),
-	    stackGet = __webpack_require__(29),
-	    stackHas = __webpack_require__(30),
-	    stackSet = __webpack_require__(31);
+	var ListCache = __webpack_require__(18),
+	    stackClear = __webpack_require__(26),
+	    stackDelete = __webpack_require__(27),
+	    stackGet = __webpack_require__(28),
+	    stackHas = __webpack_require__(29),
+	    stackSet = __webpack_require__(30);
 
 	/**
 	 * Creates a stack cache object to store key-value pairs.
@@ -3682,16 +3498,16 @@ var Entropy =
 	module.exports = Stack;
 
 /***/ },
-/* 19 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var listCacheClear = __webpack_require__(20),
-	    listCacheDelete = __webpack_require__(21),
-	    listCacheGet = __webpack_require__(24),
-	    listCacheHas = __webpack_require__(25),
-	    listCacheSet = __webpack_require__(26);
+	var listCacheClear = __webpack_require__(19),
+	    listCacheDelete = __webpack_require__(20),
+	    listCacheGet = __webpack_require__(23),
+	    listCacheHas = __webpack_require__(24),
+	    listCacheSet = __webpack_require__(25);
 
 	/**
 	 * Creates an list cache object.
@@ -3721,7 +3537,7 @@ var Entropy =
 	module.exports = ListCache;
 
 /***/ },
-/* 20 */
+/* 19 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -3741,12 +3557,12 @@ var Entropy =
 	module.exports = listCacheClear;
 
 /***/ },
-/* 21 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var assocIndexOf = __webpack_require__(22);
+	var assocIndexOf = __webpack_require__(21);
 
 	/** Used for built-in method references. */
 	var arrayProto = Array.prototype;
@@ -3783,12 +3599,12 @@ var Entropy =
 	module.exports = listCacheDelete;
 
 /***/ },
-/* 22 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var eq = __webpack_require__(23);
+	var eq = __webpack_require__(22);
 
 	/**
 	 * Gets the index at which the `key` is found in `array` of key-value pairs.
@@ -3811,7 +3627,7 @@ var Entropy =
 	module.exports = assocIndexOf;
 
 /***/ },
-/* 23 */
+/* 22 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -3855,12 +3671,12 @@ var Entropy =
 	module.exports = eq;
 
 /***/ },
-/* 24 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var assocIndexOf = __webpack_require__(22);
+	var assocIndexOf = __webpack_require__(21);
 
 	/**
 	 * Gets the list cache value for `key`.
@@ -3881,12 +3697,12 @@ var Entropy =
 	module.exports = listCacheGet;
 
 /***/ },
-/* 25 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var assocIndexOf = __webpack_require__(22);
+	var assocIndexOf = __webpack_require__(21);
 
 	/**
 	 * Checks if a list cache value for `key` exists.
@@ -3904,12 +3720,12 @@ var Entropy =
 	module.exports = listCacheHas;
 
 /***/ },
-/* 26 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var assocIndexOf = __webpack_require__(22);
+	var assocIndexOf = __webpack_require__(21);
 
 	/**
 	 * Sets the list cache `key` to `value`.
@@ -3937,12 +3753,12 @@ var Entropy =
 	module.exports = listCacheSet;
 
 /***/ },
-/* 27 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var ListCache = __webpack_require__(19);
+	var ListCache = __webpack_require__(18);
 
 	/**
 	 * Removes all key-value entries from the stack.
@@ -3959,7 +3775,7 @@ var Entropy =
 	module.exports = stackClear;
 
 /***/ },
-/* 28 */
+/* 27 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -3984,7 +3800,7 @@ var Entropy =
 	module.exports = stackDelete;
 
 /***/ },
-/* 29 */
+/* 28 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -4005,7 +3821,7 @@ var Entropy =
 	module.exports = stackGet;
 
 /***/ },
-/* 30 */
+/* 29 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -4026,14 +3842,14 @@ var Entropy =
 	module.exports = stackHas;
 
 /***/ },
-/* 31 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var ListCache = __webpack_require__(19),
-	    Map = __webpack_require__(32),
-	    MapCache = __webpack_require__(47);
+	var ListCache = __webpack_require__(18),
+	    Map = __webpack_require__(31),
+	    MapCache = __webpack_require__(46);
 
 	/** Used as the size to enable large array optimizations. */
 	var LARGE_ARRAY_SIZE = 200;
@@ -4067,13 +3883,13 @@ var Entropy =
 	module.exports = stackSet;
 
 /***/ },
-/* 32 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getNative = __webpack_require__(33),
-	    root = __webpack_require__(38);
+	var getNative = __webpack_require__(32),
+	    root = __webpack_require__(37);
 
 	/* Built-in method references that are verified to be native. */
 	var Map = getNative(root, 'Map');
@@ -4081,13 +3897,13 @@ var Entropy =
 	module.exports = Map;
 
 /***/ },
-/* 33 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseIsNative = __webpack_require__(34),
-	    getValue = __webpack_require__(46);
+	var baseIsNative = __webpack_require__(33),
+	    getValue = __webpack_require__(45);
 
 	/**
 	 * Gets the native function at `key` of `object`.
@@ -4105,15 +3921,15 @@ var Entropy =
 	module.exports = getNative;
 
 /***/ },
-/* 34 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isFunction = __webpack_require__(35),
-	    isMasked = __webpack_require__(43),
-	    isObject = __webpack_require__(42),
-	    toSource = __webpack_require__(45);
+	var isFunction = __webpack_require__(34),
+	    isMasked = __webpack_require__(42),
+	    isObject = __webpack_require__(41),
+	    toSource = __webpack_require__(44);
 
 	/**
 	 * Used to match `RegExp`
@@ -4156,13 +3972,13 @@ var Entropy =
 	module.exports = baseIsNative;
 
 /***/ },
-/* 35 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseGetTag = __webpack_require__(36),
-	    isObject = __webpack_require__(42);
+	var baseGetTag = __webpack_require__(35),
+	    isObject = __webpack_require__(41);
 
 	/** `Object#toString` result references. */
 	var asyncTag = '[object AsyncFunction]',
@@ -4200,14 +4016,14 @@ var Entropy =
 	module.exports = isFunction;
 
 /***/ },
-/* 36 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _Symbol = __webpack_require__(37),
-	    getRawTag = __webpack_require__(40),
-	    objectToString = __webpack_require__(41);
+	var _Symbol = __webpack_require__(36),
+	    getRawTag = __webpack_require__(39),
+	    objectToString = __webpack_require__(40);
 
 	/** `Object#toString` result references. */
 	var nullTag = '[object Null]',
@@ -4234,12 +4050,12 @@ var Entropy =
 	module.exports = baseGetTag;
 
 /***/ },
-/* 37 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var root = __webpack_require__(38);
+	var root = __webpack_require__(37);
 
 	/** Built-in value references. */
 	var _Symbol = root.Symbol;
@@ -4247,14 +4063,14 @@ var Entropy =
 	module.exports = _Symbol;
 
 /***/ },
-/* 38 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-	var freeGlobal = __webpack_require__(39);
+	var freeGlobal = __webpack_require__(38);
 
 	/** Detect free variable `self`. */
 	var freeSelf = (typeof self === 'undefined' ? 'undefined' : _typeof(self)) == 'object' && self && self.Object === Object && self;
@@ -4265,7 +4081,7 @@ var Entropy =
 	module.exports = root;
 
 /***/ },
-/* 39 */
+/* 38 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
@@ -4279,12 +4095,12 @@ var Entropy =
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 40 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _Symbol = __webpack_require__(37);
+	var _Symbol = __webpack_require__(36);
 
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -4332,7 +4148,7 @@ var Entropy =
 	module.exports = getRawTag;
 
 /***/ },
-/* 41 */
+/* 40 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -4361,7 +4177,7 @@ var Entropy =
 	module.exports = objectToString;
 
 /***/ },
-/* 42 */
+/* 41 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -4401,12 +4217,12 @@ var Entropy =
 	module.exports = isObject;
 
 /***/ },
-/* 43 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var coreJsData = __webpack_require__(44);
+	var coreJsData = __webpack_require__(43);
 
 	/** Used to detect methods masquerading as native. */
 	var maskSrcKey = function () {
@@ -4428,12 +4244,12 @@ var Entropy =
 	module.exports = isMasked;
 
 /***/ },
-/* 44 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var root = __webpack_require__(38);
+	var root = __webpack_require__(37);
 
 	/** Used to detect overreaching core-js shims. */
 	var coreJsData = root['__core-js_shared__'];
@@ -4441,7 +4257,7 @@ var Entropy =
 	module.exports = coreJsData;
 
 /***/ },
-/* 45 */
+/* 44 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -4474,7 +4290,7 @@ var Entropy =
 	module.exports = toSource;
 
 /***/ },
-/* 46 */
+/* 45 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -4494,16 +4310,16 @@ var Entropy =
 	module.exports = getValue;
 
 /***/ },
-/* 47 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var mapCacheClear = __webpack_require__(48),
-	    mapCacheDelete = __webpack_require__(56),
-	    mapCacheGet = __webpack_require__(59),
-	    mapCacheHas = __webpack_require__(60),
-	    mapCacheSet = __webpack_require__(61);
+	var mapCacheClear = __webpack_require__(47),
+	    mapCacheDelete = __webpack_require__(55),
+	    mapCacheGet = __webpack_require__(58),
+	    mapCacheHas = __webpack_require__(59),
+	    mapCacheSet = __webpack_require__(60);
 
 	/**
 	 * Creates a map cache object to store key-value pairs.
@@ -4533,14 +4349,14 @@ var Entropy =
 	module.exports = MapCache;
 
 /***/ },
-/* 48 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Hash = __webpack_require__(49),
-	    ListCache = __webpack_require__(19),
-	    Map = __webpack_require__(32);
+	var Hash = __webpack_require__(48),
+	    ListCache = __webpack_require__(18),
+	    Map = __webpack_require__(31);
 
 	/**
 	 * Removes all key-value entries from the map.
@@ -4561,16 +4377,16 @@ var Entropy =
 	module.exports = mapCacheClear;
 
 /***/ },
-/* 49 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var hashClear = __webpack_require__(50),
-	    hashDelete = __webpack_require__(52),
-	    hashGet = __webpack_require__(53),
-	    hashHas = __webpack_require__(54),
-	    hashSet = __webpack_require__(55);
+	var hashClear = __webpack_require__(49),
+	    hashDelete = __webpack_require__(51),
+	    hashGet = __webpack_require__(52),
+	    hashHas = __webpack_require__(53),
+	    hashSet = __webpack_require__(54);
 
 	/**
 	 * Creates a hash object.
@@ -4600,12 +4416,12 @@ var Entropy =
 	module.exports = Hash;
 
 /***/ },
-/* 50 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var nativeCreate = __webpack_require__(51);
+	var nativeCreate = __webpack_require__(50);
 
 	/**
 	 * Removes all key-value entries from the hash.
@@ -4622,12 +4438,12 @@ var Entropy =
 	module.exports = hashClear;
 
 /***/ },
-/* 51 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getNative = __webpack_require__(33);
+	var getNative = __webpack_require__(32);
 
 	/* Built-in method references that are verified to be native. */
 	var nativeCreate = getNative(Object, 'create');
@@ -4635,7 +4451,7 @@ var Entropy =
 	module.exports = nativeCreate;
 
 /***/ },
-/* 52 */
+/* 51 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -4659,12 +4475,12 @@ var Entropy =
 	module.exports = hashDelete;
 
 /***/ },
-/* 53 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var nativeCreate = __webpack_require__(51);
+	var nativeCreate = __webpack_require__(50);
 
 	/** Used to stand-in for `undefined` hash values. */
 	var HASH_UNDEFINED = '__lodash_hash_undefined__';
@@ -4696,12 +4512,12 @@ var Entropy =
 	module.exports = hashGet;
 
 /***/ },
-/* 54 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var nativeCreate = __webpack_require__(51);
+	var nativeCreate = __webpack_require__(50);
 
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -4726,12 +4542,12 @@ var Entropy =
 	module.exports = hashHas;
 
 /***/ },
-/* 55 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var nativeCreate = __webpack_require__(51);
+	var nativeCreate = __webpack_require__(50);
 
 	/** Used to stand-in for `undefined` hash values. */
 	var HASH_UNDEFINED = '__lodash_hash_undefined__';
@@ -4756,12 +4572,12 @@ var Entropy =
 	module.exports = hashSet;
 
 /***/ },
-/* 56 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getMapData = __webpack_require__(57);
+	var getMapData = __webpack_require__(56);
 
 	/**
 	 * Removes `key` and its value from the map.
@@ -4781,12 +4597,12 @@ var Entropy =
 	module.exports = mapCacheDelete;
 
 /***/ },
-/* 57 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isKeyable = __webpack_require__(58);
+	var isKeyable = __webpack_require__(57);
 
 	/**
 	 * Gets the data for `map`.
@@ -4804,7 +4620,7 @@ var Entropy =
 	module.exports = getMapData;
 
 /***/ },
-/* 58 */
+/* 57 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -4826,12 +4642,12 @@ var Entropy =
 	module.exports = isKeyable;
 
 /***/ },
-/* 59 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getMapData = __webpack_require__(57);
+	var getMapData = __webpack_require__(56);
 
 	/**
 	 * Gets the map value for `key`.
@@ -4849,12 +4665,12 @@ var Entropy =
 	module.exports = mapCacheGet;
 
 /***/ },
-/* 60 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getMapData = __webpack_require__(57);
+	var getMapData = __webpack_require__(56);
 
 	/**
 	 * Checks if a map value for `key` exists.
@@ -4872,12 +4688,12 @@ var Entropy =
 	module.exports = mapCacheHas;
 
 /***/ },
-/* 61 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getMapData = __webpack_require__(57);
+	var getMapData = __webpack_require__(56);
 
 	/**
 	 * Sets the map `key` to `value`.
@@ -4901,14 +4717,14 @@ var Entropy =
 	module.exports = mapCacheSet;
 
 /***/ },
-/* 62 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseIsEqualDeep = __webpack_require__(63),
-	    isObject = __webpack_require__(42),
-	    isObjectLike = __webpack_require__(80);
+	var baseIsEqualDeep = __webpack_require__(62),
+	    isObject = __webpack_require__(41),
+	    isObjectLike = __webpack_require__(79);
 
 	/**
 	 * The base implementation of `_.isEqual` which supports partial comparisons
@@ -4937,19 +4753,19 @@ var Entropy =
 	module.exports = baseIsEqual;
 
 /***/ },
-/* 63 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Stack = __webpack_require__(18),
-	    equalArrays = __webpack_require__(64),
-	    equalByTag = __webpack_require__(70),
-	    equalObjects = __webpack_require__(74),
-	    getTag = __webpack_require__(96),
-	    isArray = __webpack_require__(81),
-	    isBuffer = __webpack_require__(82),
-	    isTypedArray = __webpack_require__(86);
+	var Stack = __webpack_require__(17),
+	    equalArrays = __webpack_require__(63),
+	    equalByTag = __webpack_require__(69),
+	    equalObjects = __webpack_require__(73),
+	    getTag = __webpack_require__(95),
+	    isArray = __webpack_require__(80),
+	    isBuffer = __webpack_require__(81),
+	    isTypedArray = __webpack_require__(85);
 
 	/** Used to compose bitmasks for value comparisons. */
 	var COMPARE_PARTIAL_FLAG = 1;
@@ -5030,14 +4846,14 @@ var Entropy =
 	module.exports = baseIsEqualDeep;
 
 /***/ },
-/* 64 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var SetCache = __webpack_require__(65),
-	    arraySome = __webpack_require__(68),
-	    cacheHas = __webpack_require__(69);
+	var SetCache = __webpack_require__(64),
+	    arraySome = __webpack_require__(67),
+	    cacheHas = __webpack_require__(68);
 
 	/** Used to compose bitmasks for value comparisons. */
 	var COMPARE_PARTIAL_FLAG = 1,
@@ -5114,14 +4930,14 @@ var Entropy =
 	module.exports = equalArrays;
 
 /***/ },
-/* 65 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var MapCache = __webpack_require__(47),
-	    setCacheAdd = __webpack_require__(66),
-	    setCacheHas = __webpack_require__(67);
+	var MapCache = __webpack_require__(46),
+	    setCacheAdd = __webpack_require__(65),
+	    setCacheHas = __webpack_require__(66);
 
 	/**
 	 *
@@ -5148,7 +4964,7 @@ var Entropy =
 	module.exports = SetCache;
 
 /***/ },
-/* 66 */
+/* 65 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -5174,7 +4990,7 @@ var Entropy =
 	module.exports = setCacheAdd;
 
 /***/ },
-/* 67 */
+/* 66 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5195,7 +5011,7 @@ var Entropy =
 	module.exports = setCacheHas;
 
 /***/ },
-/* 68 */
+/* 67 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5225,7 +5041,7 @@ var Entropy =
 	module.exports = arraySome;
 
 /***/ },
-/* 69 */
+/* 68 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5245,17 +5061,17 @@ var Entropy =
 	module.exports = cacheHas;
 
 /***/ },
-/* 70 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _Symbol = __webpack_require__(37),
-	    Uint8Array = __webpack_require__(71),
-	    eq = __webpack_require__(23),
-	    equalArrays = __webpack_require__(64),
-	    mapToArray = __webpack_require__(72),
-	    setToArray = __webpack_require__(73);
+	var _Symbol = __webpack_require__(36),
+	    Uint8Array = __webpack_require__(70),
+	    eq = __webpack_require__(22),
+	    equalArrays = __webpack_require__(63),
+	    mapToArray = __webpack_require__(71),
+	    setToArray = __webpack_require__(72);
 
 	/** Used to compose bitmasks for value comparisons. */
 	var COMPARE_PARTIAL_FLAG = 1,
@@ -5362,12 +5178,12 @@ var Entropy =
 	module.exports = equalByTag;
 
 /***/ },
-/* 71 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var root = __webpack_require__(38);
+	var root = __webpack_require__(37);
 
 	/** Built-in value references. */
 	var Uint8Array = root.Uint8Array;
@@ -5375,7 +5191,7 @@ var Entropy =
 	module.exports = Uint8Array;
 
 /***/ },
-/* 72 */
+/* 71 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5400,7 +5216,7 @@ var Entropy =
 	module.exports = mapToArray;
 
 /***/ },
-/* 73 */
+/* 72 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5425,12 +5241,12 @@ var Entropy =
 	module.exports = setToArray;
 
 /***/ },
-/* 74 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var keys = __webpack_require__(75);
+	var keys = __webpack_require__(74);
 
 	/** Used to compose bitmasks for value comparisons. */
 	var COMPARE_PARTIAL_FLAG = 1;
@@ -5513,14 +5329,14 @@ var Entropy =
 	module.exports = equalObjects;
 
 /***/ },
-/* 75 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var arrayLikeKeys = __webpack_require__(76),
-	    baseKeys = __webpack_require__(91),
-	    isArrayLike = __webpack_require__(95);
+	var arrayLikeKeys = __webpack_require__(75),
+	    baseKeys = __webpack_require__(90),
+	    isArrayLike = __webpack_require__(94);
 
 	/**
 	 * Creates an array of the own enumerable property names of `object`.
@@ -5557,17 +5373,17 @@ var Entropy =
 	module.exports = keys;
 
 /***/ },
-/* 76 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseTimes = __webpack_require__(77),
-	    isArguments = __webpack_require__(78),
-	    isArray = __webpack_require__(81),
-	    isBuffer = __webpack_require__(82),
-	    isIndex = __webpack_require__(85),
-	    isTypedArray = __webpack_require__(86);
+	var baseTimes = __webpack_require__(76),
+	    isArguments = __webpack_require__(77),
+	    isArray = __webpack_require__(80),
+	    isBuffer = __webpack_require__(81),
+	    isIndex = __webpack_require__(84),
+	    isTypedArray = __webpack_require__(85);
 
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -5611,7 +5427,7 @@ var Entropy =
 	module.exports = arrayLikeKeys;
 
 /***/ },
-/* 77 */
+/* 76 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5638,13 +5454,13 @@ var Entropy =
 	module.exports = baseTimes;
 
 /***/ },
-/* 78 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseIsArguments = __webpack_require__(79),
-	    isObjectLike = __webpack_require__(80);
+	var baseIsArguments = __webpack_require__(78),
+	    isObjectLike = __webpack_require__(79);
 
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -5682,13 +5498,13 @@ var Entropy =
 	module.exports = isArguments;
 
 /***/ },
-/* 79 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseGetTag = __webpack_require__(36),
-	    isObjectLike = __webpack_require__(80);
+	var baseGetTag = __webpack_require__(35),
+	    isObjectLike = __webpack_require__(79);
 
 	/** `Object#toString` result references. */
 	var argsTag = '[object Arguments]';
@@ -5707,7 +5523,7 @@ var Entropy =
 	module.exports = baseIsArguments;
 
 /***/ },
-/* 80 */
+/* 79 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -5745,7 +5561,7 @@ var Entropy =
 	module.exports = isObjectLike;
 
 /***/ },
-/* 81 */
+/* 80 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5778,15 +5594,15 @@ var Entropy =
 	module.exports = isArray;
 
 /***/ },
-/* 82 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {'use strict';
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-	var root = __webpack_require__(38),
-	    stubFalse = __webpack_require__(84);
+	var root = __webpack_require__(37),
+	    stubFalse = __webpack_require__(83);
 
 	/** Detect free variable `exports`. */
 	var freeExports = ( false ? 'undefined' : _typeof(exports)) == 'object' && exports && !exports.nodeType && exports;
@@ -5823,10 +5639,10 @@ var Entropy =
 	var isBuffer = nativeIsBuffer || stubFalse;
 
 	module.exports = isBuffer;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(83)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(82)(module)))
 
 /***/ },
-/* 83 */
+/* 82 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5843,7 +5659,7 @@ var Entropy =
 	};
 
 /***/ },
-/* 84 */
+/* 83 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5868,7 +5684,7 @@ var Entropy =
 	module.exports = stubFalse;
 
 /***/ },
-/* 85 */
+/* 84 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -5895,14 +5711,14 @@ var Entropy =
 	module.exports = isIndex;
 
 /***/ },
-/* 86 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseIsTypedArray = __webpack_require__(87),
-	    baseUnary = __webpack_require__(89),
-	    nodeUtil = __webpack_require__(90);
+	var baseIsTypedArray = __webpack_require__(86),
+	    baseUnary = __webpack_require__(88),
+	    nodeUtil = __webpack_require__(89);
 
 	/* Node.js helper references. */
 	var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
@@ -5929,14 +5745,14 @@ var Entropy =
 	module.exports = isTypedArray;
 
 /***/ },
-/* 87 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseGetTag = __webpack_require__(36),
-	    isLength = __webpack_require__(88),
-	    isObjectLike = __webpack_require__(80);
+	var baseGetTag = __webpack_require__(35),
+	    isLength = __webpack_require__(87),
+	    isObjectLike = __webpack_require__(79);
 
 	/** `Object#toString` result references. */
 	var argsTag = '[object Arguments]',
@@ -5984,7 +5800,7 @@ var Entropy =
 	module.exports = baseIsTypedArray;
 
 /***/ },
-/* 88 */
+/* 87 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -6025,7 +5841,7 @@ var Entropy =
 	module.exports = isLength;
 
 /***/ },
-/* 89 */
+/* 88 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -6046,14 +5862,14 @@ var Entropy =
 	module.exports = baseUnary;
 
 /***/ },
-/* 90 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {'use strict';
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-	var freeGlobal = __webpack_require__(39);
+	var freeGlobal = __webpack_require__(38);
 
 	/** Detect free variable `exports`. */
 	var freeExports = ( false ? 'undefined' : _typeof(exports)) == 'object' && exports && !exports.nodeType && exports;
@@ -6075,16 +5891,16 @@ var Entropy =
 	}();
 
 	module.exports = nodeUtil;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(83)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(82)(module)))
 
 /***/ },
-/* 91 */
+/* 90 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isPrototype = __webpack_require__(92),
-	    nativeKeys = __webpack_require__(93);
+	var isPrototype = __webpack_require__(91),
+	    nativeKeys = __webpack_require__(92);
 
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -6115,7 +5931,7 @@ var Entropy =
 	module.exports = baseKeys;
 
 /***/ },
-/* 92 */
+/* 91 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -6140,12 +5956,12 @@ var Entropy =
 	module.exports = isPrototype;
 
 /***/ },
-/* 93 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var overArg = __webpack_require__(94);
+	var overArg = __webpack_require__(93);
 
 	/* Built-in method references for those with the same name as other `lodash` methods. */
 	var nativeKeys = overArg(Object.keys, Object);
@@ -6153,7 +5969,7 @@ var Entropy =
 	module.exports = nativeKeys;
 
 /***/ },
-/* 94 */
+/* 93 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -6175,13 +5991,13 @@ var Entropy =
 	module.exports = overArg;
 
 /***/ },
-/* 95 */
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isFunction = __webpack_require__(35),
-	    isLength = __webpack_require__(88);
+	var isFunction = __webpack_require__(34),
+	    isLength = __webpack_require__(87);
 
 	/**
 	 * Checks if `value` is array-like. A value is considered array-like if it's
@@ -6215,18 +6031,18 @@ var Entropy =
 	module.exports = isArrayLike;
 
 /***/ },
-/* 96 */
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var DataView = __webpack_require__(97),
-	    Map = __webpack_require__(32),
-	    Promise = __webpack_require__(98),
-	    Set = __webpack_require__(99),
-	    WeakMap = __webpack_require__(100),
-	    baseGetTag = __webpack_require__(36),
-	    toSource = __webpack_require__(45);
+	var DataView = __webpack_require__(96),
+	    Map = __webpack_require__(31),
+	    Promise = __webpack_require__(97),
+	    Set = __webpack_require__(98),
+	    WeakMap = __webpack_require__(99),
+	    baseGetTag = __webpack_require__(35),
+	    toSource = __webpack_require__(44);
 
 	/** `Object#toString` result references. */
 	var mapTag = '[object Map]',
@@ -6281,13 +6097,13 @@ var Entropy =
 	module.exports = getTag;
 
 /***/ },
-/* 97 */
+/* 96 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getNative = __webpack_require__(33),
-	    root = __webpack_require__(38);
+	var getNative = __webpack_require__(32),
+	    root = __webpack_require__(37);
 
 	/* Built-in method references that are verified to be native. */
 	var DataView = getNative(root, 'DataView');
@@ -6295,13 +6111,13 @@ var Entropy =
 	module.exports = DataView;
 
 /***/ },
-/* 98 */
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getNative = __webpack_require__(33),
-	    root = __webpack_require__(38);
+	var getNative = __webpack_require__(32),
+	    root = __webpack_require__(37);
 
 	/* Built-in method references that are verified to be native. */
 	var Promise = getNative(root, 'Promise');
@@ -6309,13 +6125,13 @@ var Entropy =
 	module.exports = Promise;
 
 /***/ },
-/* 99 */
+/* 98 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getNative = __webpack_require__(33),
-	    root = __webpack_require__(38);
+	var getNative = __webpack_require__(32),
+	    root = __webpack_require__(37);
 
 	/* Built-in method references that are verified to be native. */
 	var Set = getNative(root, 'Set');
@@ -6323,13 +6139,13 @@ var Entropy =
 	module.exports = Set;
 
 /***/ },
-/* 100 */
+/* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getNative = __webpack_require__(33),
-	    root = __webpack_require__(38);
+	var getNative = __webpack_require__(32),
+	    root = __webpack_require__(37);
 
 	/* Built-in method references that are verified to be native. */
 	var WeakMap = getNative(root, 'WeakMap');
@@ -6337,13 +6153,13 @@ var Entropy =
 	module.exports = WeakMap;
 
 /***/ },
-/* 101 */
+/* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isStrictComparable = __webpack_require__(102),
-	    keys = __webpack_require__(75);
+	var isStrictComparable = __webpack_require__(101),
+	    keys = __webpack_require__(74);
 
 	/**
 	 * Gets the property names, values, and compare flags of `object`.
@@ -6368,12 +6184,12 @@ var Entropy =
 	module.exports = getMatchData;
 
 /***/ },
-/* 102 */
+/* 101 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isObject = __webpack_require__(42);
+	var isObject = __webpack_require__(41);
 
 	/**
 	 * Checks if `value` is suitable for strict equality comparisons, i.e. `===`.
@@ -6390,7 +6206,7 @@ var Entropy =
 	module.exports = isStrictComparable;
 
 /***/ },
-/* 103 */
+/* 102 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -6416,18 +6232,18 @@ var Entropy =
 	module.exports = matchesStrictComparable;
 
 /***/ },
-/* 104 */
+/* 103 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseIsEqual = __webpack_require__(62),
-	    get = __webpack_require__(105),
-	    hasIn = __webpack_require__(116),
-	    isKey = __webpack_require__(108),
-	    isStrictComparable = __webpack_require__(102),
-	    matchesStrictComparable = __webpack_require__(103),
-	    toKey = __webpack_require__(115);
+	var baseIsEqual = __webpack_require__(61),
+	    get = __webpack_require__(104),
+	    hasIn = __webpack_require__(115),
+	    isKey = __webpack_require__(107),
+	    isStrictComparable = __webpack_require__(101),
+	    matchesStrictComparable = __webpack_require__(102),
+	    toKey = __webpack_require__(114);
 
 	/** Used to compose bitmasks for value comparisons. */
 	var COMPARE_PARTIAL_FLAG = 1,
@@ -6454,12 +6270,12 @@ var Entropy =
 	module.exports = baseMatchesProperty;
 
 /***/ },
-/* 105 */
+/* 104 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseGet = __webpack_require__(106);
+	var baseGet = __webpack_require__(105);
 
 	/**
 	 * Gets the value at `path` of `object`. If the resolved value is
@@ -6494,13 +6310,13 @@ var Entropy =
 	module.exports = get;
 
 /***/ },
-/* 106 */
+/* 105 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var castPath = __webpack_require__(107),
-	    toKey = __webpack_require__(115);
+	var castPath = __webpack_require__(106),
+	    toKey = __webpack_require__(114);
 
 	/**
 	 * The base implementation of `_.get` without support for default values.
@@ -6525,15 +6341,15 @@ var Entropy =
 	module.exports = baseGet;
 
 /***/ },
-/* 107 */
+/* 106 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isArray = __webpack_require__(81),
-	    isKey = __webpack_require__(108),
-	    stringToPath = __webpack_require__(110),
-	    toString = __webpack_require__(113);
+	var isArray = __webpack_require__(80),
+	    isKey = __webpack_require__(107),
+	    stringToPath = __webpack_require__(109),
+	    toString = __webpack_require__(112);
 
 	/**
 	 * Casts `value` to a path array if it's not one.
@@ -6553,15 +6369,15 @@ var Entropy =
 	module.exports = castPath;
 
 /***/ },
-/* 108 */
+/* 107 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-	var isArray = __webpack_require__(81),
-	    isSymbol = __webpack_require__(109);
+	var isArray = __webpack_require__(80),
+	    isSymbol = __webpack_require__(108);
 
 	/** Used to match property names within property paths. */
 	var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
@@ -6589,15 +6405,15 @@ var Entropy =
 	module.exports = isKey;
 
 /***/ },
-/* 109 */
+/* 108 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-	var baseGetTag = __webpack_require__(36),
-	    isObjectLike = __webpack_require__(80);
+	var baseGetTag = __webpack_require__(35),
+	    isObjectLike = __webpack_require__(79);
 
 	/** `Object#toString` result references. */
 	var symbolTag = '[object Symbol]';
@@ -6626,12 +6442,12 @@ var Entropy =
 	module.exports = isSymbol;
 
 /***/ },
-/* 110 */
+/* 109 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var memoizeCapped = __webpack_require__(111);
+	var memoizeCapped = __webpack_require__(110);
 
 	/** Used to match property names within property paths. */
 	var reLeadingDot = /^\./,
@@ -6661,12 +6477,12 @@ var Entropy =
 	module.exports = stringToPath;
 
 /***/ },
-/* 111 */
+/* 110 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var memoize = __webpack_require__(112);
+	var memoize = __webpack_require__(111);
 
 	/** Used as the maximum memoize cache size. */
 	var MAX_MEMOIZE_SIZE = 500;
@@ -6694,12 +6510,12 @@ var Entropy =
 	module.exports = memoizeCapped;
 
 /***/ },
-/* 112 */
+/* 111 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var MapCache = __webpack_require__(47);
+	var MapCache = __webpack_require__(46);
 
 	/** Error message constants. */
 	var FUNC_ERROR_TEXT = 'Expected a function';
@@ -6774,12 +6590,12 @@ var Entropy =
 	module.exports = memoize;
 
 /***/ },
-/* 113 */
+/* 112 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseToString = __webpack_require__(114);
+	var baseToString = __webpack_require__(113);
 
 	/**
 	 * Converts `value` to a string. An empty string is returned for `null`
@@ -6809,15 +6625,15 @@ var Entropy =
 	module.exports = toString;
 
 /***/ },
-/* 114 */
+/* 113 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _Symbol = __webpack_require__(37),
-	    arrayMap = __webpack_require__(14),
-	    isArray = __webpack_require__(81),
-	    isSymbol = __webpack_require__(109);
+	var _Symbol = __webpack_require__(36),
+	    arrayMap = __webpack_require__(13),
+	    isArray = __webpack_require__(80),
+	    isSymbol = __webpack_require__(108);
 
 	/** Used as references for various `Number` constants. */
 	var INFINITY = 1 / 0;
@@ -6853,12 +6669,12 @@ var Entropy =
 	module.exports = baseToString;
 
 /***/ },
-/* 115 */
+/* 114 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isSymbol = __webpack_require__(109);
+	var isSymbol = __webpack_require__(108);
 
 	/** Used as references for various `Number` constants. */
 	var INFINITY = 1 / 0;
@@ -6881,13 +6697,13 @@ var Entropy =
 	module.exports = toKey;
 
 /***/ },
-/* 116 */
+/* 115 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseHasIn = __webpack_require__(117),
-	    hasPath = __webpack_require__(118);
+	var baseHasIn = __webpack_require__(116),
+	    hasPath = __webpack_require__(117);
 
 	/**
 	 * Checks if `path` is a direct or inherited property of `object`.
@@ -6922,7 +6738,7 @@ var Entropy =
 	module.exports = hasIn;
 
 /***/ },
-/* 117 */
+/* 116 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -6942,17 +6758,17 @@ var Entropy =
 	module.exports = baseHasIn;
 
 /***/ },
-/* 118 */
+/* 117 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var castPath = __webpack_require__(107),
-	    isArguments = __webpack_require__(78),
-	    isArray = __webpack_require__(81),
-	    isIndex = __webpack_require__(85),
-	    isLength = __webpack_require__(88),
-	    toKey = __webpack_require__(115);
+	var castPath = __webpack_require__(106),
+	    isArguments = __webpack_require__(77),
+	    isArray = __webpack_require__(80),
+	    isIndex = __webpack_require__(84),
+	    isLength = __webpack_require__(87),
+	    toKey = __webpack_require__(114);
 
 	/**
 	 * Checks if `path` exists on `object`.
@@ -6987,7 +6803,7 @@ var Entropy =
 	module.exports = hasPath;
 
 /***/ },
-/* 119 */
+/* 118 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -7015,15 +6831,15 @@ var Entropy =
 	module.exports = identity;
 
 /***/ },
-/* 120 */
+/* 119 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseProperty = __webpack_require__(121),
-	    basePropertyDeep = __webpack_require__(122),
-	    isKey = __webpack_require__(108),
-	    toKey = __webpack_require__(115);
+	var baseProperty = __webpack_require__(120),
+	    basePropertyDeep = __webpack_require__(121),
+	    isKey = __webpack_require__(107),
+	    toKey = __webpack_require__(114);
 
 	/**
 	 * Creates a function that returns the value at `path` of a given object.
@@ -7054,7 +6870,7 @@ var Entropy =
 	module.exports = property;
 
 /***/ },
-/* 121 */
+/* 120 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -7075,12 +6891,12 @@ var Entropy =
 	module.exports = baseProperty;
 
 /***/ },
-/* 122 */
+/* 121 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseGet = __webpack_require__(106);
+	var baseGet = __webpack_require__(105);
 
 	/**
 	 * A specialized version of `baseProperty` which supports deep paths.
@@ -7098,14 +6914,14 @@ var Entropy =
 	module.exports = basePropertyDeep;
 
 /***/ },
-/* 123 */
+/* 122 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseGet = __webpack_require__(106),
-	    baseSet = __webpack_require__(124),
-	    castPath = __webpack_require__(107);
+	var baseGet = __webpack_require__(105),
+	    baseSet = __webpack_require__(123),
+	    castPath = __webpack_require__(106);
 
 	/**
 	 * The base implementation of  `_.pickBy` without support for iteratee shorthands.
@@ -7135,16 +6951,16 @@ var Entropy =
 	module.exports = basePickBy;
 
 /***/ },
-/* 124 */
+/* 123 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var assignValue = __webpack_require__(125),
-	    castPath = __webpack_require__(107),
-	    isIndex = __webpack_require__(85),
-	    isObject = __webpack_require__(42),
-	    toKey = __webpack_require__(115);
+	var assignValue = __webpack_require__(124),
+	    castPath = __webpack_require__(106),
+	    isIndex = __webpack_require__(84),
+	    isObject = __webpack_require__(41),
+	    toKey = __webpack_require__(114);
 
 	/**
 	 * The base implementation of `_.set`.
@@ -7187,13 +7003,13 @@ var Entropy =
 	module.exports = baseSet;
 
 /***/ },
-/* 125 */
+/* 124 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseAssignValue = __webpack_require__(126),
-	    eq = __webpack_require__(23);
+	var baseAssignValue = __webpack_require__(125),
+	    eq = __webpack_require__(22);
 
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -7221,12 +7037,12 @@ var Entropy =
 	module.exports = assignValue;
 
 /***/ },
-/* 126 */
+/* 125 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var defineProperty = __webpack_require__(127);
+	var defineProperty = __webpack_require__(126);
 
 	/**
 	 * The base implementation of `assignValue` and `assignMergeValue` without
@@ -7253,12 +7069,12 @@ var Entropy =
 	module.exports = baseAssignValue;
 
 /***/ },
-/* 127 */
+/* 126 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getNative = __webpack_require__(33);
+	var getNative = __webpack_require__(32);
 
 	var defineProperty = function () {
 	  try {
@@ -7271,14 +7087,14 @@ var Entropy =
 	module.exports = defineProperty;
 
 /***/ },
-/* 128 */
+/* 127 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var baseGetAllKeys = __webpack_require__(129),
-	    getSymbolsIn = __webpack_require__(131),
-	    keysIn = __webpack_require__(135);
+	var baseGetAllKeys = __webpack_require__(128),
+	    getSymbolsIn = __webpack_require__(130),
+	    keysIn = __webpack_require__(134);
 
 	/**
 	 * Creates an array of own and inherited enumerable property names and
@@ -7295,13 +7111,13 @@ var Entropy =
 	module.exports = getAllKeysIn;
 
 /***/ },
-/* 129 */
+/* 128 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var arrayPush = __webpack_require__(130),
-	    isArray = __webpack_require__(81);
+	var arrayPush = __webpack_require__(129),
+	    isArray = __webpack_require__(80);
 
 	/**
 	 * The base implementation of `getAllKeys` and `getAllKeysIn` which uses
@@ -7322,7 +7138,7 @@ var Entropy =
 	module.exports = baseGetAllKeys;
 
 /***/ },
-/* 130 */
+/* 129 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -7349,15 +7165,15 @@ var Entropy =
 	module.exports = arrayPush;
 
 /***/ },
-/* 131 */
+/* 130 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var arrayPush = __webpack_require__(130),
-	    getPrototype = __webpack_require__(132),
-	    getSymbols = __webpack_require__(133),
-	    stubArray = __webpack_require__(134);
+	var arrayPush = __webpack_require__(129),
+	    getPrototype = __webpack_require__(131),
+	    getSymbols = __webpack_require__(132),
+	    stubArray = __webpack_require__(133);
 
 	/* Built-in method references for those with the same name as other `lodash` methods. */
 	var nativeGetSymbols = Object.getOwnPropertySymbols;
@@ -7381,12 +7197,12 @@ var Entropy =
 	module.exports = getSymbolsIn;
 
 /***/ },
-/* 132 */
+/* 131 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var overArg = __webpack_require__(94);
+	var overArg = __webpack_require__(93);
 
 	/** Built-in value references. */
 	var getPrototype = overArg(Object.getPrototypeOf, Object);
@@ -7394,13 +7210,13 @@ var Entropy =
 	module.exports = getPrototype;
 
 /***/ },
-/* 133 */
+/* 132 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var overArg = __webpack_require__(94),
-	    stubArray = __webpack_require__(134);
+	var overArg = __webpack_require__(93),
+	    stubArray = __webpack_require__(133);
 
 	/* Built-in method references for those with the same name as other `lodash` methods. */
 	var nativeGetSymbols = Object.getOwnPropertySymbols;
@@ -7417,7 +7233,7 @@ var Entropy =
 	module.exports = getSymbols;
 
 /***/ },
-/* 134 */
+/* 133 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -7447,14 +7263,14 @@ var Entropy =
 	module.exports = stubArray;
 
 /***/ },
-/* 135 */
+/* 134 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var arrayLikeKeys = __webpack_require__(76),
-	    baseKeysIn = __webpack_require__(136),
-	    isArrayLike = __webpack_require__(95);
+	var arrayLikeKeys = __webpack_require__(75),
+	    baseKeysIn = __webpack_require__(135),
+	    isArrayLike = __webpack_require__(94);
 
 	/**
 	 * Creates an array of the own and inherited enumerable property names of `object`.
@@ -7486,14 +7302,14 @@ var Entropy =
 	module.exports = keysIn;
 
 /***/ },
-/* 136 */
+/* 135 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isObject = __webpack_require__(42),
-	    isPrototype = __webpack_require__(92),
-	    nativeKeysIn = __webpack_require__(137);
+	var isObject = __webpack_require__(41),
+	    isPrototype = __webpack_require__(91),
+	    nativeKeysIn = __webpack_require__(136);
 
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -7526,7 +7342,7 @@ var Entropy =
 	module.exports = baseKeysIn;
 
 /***/ },
-/* 137 */
+/* 136 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -7553,7 +7369,7 @@ var Entropy =
 	module.exports = nativeKeysIn;
 
 /***/ },
-/* 138 */
+/* 137 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7572,7 +7388,7 @@ var Entropy =
 
 	var _fastbitset2 = _interopRequireDefault(_fastbitset);
 
-	var _fastArray = __webpack_require__(7);
+	var _fastArray = __webpack_require__(6);
 
 	var _fastArray2 = _interopRequireDefault(_fastArray);
 
@@ -7582,17 +7398,15 @@ var Entropy =
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 	/**
-	 * Entity class. Class is used internaly. User should not instatiate this class.
+	 * Entity factory.
 	 *
 	 * @class Entity
-	 * @constructor
-	 * @param {Object} pattern entity pattern
-	 * @param {Engine} engine  Engine instance
 	 */
 	var Entity = (0, _stampit2.default)({
+	  /**
+	   * @constructs
+	   */
 	  init: function init(opts) {
 	    this._modifications = (0, _fastArray2.default)();
 	    this._used = false;
@@ -7605,26 +7419,50 @@ var Entropy =
 	  },
 
 	  methods: {
-	    initialize: function initialize() {},
+	    /**
+	     * Called when entity is created. Could be overriden (see {@link EntityStore#register}).
+	     *
+	     * @memberof Entity#
+	     */
 	    onCreate: function onCreate() {},
-	    onRemove: function onRemove() {},
-	    onReuse: function onReuse() {},
 
 	    /**
-	     * Adds new component to entity. Component is either created from scratch or reused from pool. In latter case, component's pattern `reset` method is called (if present).
-	     * Component patterns `initialize` method is called with additional arguments passed to `add` method.
-	     * If entity is already added to the system (has id greater than 0) addition doesn't happen imediately, but is postponed to nearest update cycle.
+	     * Called when entity is removed. Could be overriden (see {@link EntityStore#register}).
+	     *
+	     * @memberof Entity#
+	     */
+	    onRemove: function onRemove() {},
+
+	    /**
+	     * Called when entity is reused from pool. Could be overriden (see {@link EntityStore#register}).
+	     *
+	     * @memberof Entity#
+	     */
+	    onReuse: function onReuse() {},
+	    onComponentRemove: function onComponentRemove() {},
+
+	    /**
+	     * Adds new component to entity.
+	     *
+	     * If first argument is component type, component is either created from scratch or reused from pool. In latter case, component's pattern `onReuse` method is called (if present).
+	     * Component patterns `onCreate` method is called with additional arguments passed to `add` method.
+	     * If entity is already added to the system (has id greater than 0) addition doesn't happen immediately, but is postponed to nearest update cycle.
 	     *
 	     * @example
-	     *     //`this` is a reference to Entity instance
-	     *     //code like this can be seen in entity's pattern `create` method
-	     *     this.add("Position", 1, 1);
+	     * // `this` is a reference to Entity instance
+	     * // code like this can be seen in entity's `onCreate` method
+	     * this.add('Position', 1, 1);
 	     *
-	     * @method add
-	     * @param {String} ...name name of component to add. Addidtional parameters are applied to component patterns `initialize` method.
+	     * // or
+	     *
+	     * this.add(game.createComponent('Position', 1, 1));
+	     *
+	     * @memberof Entity#
+	     * @param {String|Component} componentTypeOrComponent component instance or component type
+	     * @param {...Any} args arguments passed to `onCreate` method of component
 	     * @return {Entity} Entity instance
 	     */
-	    add: function add(componentTypeOrComponent) {
+	    addComponent: function addComponent(componentTypeOrComponent) {
 	      var _game$component,
 	          _this = this;
 
@@ -7657,7 +7495,13 @@ var Entropy =
 
 	      this.emit('componentAdd', this, componentToAdd);
 	    },
-	    remove: function remove(componentType) {
+
+	    /**
+	     * Removes components.
+	     *
+	     * @memberof Entity#
+	     */
+	    removeComponent: function removeComponent(componentType) {
 	      var _this2 = this;
 
 	      var componentPropName = (0, _helpers.toLowerFirstCase)(componentType);
@@ -7681,20 +7525,20 @@ var Entropy =
 	      var _this3 = this;
 
 	      Object.keys(this.components).forEach(function (propName) {
-	        return _this3._removeComponent(_this3.components[propName]);
+	        return _this3.removeComponent(propName);
 	      });
 	    },
 	    _removeComponent: function _removeComponent(componentToRemove) {
 	      this.game.component.free(componentToRemove);
 	      this.components[componentToRemove._propName] = null;
 	      this.bitset.remove(componentToRemove._id);
-	      this.emit('componentRemove', this, componentToRemove);
+	      this.onComponentRemove(componentToRemove);
 	    },
 	    applyModifications: function applyModifications() {
 	      while (this._modifications.length) {
-	        var modification = this._entitiesToAdd.shift();
+	        var modification = this._modifications.shift();
 
-	        modification.fn.apply(modification, _toConsumableArray(modification.args));
+	        modification.fn();
 	      }
 	    },
 	    clearModifications: function clearModifications() {
@@ -7703,10 +7547,10 @@ var Entropy =
 	    is: function is(type) {
 	      return this.type === type;
 	    },
-	    markAsUsed: function markAsUsed() {
+	    markAsRecycled: function markAsRecycled() {
 	      this._used = true;
 	    },
-	    isUsed: function isUsed() {
+	    isRecycled: function isRecycled() {
 	      return this._used;
 	    }
 	  }
@@ -7715,7 +7559,7 @@ var Entropy =
 	exports.default = Entity;
 
 /***/ },
-/* 139 */
+/* 138 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7726,17 +7570,17 @@ var Entropy =
 
 	var _stampit = __webpack_require__(1);
 
-	var _pickBy = __webpack_require__(13);
+	var _pickBy = __webpack_require__(12);
 
 	var _pickBy2 = _interopRequireDefault(_pickBy);
 
 	var _helpers = __webpack_require__(2);
 
-	var _Pool = __webpack_require__(8);
+	var _Pool = __webpack_require__(7);
 
 	var _Pool2 = _interopRequireDefault(_Pool);
 
-	var _Component = __webpack_require__(140);
+	var _Component = __webpack_require__(139);
 
 	var _Component2 = _interopRequireDefault(_Component);
 
@@ -7750,27 +7594,50 @@ var Entropy =
 	var ComponentStore = (0, _stampit.compose)({
 	  init: function init() {
 	    /**
-	    * [_greatestComponentId description]
-	    * @type {Number}
-	    */
+	     * Stores the gratest component's ID so far. Every component type when registered gets it's own unique ID.
+	     *
+	     * @private
+	     * @memberof Component#
+	     * @name _greatestComponentId
+	     * @type {Number}
+	     */
 	    this._greatestComponentId = 0;
 
 	    /**
-	    * [_componentsIdsMap description]
-	    * @type {Object}
-	    */
+	     * Stores map of registered types to IDs.
+	     *
+	     * @example
+	     * {
+	     *   Position: 0,
+	     *   Velocity: 1,
+	     *   ...
+	     * }
+	     *
+	     * @private
+	     * @memberof Component#
+	     * @name _componentsIdsMap
+	     * @type {Object}
+	     */
 	    this._componentsIdsMap = {};
 
 	    /**
-	    * [_pools description]
-	    * @type {Object}
-	    */
+	     * Object with instances of Pool, one for each component type. Type is a key.
+	     *
+	     * @private
+	     * @memberof Component#
+	     * @name _pools
+	     * @type {Object}
+	     */
 	    this._pools = {};
 
 	    /**
-	    * [_initializers description]
-	    * @type {Object}
-	    */
+	     * Object with components factories. Factories are created when component is registerd. Type is a key.
+	     *
+	     * @private
+	     * @memberof Component#
+	     * @name _factories
+	     * @type {Object}
+	     */
 	    this._factories = {};
 	  },
 
@@ -7778,11 +7645,25 @@ var Entropy =
 	    /**
 	     * Registers component.
 	     *
+	     * @example
+	     * game.component.register({
+	     *   type: 'Position',
+	     *   onCreate(x, y) {
+	     *     this.x = x;
+	     *     this.y = y;
+	     *   },
+	     * });
+	     *
+	     * const c = game.component.create('Position', 1, 2);
+	     * c.x; // 1
+	     * c.y; // 2
+	     *
 	     * @public
 	     * @memberof ComponentStore#
 	     * @method register
-	     * @param  {String} type   [description]
-	     * @param  {Function} initFn [description]
+	     * @param {Object}    descriptor            object describing component
+	     * @param {String}    descriptor.type       type of components
+	     * @param {Function}  descriptor.onCreate   method called when component is created
 	     */
 	    register: function register(descriptor) {
 	      var _this = this;
@@ -7821,9 +7702,12 @@ var Entropy =
 	    },
 
 	    /**
-	     * [registerComponents description]
-	     * @param  {[type]} obj [description]
-	     * @return {[type]}     [description]
+	     * Registeres many components.
+	     *
+	     * @public
+	     * @memberof ComponentStore#
+	     * @method registerMany
+	     * @param  {Array} descriptiors array of component's descriptors (see {@link ComponentStore#register})
 	     */
 	    registerMany: function registerMany(descriptors) {
 	      var _this2 = this;
@@ -7834,10 +7718,14 @@ var Entropy =
 	    },
 
 	    /**
-	     * [createComponent description]
-	     * @param  {[type]} name    [description]
-	     * @param  {[type]} ...args [description]
-	     * @return {[type]}         [description]
+	     * Creates new component instance or aquires one from pool.
+	     *
+	     * @public
+	     * @memberof ComponentStore#
+	     * @method create
+	     * @param  {String} type    type of component to create
+	     * @param  {...Any} ...args arguments passed to `onCreate` method
+	     * @return {Component}      new (or reused) component ready to add to entity
 	     */
 	    create: function create(type) {
 	      var _pools$type;
@@ -7850,9 +7738,13 @@ var Entropy =
 	    },
 
 	    /**
-	     * [freeComponent description]
-	     * @param  {[type]} component [description]
-	     * @return {[type]}           [description]
+	     * Frees component. Component is added to the pool.
+	     * This method is called internally by the engine, user should not call it.
+	     *
+	     * @public
+	     * @memberof ComponentStore#
+	     * @method free
+	     * @param  {Component} component component
 	     */
 	    free: function free(component) {
 	      this._pools[component.getType()].free(component);
@@ -7863,7 +7755,7 @@ var Entropy =
 	exports.default = ComponentStore;
 
 /***/ },
-/* 140 */
+/* 139 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7910,6 +7802,7 @@ var Entropy =
 
 	    /**
 	     * Lowercase component type, which is used to identify component's instance when added to entity.
+	     * For type 'Position' propName is `position`. For type 'LifeTime' propName is `lifeTime`.
 	     *
 	     * @private
 	     * @memberof Component#
@@ -7920,11 +7813,35 @@ var Entropy =
 	  },
 
 	  methods: {
-	    onCreate: function onCreate() {
-	      if (arguments.length === 1 && (0, _helpers.isObject)(arguments.length <= 0 ? undefined : arguments[0])) {
-	        Object.assign(this, arguments.length <= 0 ? undefined : arguments[0]);
+	    /**
+	     * Run when component is created. Can be overriedden on component registration.
+	     * Default implementation coppies properties from first argument, if it's an object.
+	     *
+	     * @example
+	     * game.component.register({
+	     *   type: 'Position',
+	     * }) // component registered without `onCreate` method
+	     *
+	     * const c = game.component.create('Position', { x: 1, y: 2 }); // default `onCreate` is used
+	     *
+	     * c.x // 1
+	     * c.y // 2
+	     *
+	     * @memberof Component#
+	     * @param {Object} [opts] object with proprties to assign to component instance
+	     */
+	    onCreate: function onCreate(opts) {
+	      if ((0, _helpers.isObject)(opts)) {
+	        Object.assign(this, opts);
 	      }
 	    },
+
+	    /**
+	     * Returns component type.
+	     *
+	     * @memberof Component#
+	     * @returns component type
+	     */
 	    getType: function getType() {
 	      return this._type;
 	    }
@@ -7934,7 +7851,7 @@ var Entropy =
 	exports.default = Component;
 
 /***/ },
-/* 141 */
+/* 140 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7945,13 +7862,13 @@ var Entropy =
 
 	var _stampit = __webpack_require__(1);
 
-	var _pickBy = __webpack_require__(13);
+	var _pickBy = __webpack_require__(12);
 
 	var _pickBy2 = _interopRequireDefault(_pickBy);
 
 	var _helpers = __webpack_require__(2);
 
-	var _System = __webpack_require__(142);
+	var _System = __webpack_require__(141);
 
 	var _System2 = _interopRequireDefault(_System);
 
@@ -8022,7 +7939,7 @@ var Entropy =
 	exports.default = SystemStore;
 
 /***/ },
-/* 142 */
+/* 141 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
