@@ -1,0 +1,7 @@
+src
+docs
+production.config.js
+development.config.js
+node_modules
+test
+.npmignore
