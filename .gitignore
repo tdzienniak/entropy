@@ -3,6 +3,7 @@ node_modules
 build
 
 npm-debug.log
+lerna-debug.log
 
 #Exclude project config files
 *.sublime-project

@@ -1,24 +1,24 @@
 {
-  "name": "entropy.js",
-  "version": "1.0.0-alpha.3",
-  "author": "Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>",
-  "description": "Framework for making games and not only games in entity system manner.",
-  "keywords": [
-    "gamedev",
-    "es",
-    "entity system",
-    "game engine"
-  ],
-  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "test": "babel-tape-runner packages/*/test/* | tap-spec",
+    "docs": "jsdoc -c jsdoc.json"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tdzienniak/entropy.git"
   },
+  "keywords": [],
+  "author": "Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tdzienniak/entropy/issues"
+  },
+  "homepage": "https://github.com/tdzienniak/entropy#readme",
   "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-core": "^6.18.2",
     "babel-loader": "^6.2.7",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
     "babel-preset-es2015": "^6.18.0",
     "babel-tape-runner": "^2.0.1",
     "check-types": "^7.0.1",
@@ -29,37 +29,7 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.4.1",
     "jsdoc": "^3.4.2",
-    "mkdirp": "^0.5.1",
-    "rimraf": "^2.5.4",
     "tap-spec": "^4.1.1",
-    "tape": "^4.6.2",
-    "webpack": "^1.13.3"
-  },
-  "dependencies": {
-    "fast-array": "^1.3.1",
-    "fastbitset": "0.0.18",
-    "lodash": "^4.17.2",
-    "stampit": "^3.0.6"
-  },
-  "main": "./build/Entropy.js",
-  "scripts": {
-    "test": "babel-tape-runner test/* | tap-spec",
-    "docs": "jsdoc -c jsdoc.json",
-    "clean": "rimraf build/* && mkdirp build && rimraf dist/* && mkdirp dist",
-    "babel": "babel src --out-dir build --presets=es2015",
-    "prepublish": "npm run clean && npm run babel && npm run bundle",
-    "bundle:development": "webpack --config development.config.js",
-    "bundle:production": "webpack --config production.config.js",
-    "bundle:watch": "npm run bundle:development -- --watch",
-    "bundle": "npm run bundle:production && npm run bundle:development"
-  },
-  "bugs": {
-    "url": "https://github.com/tdzienniak/entropy/issues"
-  },
-  "homepage": "https://github.com/tdzienniak/entropy#readme",
-  "directories": {
-    "doc": "docs",
-    "example": "example",
-    "test": "test"
+    "tape": "^4.6.2"
   }
 }
