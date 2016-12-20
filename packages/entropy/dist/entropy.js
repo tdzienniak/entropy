@@ -47,6 +47,11 @@ var Entropy =
 
 	'use strict';
 
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.stampit = exports.Entropy = undefined;
+
 	var _stampit = __webpack_require__(1);
 
 	var stampit = _interopRequireWildcard(_stampit);
@@ -433,8 +438,9 @@ var Entropy =
 	  }
 	});
 
-	// will use CJS syntax here, to let browserify bundle it correctly
-	module.exports = Entropy;
+	exports.default = Entropy;
+	exports.Entropy = Entropy;
+	exports.stampit = stampit;
 
 /***/ },
 /* 1 */
@@ -445,25 +451,6 @@ var Entropy =
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	Object.defineProperty(exports, '__esModule', { value: true });
-
-	function isObject(obj) {
-	  var type = typeof obj === 'undefined' ? 'undefined' : _typeof(obj);
-	  return !!obj && (type === 'object' || type === 'function');
-	}
-
-	function isFunction(obj) {
-	  return typeof obj === 'function';
-	}
-
-	var concat = Array.prototype.concat;
-	var extractFunctions = function extractFunctions() {
-	  var fns = concat.apply([], arguments).filter(isFunction);
-	  return fns.length === 0 ? undefined : fns;
-	};
-
-	function isPlainObject(value) {
-	  return !!value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && Object.getPrototypeOf(value) === Object.prototype;
-	}
 
 	/**
 	 * The 'src' argument plays the command role.
@@ -479,8 +466,8 @@ var Entropy =
 
 	  // According to specification arrays must be concatenated.
 	  // Also, the '.concat' creates a new array instance. Overrides the 'dst'.
-	  if (Array.isArray(src)) {
-	    return (Array.isArray(dst) ? dst : []).concat(src);
+	  if (isArray(src)) {
+	    return (isArray(dst) ? dst : []).concat(src);
 	  }
 
 	  // Now deal with non plain 'src' object. 'src' overrides 'dst'
@@ -501,7 +488,7 @@ var Entropy =
 	    if (srcValue !== undefined) {
 	      var dstValue = returnValue[key];
 	      // Recursive calls to mergeOne() must allow only plain objects or arrays in dst
-	      var newDst = isPlainObject(dstValue) || Array.isArray(srcValue) ? dstValue : {};
+	      var newDst = isPlainObject(dstValue) || isArray(srcValue) ? dstValue : {};
 
 	      // deep merge each property. Recursion!
 	      returnValue[key] = mergeOne(newDst, srcValue);
@@ -519,7 +506,60 @@ var Entropy =
 	  }return srcs.reduce(mergeOne, dst);
 	};
 
-	var assign$1 = Object.assign;
+	var assign = Object.assign;
+	var isArray = Array.isArray;
+
+	function isFunction(obj) {
+	  return typeof obj === 'function';
+	}
+
+	function isObject(obj) {
+	  var type = typeof obj === 'undefined' ? 'undefined' : _typeof(obj);
+	  return !!obj && (type === 'object' || type === 'function');
+	}
+
+	function isPlainObject(value) {
+	  return !!value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && Object.getPrototypeOf(value) === Object.prototype;
+	}
+
+	var concat = Array.prototype.concat;
+	function extractFunctions() {
+	  var fns = concat.apply([], arguments).filter(isFunction);
+	  return fns.length === 0 ? undefined : fns;
+	}
+
+	function concatAssignFunctions(dstObject, srcArray, propName) {
+	  if (!isArray(srcArray)) {
+	    return;
+	  }
+
+	  var length = srcArray.length;
+	  var dstArray = dstObject[propName] || [];
+	  dstObject[propName] = dstArray;
+	  for (var i = 0; i < length; i += 1) {
+	    var fn = srcArray[i];
+	    if (isFunction(fn) && dstArray.indexOf(fn) < 0) {
+	      dstArray.push(fn);
+	    }
+	  }
+	}
+
+	function combineProperties(dstObject, srcObject, propName, action) {
+	  if (!isObject(srcObject[propName])) {
+	    return;
+	  }
+	  if (!isObject(dstObject[propName])) {
+	    dstObject[propName] = {};
+	  }
+	  action(dstObject[propName], srcObject[propName]);
+	}
+
+	function deepMergeAssign(dstObject, srcObject, propName) {
+	  combineProperties(dstObject, srcObject, propName, merge);
+	}
+	function mergeAssign(dstObject, srcObject, propName) {
+	  combineProperties(dstObject, srcObject, propName, assign);
+	}
 
 	/**
 	 * Converts stampit extended descriptor to a standard one.
@@ -541,6 +581,7 @@ var Entropy =
 	 * @param [conf]
 	 * @param [deepConfiguration]
 	 * @param [deepConf]
+	 * @param [composers]
 	 * @returns {Descriptor}
 	 */
 	var standardiseDescriptor = function standardiseDescriptor(ref) {
@@ -551,6 +592,7 @@ var Entropy =
 	  var refs = ref.refs;
 	  var initializers = ref.initializers;
 	  var init = ref.init;
+	  var composers = ref.composers;
 	  var deepProperties = ref.deepProperties;
 	  var deepProps = ref.deepProps;
 	  var propertyDescriptors = ref.propertyDescriptors;
@@ -564,36 +606,66 @@ var Entropy =
 	  var deepConfiguration = ref.deepConfiguration;
 	  var deepConf = ref.deepConf;
 
-	  var p = isObject(props) || isObject(refs) || isObject(properties) ? assign$1({}, props, refs, properties) : undefined;
+	  var p = isObject(props) || isObject(refs) || isObject(properties) ? assign({}, props, refs, properties) : undefined;
 
 	  var dp = isObject(deepProps) ? merge({}, deepProps) : undefined;
 	  dp = isObject(deepProperties) ? merge(dp, deepProperties) : dp;
 
-	  var sp = isObject(statics) || isObject(staticProperties) ? assign$1({}, statics, staticProperties) : undefined;
+	  var sp = isObject(statics) || isObject(staticProperties) ? assign({}, statics, staticProperties) : undefined;
 
 	  var dsp = isObject(deepStatics) ? merge({}, deepStatics) : undefined;
 	  dsp = isObject(staticDeepProperties) ? merge(dsp, staticDeepProperties) : dsp;
 
-	  var c = isObject(conf) || isObject(configuration) ? assign$1({}, conf, configuration) : undefined;
+	  var c = isObject(conf) || isObject(configuration) ? assign({}, conf, configuration) : undefined;
 
 	  var dc = isObject(deepConf) ? merge({}, deepConf) : undefined;
 	  dc = isObject(deepConfiguration) ? merge(dc, deepConfiguration) : dc;
 
-	  return {
-	    methods: methods,
-	    properties: p,
-	    initializers: extractFunctions(init, initializers),
-	    deepProperties: dp,
-	    staticProperties: sp,
-	    staticDeepProperties: dsp,
-	    propertyDescriptors: propertyDescriptors,
-	    staticPropertyDescriptors: staticPropertyDescriptors,
-	    configuration: c,
-	    deepConfiguration: dc
-	  };
-	};
+	  var ii = extractFunctions(init, initializers);
 
-	var assign$2 = Object.assign;
+	  var composerFunctions = extractFunctions(composers);
+	  if (composerFunctions) {
+	    dc = dc || {};
+	    concatAssignFunctions(dc, composerFunctions, 'composers');
+	  }
+
+	  var descriptor = {};
+	  if (methods) {
+	    descriptor.methods = methods;
+	  }
+	  if (p) {
+	    descriptor.properties = p;
+	  }
+	  if (ii) {
+	    descriptor.initializers = ii;
+	  }
+	  if (dp) {
+	    descriptor.deepProperties = dp;
+	  }
+	  if (sp) {
+	    descriptor.staticProperties = sp;
+	  }
+	  if (methods) {
+	    descriptor.methods = methods;
+	  }
+	  if (dsp) {
+	    descriptor.staticDeepProperties = dsp;
+	  }
+	  if (propertyDescriptors) {
+	    descriptor.propertyDescriptors = propertyDescriptors;
+	  }
+	  if (staticPropertyDescriptors) {
+	    descriptor.staticPropertyDescriptors = staticPropertyDescriptors;
+	  }
+	  if (c) {
+	    descriptor.configuration = c;
+	  }
+	  if (dc) {
+	    descriptor.deepConfiguration = dc;
+	  }
+
+	  return descriptor;
+	};
 
 	/**
 	 * Creates new factory instance.
@@ -610,7 +682,7 @@ var Entropy =
 	    var obj = Object.create(descriptor.methods || null);
 
 	    merge(obj, descriptor.deepProperties);
-	    assign$2(obj, descriptor.properties);
+	    assign(obj, descriptor.properties);
 	    Object.defineProperties(obj, descriptor.propertyDescriptors || {});
 
 	    if (!descriptor.initializers || descriptor.initializers.length === 0) {
@@ -620,10 +692,17 @@ var Entropy =
 	    if (options === undefined) {
 	      options = {};
 	    }
-	    return descriptor.initializers.filter(isFunction).reduce(function (resultingObj, initializer) {
-	      var returnedValue = initializer.call(resultingObj, options, { instance: resultingObj, stamp: Stamp, args: [options].concat(args) });
-	      return returnedValue === undefined ? resultingObj : returnedValue;
-	    }, obj);
+	    var inits = descriptor.initializers;
+	    var length = inits.length;
+	    for (var i = 0; i < length; i += 1) {
+	      var initializer = inits[i];
+	      if (isFunction(initializer)) {
+	        var returnedValue = initializer.call(obj, options, { instance: obj, stamp: Stamp, args: [options].concat(args) });
+	        obj = returnedValue === undefined ? obj : returnedValue;
+	      }
+	    }
+
+	    return obj;
 	  };
 	}
 
@@ -637,7 +716,7 @@ var Entropy =
 	  var Stamp = createFactory(descriptor);
 
 	  merge(Stamp, descriptor.staticDeepProperties);
-	  assign$2(Stamp, descriptor.staticProperties);
+	  assign(Stamp, descriptor.staticProperties);
 	  Object.defineProperties(Stamp, descriptor.staticPropertyDescriptors || {});
 
 	  var composeImplementation = isFunction(Stamp.compose) ? Stamp.compose : composeFunction;
@@ -648,7 +727,7 @@ var Entropy =
 	      args[len] = arguments[len];
 	    }return composeImplementation.apply(this, args);
 	  };
-	  assign$2(Stamp.compose, descriptor);
+	  assign(Stamp.compose, descriptor);
 
 	  return Stamp;
 	}
@@ -666,33 +745,16 @@ var Entropy =
 	    return dstDescriptor;
 	  }
 
-	  var combineProperty = function combineProperty(propName, action) {
-	    if (!isObject(srcDescriptor[propName])) {
-	      return;
-	    }
-	    if (!isObject(dstDescriptor[propName])) {
-	      dstDescriptor[propName] = {};
-	    }
-	    action(dstDescriptor[propName], srcDescriptor[propName]);
-	  };
-
-	  combineProperty('methods', assign$2);
-	  combineProperty('properties', assign$2);
-	  combineProperty('deepProperties', merge);
-	  combineProperty('propertyDescriptors', assign$2);
-	  combineProperty('staticProperties', assign$2);
-	  combineProperty('staticDeepProperties', merge);
-	  combineProperty('staticPropertyDescriptors', assign$2);
-	  combineProperty('configuration', assign$2);
-	  combineProperty('deepConfiguration', merge);
-	  if (Array.isArray(srcDescriptor.initializers)) {
-	    dstDescriptor.initializers = srcDescriptor.initializers.reduce(function (result, init) {
-	      if (isFunction(init) && result.indexOf(init) < 0) {
-	        result.push(init);
-	      }
-	      return result;
-	    }, Array.isArray(dstDescriptor.initializers) ? dstDescriptor.initializers : []);
-	  }
+	  mergeAssign(dstDescriptor, srcDescriptor, 'methods');
+	  mergeAssign(dstDescriptor, srcDescriptor, 'properties');
+	  deepMergeAssign(dstDescriptor, srcDescriptor, 'deepProperties');
+	  mergeAssign(dstDescriptor, srcDescriptor, 'propertyDescriptors');
+	  mergeAssign(dstDescriptor, srcDescriptor, 'staticProperties');
+	  deepMergeAssign(dstDescriptor, srcDescriptor, 'staticDeepProperties');
+	  mergeAssign(dstDescriptor, srcDescriptor, 'staticPropertyDescriptors');
+	  mergeAssign(dstDescriptor, srcDescriptor, 'configuration');
+	  deepMergeAssign(dstDescriptor, srcDescriptor, 'deepConfiguration');
+	  concatAssignFunctions(dstDescriptor, srcDescriptor.initializers, 'initializers');
 
 	  return dstDescriptor;
 	}
@@ -750,17 +812,14 @@ var Entropy =
 	  return isFunction(obj) && isFunction(obj.compose);
 	}
 
-	var assign = Object.assign;
-
 	function createUtilityFunction(propName, action) {
 	  return function composeUtil() {
 	    var i = arguments.length,
 	        argsArray = Array(i);
 	    while (i--) {
 	      argsArray[i] = arguments[i];
-	    }var descriptor = {};
-	    descriptor[propName] = action.apply(void 0, [{}].concat(argsArray));
-	    return (this && this.compose || stampit).call(this, descriptor);
+	    }return (this && this.compose || stampit).call(this, (obj = {}, obj[propName] = action.apply(void 0, [{}].concat(argsArray)), obj));
+	    var obj;
 	  };
 	}
 
@@ -776,6 +835,16 @@ var Entropy =
 	    initializers: extractFunctions.apply(void 0, args)
 	  });
 	}
+	function composers() {
+	  var args = [],
+	      len = arguments.length;
+	  while (len--) {
+	    args[len] = arguments[len];
+	  }return (this && this.compose || stampit).call(this, {
+	    composers: extractFunctions.apply(void 0, args)
+	  });
+	}
+
 	var deepProperties = createUtilityFunction('deepProperties', merge);
 	var staticProperties = createUtilityFunction('staticProperties', assign);
 	var staticDeepProperties = createUtilityFunction('staticDeepProperties', merge);
@@ -794,6 +863,8 @@ var Entropy =
 
 	  initializers: initializers,
 	  init: initializers,
+
+	  composers: composers,
 
 	  deepProperties: deepProperties,
 	  deepProps: deepProperties,
@@ -843,12 +914,24 @@ var Entropy =
 	      len = arguments.length;
 	  while (len--) {
 	    args[len] = arguments[len];
-	  }args = args.filter(isObject).map(function (arg) {
+	  }var composables = args.filter(isObject).map(function (arg) {
 	    return isStamp(arg) ? arg : standardiseDescriptor(arg);
 	  });
 
 	  // Calling the standard pure compose function here.
-	  return compose.apply(this || baseStampit, args);
+	  var stamp = compose.apply(this || baseStampit, composables);
+
+	  var composerFunctions = stamp.compose.deepConfiguration && stamp.compose.deepConfiguration.composers;
+	  if (isArray(composerFunctions)) {
+	    for (var i = 0; i < composerFunctions.length; i += 1) {
+	      if (isFunction(composerFunctions[i])) {
+	        var returnedValue = composerFunctions[i]({ stamp: stamp, composables: composables });
+	        stamp = isStamp(returnedValue) ? returnedValue : stamp;
+	      }
+	    }
+	  }
+
+	  return stamp;
 	}
 
 	var exportedCompose = stampit.bind(); // bind to 'undefined'
@@ -863,6 +946,7 @@ var Entropy =
 	exports.props = properties;
 	exports.initializers = initializers;
 	exports.init = initializers;
+	exports.composers = composers;
 	exports.deepProperties = deepProperties;
 	exports.deepProps = deepProperties;
 	exports.staticProperties = staticProperties;
@@ -1533,10 +1617,69 @@ var Entropy =
 
 	'use strict';
 
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 	Object.defineProperty(exports, '__esModule', { value: true });
+
+	/**
+	 * The 'src' argument plays the command role.
+	 * The returned values is always of the same type as the 'src'.
+	 * @param dst
+	 * @param src
+	 * @returns {*}
+	 */
+	function mergeOne(dst, src) {
+	  if (src === undefined) {
+	    return dst;
+	  }
+
+	  // According to specification arrays must be concatenated.
+	  // Also, the '.concat' creates a new array instance. Overrides the 'dst'.
+	  if (isArray(src)) {
+	    return (isArray(dst) ? dst : []).concat(src);
+	  }
+
+	  // Now deal with non plain 'src' object. 'src' overrides 'dst'
+	  // Note that functions are also assigned! We do not deep merge functions.
+	  if (!isPlainObject(src)) {
+	    return src;
+	  }
+
+	  // See if 'dst' is allowed to be mutated. If not - it's overridden with a new plain object.
+	  var returnValue = isObject(dst) ? dst : {};
+
+	  var keys = Object.keys(src);
+	  for (var i = 0; i < keys.length; i += 1) {
+	    var key = keys[i];
+
+	    var srcValue = src[key];
+	    // Do not merge properties with the 'undefined' value.
+	    if (srcValue !== undefined) {
+	      var dstValue = returnValue[key];
+	      // Recursive calls to mergeOne() must allow only plain objects or arrays in dst
+	      var newDst = isPlainObject(dstValue) || isArray(srcValue) ? dstValue : {};
+
+	      // deep merge each property. Recursion!
+	      returnValue[key] = mergeOne(newDst, srcValue);
+	    }
+	  }
+
+	  return returnValue;
+	}
+
+	var isArray = Array.isArray;
 
 	function isFunction(obj) {
 	  return typeof obj === 'function';
+	}
+
+	function isObject(obj) {
+	  var type = typeof obj === 'undefined' ? 'undefined' : _typeof(obj);
+	  return !!obj && (type === 'object' || type === 'function');
+	}
+
+	function isPlainObject(value) {
+	  return !!value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && Object.getPrototypeOf(value) === Object.prototype;
 	}
 
 	/**

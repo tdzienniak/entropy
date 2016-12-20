@@ -317,5 +317,6 @@ const Entropy = stampit.compose(EventEmitter, {
   },
 });
 
-// will use CJS syntax here, to let browserify bundle it correctly
-module.exports = Entropy;
+export default Entropy;
+export { Entropy };
+export { stampit };

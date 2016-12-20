@@ -1,0 +1,50 @@
+{
+  "name": "entropy.js",
+  "version": "1.0.0-alpha.3",
+  "description": "Framework for making games and not only games in entity system manner.",
+  "keywords": [
+    "entity system",
+    "es",
+    "game engine",
+    "gamedev"
+  ],
+  "homepage": "https://github.com/tdzienniak/entropy#readme",
+  "bugs": {
+    "url": "https://github.com/tdzienniak/entropy/issues"
+  },
+  "license": "MIT",
+  "author": "Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>",
+  "main": "./build/Entropy.js",
+  "directories": {
+    "doc": "docs",
+    "example": "example",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tdzienniak/entropy.git"
+  },
+  "scripts": {
+    "babel": "babel src --out-dir build --presets=es2015",
+    "bundle": "npm run bundle:production && npm run bundle:development",
+    "bundle:development": "webpack --config development.config.js",
+    "bundle:production": "webpack --config production.config.js",
+    "bundle:watch": "npm run bundle:development -- --watch",
+    "clean": "rimraf build/* && rimraf dist/*",
+    "prepublish": "npm run clean && npm run babel && npm run bundle"
+  },
+  "dependencies": {
+    "fast-array": "^1.3.1",
+    "fastbitset": "0.0.18",
+    "lodash": "^4.17.2",
+    "stampit": "^3.0.6"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.18.2",
+    "babel-preset-es2015": "^6.18.0",
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.5.4",
+    "webpack": "^1.13.3"
+  }
+}

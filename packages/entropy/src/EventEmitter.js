@@ -20,11 +20,13 @@ import stampit from 'stampit';
 const EventEmitter = stampit({
   init() {
     /**
-    * Object with registered event listeners. Keys are event names.
-    *
-    * @private
-    * @property {Object} _events
-    */
+     * Object with registered event listeners. Keys are event names.
+     *
+     * @private
+     * @memberof EventEmitter#
+     * @name _events
+     * @type Object
+     */
     this._events = {};
     this._responding = true;
   },
