@@ -2,7 +2,7 @@ __Note: this engine is still in active developement. It lacks many tests, docume
 
 __Documentation note: all "classes" in docs are not real classes, they are factory functions and should be called without `new`. JSDocs has no convenient way to describe factory functions.__
 
-# Entropy
+![entropy-logo](https://raw.githubusercontent.com/tdzienniak/entropy/master/entropy.png)
 
 _JavaScript entity system framework for games._
 
