@@ -53,12 +53,21 @@ After cloning the repo run:
 npm install
 ```
 
-Then to build and to create minified file for browsers:
+Then you need to bootstrap all packages (install dependencies, etc.):
 ```
-npm run build
+npm run bootstrap
 ```
 
-To run tests:
+Bootstraping automatically compiles and builds all packages.
+
+If you want to bundle or build single package, `cd` into desired package directore and use `npm` scripts:
+```
+cd ./packages/entropy
+npm run bundle # bundles package for browser
+npm run babel # transpiles source files
+```
+
+To run tests for all packages:
 ```
 npm test
 ```
