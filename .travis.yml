@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+  - "0.12"
+  - "4"
+  - "5"
+  - "6"
+  - "7"
+install:
+  - npm install && npm run bootstrap
+script:
+  - npm test
+notifications:
+  email: false

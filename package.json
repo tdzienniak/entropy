@@ -2,7 +2,8 @@
   "private": true,
   "scripts": {
     "test": "babel-tape-runner packages/*/test/* | tap-spec",
-    "docs": "jsdoc -c jsdoc.json"
+    "docs": "jsdoc -c jsdoc.json",
+    "bootstrap": "lerna bootstrap"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "eslint-plugin-react": "^6.4.1",
     "jsdoc": "^3.4.2",
     "tap-spec": "^4.1.1",
-    "tape": "^4.6.2"
+    "tape": "^4.6.2",
+    "lerna": "2.0.0-beta.31"
   }
 }
