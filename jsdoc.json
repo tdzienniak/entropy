@@ -3,14 +3,14 @@
     "allowUnknownTags": true
   },
   "source": {
-    "include": "src",
+    "include": "packages/entropy/src",
     "includePattern": "(.json|.js)$"
   },
   "plugins": [
     "node_modules/jsdoc/plugins/markdown"
   ],
   "opts": {
-    "package": "./package.json",
+    "package": "./packages/entropy/package.json",
     "readme": "./README.md",
     "template": "node_modules/docdash",
     "encoding": "utf8",
