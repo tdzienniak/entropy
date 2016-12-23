@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Engine.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Component.html">Component</a><ul class='methods'><li data-type='method'><a href="Component.html#getType">getType</a></li><li data-type='method'><a href="Component.html#onCreate">onCreate</a></li></ul></li><li><a href="ComponentStore.html">ComponentStore</a><ul class='methods'><li data-type='method'><a href="ComponentStore.html#create">create</a></li><li data-type='method'><a href="ComponentStore.html#free">free</a></li><li data-type='method'><a href="ComponentStore.html#register">register</a></li><li data-type='method'><a href="ComponentStore.html#registerMany">registerMany</a></li></ul></li><li><a href="Engine.html">Engine</a><ul class='methods'><li data-type='method'><a href="Engine.html#addEntity">addEntity</a></li><li data-type='method'><a href="Engine.html#addSystem">addSystem</a></li><li data-type='method'><a href="Engine.html#clear">clear</a></li><li data-type='method'><a href="Engine.html#emit">emit</a></li><li data-type='method'><a href="Engine.html#getEntities">getEntities</a></li><li data-type='method'><a href="Engine.html#off">off</a></li><li data-type='method'><a href="Engine.html#on">on</a></li><li data-type='method'><a href="Engine.html#once">once</a></li><li data-type='method'><a href="Engine.html#removeEntity">removeEntity</a></li><li data-type='method'><a href="Engine.html#removeSystem">removeSystem</a></li><li data-type='method'><a href="Engine.html#startResponding">startResponding</a></li><li data-type='method'><a href="Engine.html#stopResponding">stopResponding</a></li><li data-type='method'><a href="Engine.html#update">update</a></li></ul></li><li><a href="Entity.html">Entity</a><ul class='methods'><li data-type='method'><a href="Entity.html#addComponent">addComponent</a></li><li data-type='method'><a href="Entity.html#onCreate">onCreate</a></li><li data-type='method'><a href="Entity.html#onRemove">onRemove</a></li><li data-type='method'><a href="Entity.html#onReuse">onReuse</a></li><li data-type='method'><a href="Entity.html#removeComponent">removeComponent</a></li></ul></li><li><a href="EntityStore.html">EntityStore</a><ul class='methods'><li data-type='method'><a href="EntityStore.html#create">create</a></li><li data-type='method'><a href="EntityStore.html#free">free</a></li><li data-type='method'><a href="EntityStore.html#register">register</a></li><li data-type='method'><a href="EntityStore.html#registerMany">registerMany</a></li></ul></li><li><a href="Entropy.html">Entropy</a><ul class='methods'><li data-type='method'><a href="Entropy.html#addEntity">addEntity</a></li><li data-type='method'><a href="Entropy.html#addSystem">addSystem</a></li><li data-type='method'><a href="Entropy.html#createComponent">createComponent</a></li><li data-type='method'><a href="Entropy.html#createEntity">createEntity</a></li><li data-type='method'><a href="Entropy.html#createQuery">createQuery</a></li><li data-type='method'><a href="Entropy.html#createSystem">createSystem</a></li><li data-type='method'><a href="Entropy.html#emit">emit</a></li><li data-type='method'><a href="Entropy.html#getEntities">getEntities</a></li><li data-type='method'><a href="Entropy.html#isRunning">isRunning</a></li><li data-type='method'><a href="Entropy.html#off">off</a></li><li data-type='method'><a href="Entropy.html#on">on</a></li><li data-type='method'><a href="Entropy.html#once">once</a></li><li data-type='method'><a href="Entropy.html#pause">pause</a></li><li data-type='method'><a href="Entropy.html#registerComponent">registerComponent</a></li><li data-type='method'><a href="Entropy.html#registerComponents">registerComponents</a></li><li data-type='method'><a href="Entropy.html#registerEntity">registerEntity</a></li><li data-type='method'><a href="Entropy.html#registerEntitys">registerEntitys</a></li><li data-type='method'><a href="Entropy.html#registerSystem">registerSystem</a></li><li data-type='method'><a href="Entropy.html#registerSystems">registerSystems</a></li><li data-type='method'><a href="Entropy.html#removeEntity">removeEntity</a></li><li data-type='method'><a href="Entropy.html#removeSystem">removeSystem</a></li><li data-type='method'><a href="Entropy.html#resume">resume</a></li><li data-type='method'><a href="Entropy.html#start">start</a></li><li data-type='method'><a href="Entropy.html#startResponding">startResponding</a></li><li data-type='method'><a href="Entropy.html#stop">stop</a></li><li data-type='method'><a href="Entropy.html#stopResponding">stopResponding</a></li></ul></li><li><a href="EventEmitter.html">EventEmitter</a><ul class='methods'><li data-type='method'><a href="EventEmitter.html#emit">emit</a></li><li data-type='method'><a href="EventEmitter.html#off">off</a></li><li data-type='method'><a href="EventEmitter.html#on">on</a></li><li data-type='method'><a href="EventEmitter.html#once">once</a></li><li data-type='method'><a href="EventEmitter.html#startResponding">startResponding</a></li><li data-type='method'><a href="EventEmitter.html#stopResponding">stopResponding</a></li></ul></li><li><a href="Query.html">Query</a><ul class='methods'><li data-type='method'><a href="Query.html#addToIndex">addToIndex</a></li><li data-type='method'><a href="Query.html#getEntities">getEntities</a></li><li data-type='method'><a href="Query.html#initialize">initialize</a></li><li data-type='method'><a href="Query.html#removeFromIndex">removeFromIndex</a></li><li data-type='method'><a href="Query.html#satisfiedBy">satisfiedBy</a></li><li data-type='method'><a href="Query.html#shouldUpdate">shouldUpdate</a></li><li data-type='method'><a href="Query.html#update">update</a></li></ul></li><li><a href="SystemStore.html">SystemStore</a><ul class='methods'><li data-type='method'><a href="SystemStore.html#create">create</a></li><li data-type='method'><a href="SystemStore.html#register">register</a></li><li data-type='method'><a href="SystemStore.html#registerMany">registerMany</a></li></ul></li><li><a href="Ticker.html">Ticker</a><ul class='methods'><li data-type='method'><a href="Ticker.html#getFPS">getFPS</a></li><li data-type='method'><a href="Ticker.html#getMaxAllowedFPS">getMaxAllowedFPS</a></li><li data-type='method'><a href="Ticker.html#getSimulationTimestep">getSimulationTimestep</a></li><li data-type='method'><a href="Ticker.html#isRunning">isRunning</a></li><li data-type='method'><a href="Ticker.html#resetFrameDelta">resetFrameDelta</a></li><li data-type='method'><a href="Ticker.html#setMaxAllowedFPS">setMaxAllowedFPS</a></li><li data-type='method'><a href="Ticker.html#setSimulationTimestep">setSimulationTimestep</a></li><li data-type='method'><a href="Ticker.html#start">start</a></li><li data-type='method'><a href="Ticker.html#stop">stop</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="Engine.html#event:clear">clear</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Engine.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { compose } from 'stampit';
+import isStamp from 'stampit/isStamp';
+import FastArray from 'fast-array';
+
+import EventEmitter from './EventEmitter';
+import Pool from './Pool';
+import { isNonEmptyString } from './helpers';
+
+/**
+ * This module manages the state of entities, components and systems. The heart of Entropy.
+ *
+ * @class Engine
+ * @extends EventEmitter
+ */
+const Engine = compose({
+  init(opts) {
+    // entity ids start from 1, 0 means uninitailized or disabled entity
+    let greatestEntityID = 1;
+
+    /**
+     * When entity is removed, it's ID can be reused by new entities. This pool stores old IDs ready to reuse.
+     *
+     * @private
+     * @name _entitiesIdsPool
+     * @memberof Engine#
+     * @type Pool
+     */
+    this._entitiesIdsPool = Pool({
+      _new() {
+        return greatestEntityID++;
+      },
+    });
+
+    /**
+     * Systems that are processed every tick.
+     *
+     * @private
+     * @name _systems
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._systems = FastArray({
+      initialSize: 10,
+    });
+
+    /**
+     * Array with entities. Array index corresponds to ID of an entity.
+     * First element is empty (equals 0), because entity IDs start from 1.
+     * Entity with `id` property equal 0 is _officially_ not present
+     * in the system (it can be for example present in the pool or waiting
+     * for addition to system).
+     *
+     * @private
+     * @name _entities
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._entities = FastArray();
+
+    /**
+     * List of modified entities.
+     *
+     * When entity is modified it is added to this list. After each frame modifications are applied to every entity on the list.
+     *
+     * @private
+     * @name _modifiedEntities
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._modifiedEntities = FastArray();
+
+    /**
+     * Queue of entities ready to be added on next tick.
+     *
+     * @private
+     * @name _entitiesToAdd
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._entitiesToAdd = FastArray();
+
+    /**
+     * Queue of entities ready to be removed on next tick.
+     *
+     * @private
+     * @name _entitiesToRemove
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._entitiesToRemove = FastArray();
+
+    /**
+     * Queue of systems ready to be added on next tick.
+     *
+     * @private
+     * @name _systemsToAdd
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._systemsToAdd = FastArray({
+      initialSize: 10,
+    });
+
+    /**
+     * Queue of systems ready to be removed on next tick.
+     *
+     * @private
+     * @name _systemsToRemove
+     * @memberof Engine#
+     * @type FastArray
+     */
+    this._systemsToRemove = FastArray({
+      initialSize: 10,
+    });
+
+    /**
+     * Array of queries. Every query that was used is stored here and updated when engine state changes.
+     *
+     * @private
+     * @name _queries
+     * @memberof Engine#
+     * @type {Array}
+     */
+    this._queries = [];
+
+    /**
+     * Current number of entities active.
+     *
+     * @private
+     * @name _entitiesCount
+     * @memberof Engine#
+     * @type {Number}
+     */
+    this._entitiesCount = 0;
+
+    /**
+     * Indicates whether clearing is scheduled.
+     *
+     * @private
+     * @name _isClearingScheduled
+     * @memberof Engine#
+     * @type {Boolean}
+     */
+    this._isClearingScheduled = false;
+
+    /**
+     * Indicates whether clearing was performed.
+     *
+     * @private
+     * @name _wasClearingPerformed
+     * @memberof Engine#
+     * @type {Boolean}
+     */
+    this._wasClearingPerformed = false;
+
+    this.game = opts.game;
+  },
+  methods: {
+    /**
+     * Adds entity to adding queue.
+     * If entity is new (not recycled), adds event listener for modifications.
+     *
+     * @memberof Engine#
+     * @param {Entity} entity entity to add
+     */
+    addEntity(entity) {
+      if (!entity.isRecycled()) {
+        entity.on('queueModification', () => {
+          this._markModifiedEntity(entity);
+        });
+      }
+
+      if (this.game.isRunning()) {
+        this._entitiesToAdd.push(entity);
+      } else {
+        this._addEntity(entity);
+      }
+    },
+    /**
+     * Adds entity to removing queue.
+     *
+     * @memberof Engine#
+     * @param {Entity} entity entity to remove
+     */
+    removeEntity(entity) {
+      if (this.game.isRunning()) {
+        this._entitiesToRemove.push(entity);
+      } else {
+        this._removeEntity();
+      }
+    },
+    /**
+     * Adds system to adding queue.
+     *
+     * @memberof Engine#
+     * @param {System} system to add
+     */
+    addSystem(system) {
+      this._systemsToAdd.push(system);
+    },
+    /**
+     * Adds system to removing queue.
+     *
+     * @memberof Engine#
+     * @param {String|System} systemOrType system instance or system type to remove
+     */
+    removeSystem(systemOrType) {
+      let system;
+
+      if (isStamp(systemOrType)) {
+        system = systemOrType;
+      } else if (isNonEmptyString(systemOrType)) {
+        system = this._systems.find(s => s.type === systemOrType);
+      }
+
+      if (system) {
+        this._systemsToRemove.push(system);
+      }
+    },
+    /**
+     * Gets entities matching query criterions.
+     *
+     * @memberof Engine#
+     * @param {Query} query query
+     * @return {Object} object with `entities` and `length` properties
+     */
+    getEntities(query) {
+      if (this._queries.indexOf(query) === -1) {
+        this._initializeQuery(query);
+      }
+
+      return query.getEntities();
+    },
+    /**
+     * Updates the engine:
+     * - updates systems (calls `onUpdate` method of every active system)
+     * - performs clearing, if scheduled
+     * - applies engine modifications (adding/removing entities/systems, updating queries)
+     *
+     * @memberof Engine#
+     * @fires Engine#clear
+     * @param {...Any} args arguments passed to systems `onUpdate` methods
+     */
+    update(...args) {
+      this._updateSystems(...args);
+
+      if (this._isClearingScheduled) {
+        this._performScheduledClearing();
+      }
+
+      this._removeEntities();
+      this._addEntities();
+      this._modifyEntities();
+      this._removeSystems();
+      this._addSystems();
+      this._updateQueries();
+
+      if (this._wasClearingPerformed) {
+        /**
+         * Engine was cleared.
+         *
+         * @event Engine#clear
+         */
+        this.emit('clear');
+
+        this._wasClearingPerformed = false;
+        this._isClearingScheduled = false;
+      }
+    },
+    /**
+     * Schedules clearing. Clearing is done on next frame.
+     *
+     * @memberof Engine#
+     */
+    clear() {
+      this._isClearingScheduled = true;
+    },
+    _markModifiedEntity(entity) {
+      if (entity.id !== 0 &amp;&amp; this._modifiedEntities.indexOf(entity) === -1) {
+        if (this.game.isRunning()) {
+          this._modifiedEntities.push(entity);
+        } else {
+          this._modifyEntity(entity);
+        }
+      }
+    },
+    _updateSystems(...args) {
+      for (let i = 0; i &lt; this._systems.length; i += 1) {
+        const system = this._systems.arr[i];
+
+        if (!system._disabled) {
+          system.onUpdate(...args);
+        }
+      }
+    },
+    _removeEntities() {
+      while (this._entitiesToRemove.length) {
+        this._removeEntity(this._entitiesToRemove.pop());
+      }
+    },
+    _removeEntity(entity) {
+      if (entity.id === 0) {
+        return;
+      }
+
+      for (let i = 0; i &lt; this._queries.length; i += 1) {
+        const query = this._queries[i];
+
+        if (query.satisfiedBy(entity)) {
+          query.removeFromIndex(entity.id);
+        }
+      }
+
+      entity.onRemove(entity);
+
+      // remove entity from global index
+      this._entities.unsetAtIndex(entity.id);
+
+      // send unused entity ID to pool for later reuse
+      this._entitiesIdsPool.free(entity.id);
+
+      entity.removeAllComponents();
+
+      // id = 0 indicates inactive entity
+      entity.id = 0;
+
+      this.game.entity.free(entity);
+
+      this._entitiesCount -= 1;
+
+      this.emit('entityRemove', entity);
+    },
+    _addEntities() {
+      while (this._entitiesToAdd.length) {
+        this._addEntity(this._entitiesToAdd.pop());
+      }
+    },
+    _addEntity(entity) {
+      const newEntityId = this._entitiesIdsPool.allocate();
+
+      entity.id = newEntityId;
+
+      this._entities.insertAtIndex(newEntityId, entity);
+
+      for (let i = 0; i &lt; this._queries.length; i += 1) {
+        const query = this._queries[i];
+
+        if (query.satisfiedBy(entity)) {
+          query.addToIndex(newEntityId);
+        }
+      }
+
+      this._entitiesCount += 1;
+
+      this.emit('entityAdd', entity);
+    },
+    _modifyEntity(entity) {
+      for (let i = 0; i &lt; this._queries.length; i += 1) {
+        const query = this._queries[i];
+
+        const satisfiedBeforeModification = query.satisfiedBy(entity);
+
+        entity.applyModifications();
+
+        const satisfiesAfterModification = query.satisfiedBy(entity);
+
+        if (!satisfiedBeforeModification &amp;&amp; satisfiesAfterModification) {
+          query.addToIndex(entity.id);
+        } else if (satisfiedBeforeModification &amp;&amp; !satisfiesAfterModification) {
+          query.removeFromIndex(entity.id);
+        }
+      }
+    },
+    _modifyEntities() {
+      while (this._modifiedEntities.length) {
+        this._modifyEntity(this._modifiedEntities.pop());
+      }
+    },
+    _addSystem(system) {
+      let insertionIndex = 0;
+      for (;insertionIndex &lt; this._systems.length; insertionIndex += 1) {
+        if (this._systems.arr[insertionIndex].priority > system.priority) {
+          break;
+        }
+      }
+
+      this._systems.insertBefore(insertionIndex, system);
+    },
+    _addSystems() {
+      while (this._systemsToAdd.length) {
+        this._addSystem(this._systemsToAdd.shift());
+      }
+    },
+    _removeSystem(system) {
+      const indexOfSystem = this._systems.indexOf(system);
+
+      if (indexOfSystem !== -1) {
+        system.onRemove();
+
+        this._systems.removeAtIndex(indexOfSystem);
+      }
+    },
+    _removeSystems() {
+      while (this._systemsToRemove.length) {
+        this._removeSystem(this._systemsToRemove.shift());
+      }
+    },
+    _updateQueries() {
+      for (let i = 0; i &lt; this._queries.length; i += 1) {
+        this._queries[i].update(this._entities);
+      }
+    },
+    _performScheduledClearing() {
+      this._wasClearingPerformed = true;
+    },
+    _initializeQuery(query) {
+      query.initialize(this._entities);
+
+      this._queries.push(query);
+    },
+  },
+}, EventEmitter);
+
+export default Engine;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Dec 23 2016 15:24:05 GMT+0100 (Środkowoeuropejski czas stand.) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

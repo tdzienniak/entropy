@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Ticker - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Component.html">Component</a><ul class='methods'><li data-type='method'><a href="Component.html#getType">getType</a></li><li data-type='method'><a href="Component.html#onCreate">onCreate</a></li></ul></li><li><a href="ComponentStore.html">ComponentStore</a><ul class='methods'><li data-type='method'><a href="ComponentStore.html#create">create</a></li><li data-type='method'><a href="ComponentStore.html#free">free</a></li><li data-type='method'><a href="ComponentStore.html#register">register</a></li><li data-type='method'><a href="ComponentStore.html#registerMany">registerMany</a></li></ul></li><li><a href="Engine.html">Engine</a><ul class='methods'><li data-type='method'><a href="Engine.html#addEntity">addEntity</a></li><li data-type='method'><a href="Engine.html#addSystem">addSystem</a></li><li data-type='method'><a href="Engine.html#clear">clear</a></li><li data-type='method'><a href="Engine.html#emit">emit</a></li><li data-type='method'><a href="Engine.html#getEntities">getEntities</a></li><li data-type='method'><a href="Engine.html#off">off</a></li><li data-type='method'><a href="Engine.html#on">on</a></li><li data-type='method'><a href="Engine.html#once">once</a></li><li data-type='method'><a href="Engine.html#removeEntity">removeEntity</a></li><li data-type='method'><a href="Engine.html#removeSystem">removeSystem</a></li><li data-type='method'><a href="Engine.html#startResponding">startResponding</a></li><li data-type='method'><a href="Engine.html#stopResponding">stopResponding</a></li><li data-type='method'><a href="Engine.html#update">update</a></li></ul></li><li><a href="Entity.html">Entity</a><ul class='methods'><li data-type='method'><a href="Entity.html#addComponent">addComponent</a></li><li data-type='method'><a href="Entity.html#onCreate">onCreate</a></li><li data-type='method'><a href="Entity.html#onRemove">onRemove</a></li><li data-type='method'><a href="Entity.html#onReuse">onReuse</a></li><li data-type='method'><a href="Entity.html#removeComponent">removeComponent</a></li></ul></li><li><a href="EntityStore.html">EntityStore</a><ul class='methods'><li data-type='method'><a href="EntityStore.html#create">create</a></li><li data-type='method'><a href="EntityStore.html#free">free</a></li><li data-type='method'><a href="EntityStore.html#register">register</a></li><li data-type='method'><a href="EntityStore.html#registerMany">registerMany</a></li></ul></li><li><a href="Entropy.html">Entropy</a><ul class='methods'><li data-type='method'><a href="Entropy.html#addEntity">addEntity</a></li><li data-type='method'><a href="Entropy.html#addSystem">addSystem</a></li><li data-type='method'><a href="Entropy.html#createComponent">createComponent</a></li><li data-type='method'><a href="Entropy.html#createEntity">createEntity</a></li><li data-type='method'><a href="Entropy.html#createQuery">createQuery</a></li><li data-type='method'><a href="Entropy.html#createSystem">createSystem</a></li><li data-type='method'><a href="Entropy.html#emit">emit</a></li><li data-type='method'><a href="Entropy.html#getEntities">getEntities</a></li><li data-type='method'><a href="Entropy.html#isRunning">isRunning</a></li><li data-type='method'><a href="Entropy.html#off">off</a></li><li data-type='method'><a href="Entropy.html#on">on</a></li><li data-type='method'><a href="Entropy.html#once">once</a></li><li data-type='method'><a href="Entropy.html#pause">pause</a></li><li data-type='method'><a href="Entropy.html#registerComponent">registerComponent</a></li><li data-type='method'><a href="Entropy.html#registerComponents">registerComponents</a></li><li data-type='method'><a href="Entropy.html#registerEntity">registerEntity</a></li><li data-type='method'><a href="Entropy.html#registerEntitys">registerEntitys</a></li><li data-type='method'><a href="Entropy.html#registerSystem">registerSystem</a></li><li data-type='method'><a href="Entropy.html#registerSystems">registerSystems</a></li><li data-type='method'><a href="Entropy.html#removeEntity">removeEntity</a></li><li data-type='method'><a href="Entropy.html#removeSystem">removeSystem</a></li><li data-type='method'><a href="Entropy.html#resume">resume</a></li><li data-type='method'><a href="Entropy.html#start">start</a></li><li data-type='method'><a href="Entropy.html#startResponding">startResponding</a></li><li data-type='method'><a href="Entropy.html#stop">stop</a></li><li data-type='method'><a href="Entropy.html#stopResponding">stopResponding</a></li></ul></li><li><a href="EventEmitter.html">EventEmitter</a><ul class='methods'><li data-type='method'><a href="EventEmitter.html#emit">emit</a></li><li data-type='method'><a href="EventEmitter.html#off">off</a></li><li data-type='method'><a href="EventEmitter.html#on">on</a></li><li data-type='method'><a href="EventEmitter.html#once">once</a></li><li data-type='method'><a href="EventEmitter.html#startResponding">startResponding</a></li><li data-type='method'><a href="EventEmitter.html#stopResponding">stopResponding</a></li></ul></li><li><a href="Query.html">Query</a><ul class='methods'><li data-type='method'><a href="Query.html#addToIndex">addToIndex</a></li><li data-type='method'><a href="Query.html#getEntities">getEntities</a></li><li data-type='method'><a href="Query.html#initialize">initialize</a></li><li data-type='method'><a href="Query.html#removeFromIndex">removeFromIndex</a></li><li data-type='method'><a href="Query.html#satisfiedBy">satisfiedBy</a></li><li data-type='method'><a href="Query.html#shouldUpdate">shouldUpdate</a></li><li data-type='method'><a href="Query.html#update">update</a></li></ul></li><li><a href="SystemStore.html">SystemStore</a><ul class='methods'><li data-type='method'><a href="SystemStore.html#create">create</a></li><li data-type='method'><a href="SystemStore.html#register">register</a></li><li data-type='method'><a href="SystemStore.html#registerMany">registerMany</a></li></ul></li><li><a href="Ticker.html">Ticker</a><ul class='methods'><li data-type='method'><a href="Ticker.html#getFPS">getFPS</a></li><li data-type='method'><a href="Ticker.html#getMaxAllowedFPS">getMaxAllowedFPS</a></li><li data-type='method'><a href="Ticker.html#getSimulationTimestep">getSimulationTimestep</a></li><li data-type='method'><a href="Ticker.html#isRunning">isRunning</a></li><li data-type='method'><a href="Ticker.html#resetFrameDelta">resetFrameDelta</a></li><li data-type='method'><a href="Ticker.html#setMaxAllowedFPS">setMaxAllowedFPS</a></li><li data-type='method'><a href="Ticker.html#setSimulationTimestep">setSimulationTimestep</a></li><li data-type='method'><a href="Ticker.html#start">start</a></li><li data-type='method'><a href="Ticker.html#stop">stop</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="Engine.html#event:clear">clear</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Ticker</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        Ticker
+        </h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+
+    <h4 class="name" id="Ticker"><span class="type-signature"></span>new Ticker<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Ticker.js.html">Ticker.js</a>, <a href="Ticker.js.html#line99">line 99</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="getFPS"><span class="type-signature"></span>getFPS<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Ticker.js.html">Ticker.js</a>, <a href="Ticker.js.html#line407">line 407</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Returns the exponential moving average of the frames per second.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The exponential moving average of the frames per second.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getMaxAllowedFPS"><span class="type-signature"></span>getMaxAllowedFPS<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Ticker.js.html">Ticker.js</a>, <a href="Ticker.js.html#line422">line 422</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Gets the maximum frame rate.</p>
+<p>Other factors also limit the FPS; see <code>MainLoop.setSimulationTimestep</code>
+for details.</p>
+<p>See also <code>MainLoop.setMaxAllowedFPS()</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The maximum number of frames per second allowed.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getSimulationTimestep"><span class="type-signature"></span>getSimulationTimestep<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Ticker.js.html">Ticker.js</a>, <a href="Ticker.js.html#line349">line 349</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Gets how many milliseconds should be simulated by every run of update().</p>
+<p>See <code>MainLoop.setSimulationTimestep()</code> for details on this value.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The number of milliseconds that should be simulated by every run of
+  <code>update</code>().</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="isRunning"><span class="type-signature"></span>isRunning<span class="signature">()</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Ticker.js.html">Ticker.js</a>, <a href="Ticker.js.html#line584">line 584</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Returns whether the main loop is currently running.</p>
+<p>See also <code>MainLoop.start()</code> and <code>MainLoop.stop()</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Whether the main loop is currently running.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="resetFrameDelta"><span class="type-signature"></span>resetFrameDelta<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Ticker.js.html">Ticker.js</a>, <a href="Ticker.js.html#line479">line 479</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Reset the amount of time that has not yet been simulated to zero.</p>
+<p>This introduces non-deterministic behavior if called after the
+application has started running (unless it is being reset, in which case
+it doesn't matter). However, this can be useful in cases where the
+amount of time that has not yet been simulated has grown very large
+(for example, when the application's tab gets put in the background and
+the browser throttles the timers as a result). In applications with
+lockstep the player would get dropped, but in other networked
+applications it may be necessary to snap or ease the player/user to the
+authoritative state and discard pending updates in the process. In
+non-networked applications it may also be acceptable to simply resume
+the application where it last left off and ignore the accumulated
+unsimulated time.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The cumulative amount of elapsed time in milliseconds that has not yet
+  been simulated, but is being discarded as a result of calling this
+  function.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="setMaxAllowedFPS"><span class="type-signature"></span>setMaxAllowedFPS<span class="signature">(fps<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Ticker.js.html">Ticker.js</a>, <a href="Ticker.js.html#line442">line 442</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Sets a maximum frame rate.</p>
+<p>See also <code>MainLoop.getMaxAllowedFPS()</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>fps</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>Infinity</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>The maximum number of frames per second to execute. If Infinity or not
+  passed, there will be no FPS cap (although other factors do limit the
+  FPS; see <code>MainLoop.setSimulationTimestep</code> for details). If zero, this
+  will stop the loop, and when the loop is next started, it will return
+  to the previous maximum frame rate. Passing negative values will stall
+  the loop until this function is called again with a positive value.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="setSimulationTimestep"><span class="type-signature"></span>setSimulationTimestep<span class="signature">(timestep)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Ticker.js.html">Ticker.js</a>, <a href="Ticker.js.html#line395">line 395</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Sets how many milliseconds should be simulated by every run of update().</p>
+<p>The perceived frames per second (FPS) is effectively capped at the
+multiplicative inverse of the simulation timestep. That is, if the
+timestep is 1000 / 60 (which is the default), then the maximum perceived
+FPS is effectively 60. Decreasing the timestep increases the maximum
+perceived FPS at the cost of running <code>update</code>() more
+times per frame at lower frame rates. Since running update() more times
+takes more time to process, this can actually slow down the frame rate.
+Additionally, if the amount of time it takes to run update() exceeds or
+very nearly exceeds the timestep, the application will freeze and crash
+in a spiral of death (unless it is rescued; see <code>MainLoop.setEnd()</code> for
+an explanation of what can be done if a spiral of death is occurring).</p>
+<p>The exception to this is that interpolating between updates for each
+render can increase the perceived frame rate and reduce visual
+stuttering. See <code>MainLoop.setDraw()</code> for an explanation of how to do
+this.</p>
+<p>If you are considering decreasing the simulation timestep in order to
+raise the maximum perceived FPS, keep in mind that most monitors can't
+display more than 60 FPS. Whether humans can tell the difference among
+high frame rates depends on the application, but for reference, film is
+usually displayed at 24 FPS, other videos at 30 FPS, most games are
+acceptable above 30 FPS, and virtual reality might require 75 FPS to
+feel natural. Some gaming monitors go up to 144 FPS. Setting the
+timestep below 1000 / 144 is discouraged and below 1000 / 240 is
+strongly discouraged. The default of 1000 / 60 is good in most cases.</p>
+<p>The simulation timestep should typically only be changed at
+deterministic times (e.g. before the main loop starts for the first
+time, and not in response to user input or slow frame rates) to avoid
+introducing non-deterministic behavior. The update timestep should be
+the same for all players/users in multiplayer/multi-user applications.</p>
+<p>See also <code>MainLoop.getSimulationTimestep()</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>timestep</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The number of milliseconds that should be simulated by every run of
+  <code>update</code>().</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="start"><span class="type-signature"></span>start<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Ticker.js.html">Ticker.js</a>, <a href="Ticker.js.html#line503">line 503</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Starts the main loop.</p>
+<p>Note that the application is not considered &quot;running&quot; immediately after
+this function returns; rather, it is considered &quot;running&quot; after the
+application draws its first frame. The distinction is that event
+handlers should remain paused until the application is running, even
+after <code>MainLoop.start()</code> is called. Check <code>MainLoop.isRunning()</code> for the
+current status. To act after the application starts, register a callback
+with requestAnimationFrame() after calling this function and execute the
+action in that callback. It is safe to call <code>MainLoop.start()</code> multiple
+times even before the application starts running and without calling
+<code>MainLoop.stop()</code> in between, although there is no reason to do this;
+the main loop will only start if it is not already started.</p>
+<p>See also <code>MainLoop.stop()</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="stop"><span class="type-signature"></span>stop<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Ticker.js.html">Ticker.js</a>, <a href="Ticker.js.html#line552">line 552</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Stops the main loop.</p>
+<p>Event handling and other background tasks should also be paused when the
+main loop is paused.</p>
+<p>Note that pausing in multiplayer/multi-user applications will cause the
+player's/user's client to become out of sync. In this case the
+simulation should exit, or the player/user needs to be snapped to their
+updated position when the main loop is started again.</p>
+<p>See also <code>MainLoop.start()</code> and <code>MainLoop.isRunning()</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Dec 23 2016 15:24:05 GMT+0100 (Środkowoeuropejski czas stand.) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

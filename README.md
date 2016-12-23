@@ -31,7 +31,7 @@ If you prefer to just include script as standalone lib, put reference to `entrop
 
 The best way to get a grasp of Entropy is to read the [wiki](https://github.com/tdzienniak/entropy/wiki).
 
-You can also read the [docs](http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.1/) and check out examples:
+You can also read the [docs](http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.5/) and check out examples:
 
 1. [Bunnies (benchmark and PIXI.js rendering)](http://tdzienniak.github.io/entropy/example/bunnies/)
 2. [Breakout (complete game with p2.js physics, PIXI rendering and plugins)](http://tdzienniak.github.io/entropy/example/breakout/)
@@ -74,7 +74,7 @@ npm test
 
 ## Docs
 
-Documentation is located in `docs` folder. You can also read it online: [http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.1/](http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.1/).
+Documentation is located in `docs` folder. You can also read it online: [http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.5/](http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.5/).
 
 ## Testers and people who have helped
 
