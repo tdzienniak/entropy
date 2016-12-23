@@ -11,9 +11,6 @@ import EventEmitter from './EventEmitter';
  * @class Entity
  */
 const Entity = stampit({
-  /**
-   * @constructs
-   */
   init(opts) {
     this._modifications = FastArray();
     this._used = false;
@@ -93,7 +90,7 @@ const Entity = stampit({
       this.emit('componentAdd', this, componentToAdd);
     },
     /**
-     * Removes components.
+     * Removes component.
      *
      * @memberof Entity#
      */
