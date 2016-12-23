@@ -43,9 +43,6 @@ const Entropy = stampit.compose(EventEmitter, {
       PLUGINS.push(factoryFunction);
     },
   },
-  /**
-   * @constructs
-   */
   init(config = {}) {
     // welcome message
     const styles = `
@@ -106,7 +103,8 @@ const Entropy = stampit.compose(EventEmitter, {
     /**
      * Instance of Ticker class.
      *
-     * @property ticker
+     * @memberof Entropy#
+     * @name ticker
      * @type {Ticker}
      */
     this.ticker = Ticker({
@@ -203,20 +201,6 @@ const Entropy = stampit.compose(EventEmitter, {
         this._stopAndEmit();
       }
     },
-    /**
-     * Defines new state.
-     *
-     * @example
-     * sss
-     *
-     * @memberof Entropy#
-     * @param {Object} state object definig state. See {@link State#define} for more info.
-     */
-    defineState(state) {
-      this.state.define(Object.assign({}, state, {
-        constArgs: [this],
-      }));
-    },
     registerEntity(...args) {
       this.entity.register(...args);
 
@@ -231,9 +215,13 @@ const Entropy = stampit.compose(EventEmitter, {
       return this.entity.create(...args);
     },
     /**
-     * [addEntity description]
-     * @param {[type]} nameOrEntity [description]
-     * @param {[type]} ...args      [description]
+     * Adds (or schedules adding) entity to engine. If first argument is entity type (string), then entity instance is created and then added.
+     *
+     * @public
+     * @memberof Entropy#
+     * @method addEntity
+     * @param {Entity|String} typeOrEntity entity instance or entity type to create
+     * @param {...Any}        args         arguments passed to `onCreate` method of entity descriptor, when first argument is entity type
      */
     addEntity(typeOrEntity, ...args) {
       const entity = isObject(typeOrEntity) ?
@@ -244,9 +232,12 @@ const Entropy = stampit.compose(EventEmitter, {
       return this;
     },
     /**
-     * [removeEntity description]
-     * @param  {[type]} entity [description]
-     * @return {[type]}        [description]
+     * Removes (or schedules removing) entity from engine.
+     *
+     * @public
+     * @memberof Entropy#
+     * @method removeEntity
+     * @param {Entity} entity entity instance
      */
     removeEntity(entity) {
       this.engine.removeEntity(entity);
@@ -278,9 +269,13 @@ const Entropy = stampit.compose(EventEmitter, {
       return this.system.create(...args);
     },
     /**
-     * [addSystem description]
-     * @param {[type]} nameOrSystem [description]
-     * @param {[type]} ...args      [description]
+     * Adds system to engine. If first argument is system type (string), then system instance is created and then added.
+     *
+     * @public
+     * @memberof Entropy#
+     * @method addSystem
+     * @param {System|String} typeOrSystem system instance or system type to create
+     * @param {...Any}        args         arguments passed to `onCreate` method of system descriptor, when first argument is system type
      */
     addSystem(typeOrSystem, ...args) {
       const system = isObject(typeOrSystem) ?
@@ -289,9 +284,24 @@ const Entropy = stampit.compose(EventEmitter, {
       this.engine.addSystem(system);
     },
     /**
-     * [createQuery description]
-     * @param  {[type]} criterions [description]
-     * @return {[type]}            [description]
+     * Removes (or schedules removing) system from engine.
+     *
+     * @public
+     * @memberof Entropy#
+     * @method removeSystem
+     * @param {System|String} typeOrSystem system instance or system type
+     */
+    removeSystem(typeOrSystem) {
+      this.engine.removeSystem(typeOrSystem);
+    },
+    /**
+     * Creates new query from criterions. See {@link Query} for details about available criterions.
+     *
+     * @public
+     * @memberof Entropy#
+     * @method createQuery
+     * @param {Object|Array} criterions criterions
+     * @returns {Query} query instance
      */
     createQuery(criterions) {
       const query = Query({
@@ -301,8 +311,28 @@ const Entropy = stampit.compose(EventEmitter, {
 
       return query;
     },
+    /**
+     * Returns entities that matches provided query.
+     *
+     * @public
+     * @memberof Entropy#
+     * @method getEntities
+     * @param {Query} query query
+     * @return {Object} object with `length` and `entities` properties
+     */
     getEntities(query) {
       return this.engine.getEntities(query);
+    },
+    /**
+     * Checks if ticker is running.
+     *
+     * @public
+     * @memberof Entropy#
+     * @method isRunning
+     * @returns {Boolean}
+     */
+    isRunning() {
+      return this.ticker.isRunning();
     },
     _stopAndEmit() {
       const stop = this.ticker.stop();
@@ -311,12 +341,7 @@ const Entropy = stampit.compose(EventEmitter, {
         this.emit('stop');
       }
     },
-    isRunning() {
-      return this.ticker.isRunning();
-    },
   },
 });
 
-export default Entropy;
-export { Entropy };
-export { stampit };
+module.exports = Entropy;
