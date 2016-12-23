@@ -122,7 +122,7 @@ const ComponentStore = compose({
       descriptors.forEach(descriptor => this.register(descriptor));
     },
     /**
-     * Creates new component instance or aquires one from pool.
+     * Creates new component instance or acquires one from pool.
      *
      * @public
      * @memberof ComponentStore#
