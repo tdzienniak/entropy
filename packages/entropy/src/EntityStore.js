@@ -50,10 +50,35 @@ const EntityStore = compose({
   },
   methods: {
     /**
-     * [registerEntity description]
-     * @param  {[type]} name   [description]
-     * @param  {[type]} initFn [description]
-     * @return {[type]}        [description]
+     * Registers entity. Entity has to be registered before it can be created.
+     *
+     * @example
+     * game.entity.register({
+     *   type: 'Ball',
+     *   onCreate(x, y, texture) {
+     *     const sprite = Sprite(texture);
+     *
+     *     this.addComponent('Position', x, y);
+     *     this.addComponent('Sprite', sprite);
+     *
+     *     // add sprite to stage for renderer (when using PIXI this has to be done)
+     *     this.game.stage.addChild(sprite);
+     *   },
+     *   onRemove() {
+     *     this.game.stage.removeChild(this.components.sprite.sprite);
+     *   },
+     * });
+     *
+     * const c = game.entity.create('Ball', 1, 2, 'ball.png');
+     *
+     * @public
+     * @memberof EntityStore#
+     * @method register
+     * @param {Object}    descriptor            object describing entity
+     * @param {String}    descriptor.type       type of entity
+     * @param {Function}  descriptor.onCreate   method called when entity is created (may be recycled from pool)
+     * @param {Function}  descriptor.onReuse    method called when entity is reused from pool (called before `onCreate`)
+     * @param {Function}  descriptor.onRemove   method called when entity is removed (usually it returns to a pool)
      */
     register(descriptor) {
       this._factories[descriptor.type] = compose(Entity, {
@@ -80,28 +105,45 @@ const EntityStore = compose({
       });
     },
     /**
-     * [registerEntities description]
-     * @param  {[type]} obj [description]
-     * @return {[type]}     [description]
+     * Registeres many entities.
+     *
+     * @public
+     * @memberof EntityStore#
+     * @method registerMany
+     * @param  {Array} descriptiors array of entity's descriptors (see {@link EntityStore#register})
      */
     registerMany(descriptors) {
       descriptors.forEach(descriptor => this.register(descriptor));
     },
     /**
-     * [createEntity description]
-     * @param  {[type]} name    [description]
-     * @param  {[type]} ...args [description]
-     * @return {[type]}         [description]
+     * Creates new entity instance or acquires one from pool.
+     *
+     * @public
+     * @memberof EntityStore#
+     * @method create
+     * @param  {String} type    type of entity to create
+     * @param  {...Any} ...args arguments passed to `onCreate` method
+     * @return {Entity}         new (or reused) entity ready to be added to engine
      */
     create(type, ...args) {
       return this._pools[type].allocate(...args);
     },
+    /**
+     * Frees entity. Entity is added to the pool. Marks entity as recyceled.
+     *
+     * _This method is called internally by the engine, user should not call it._
+     *
+     * @public
+     * @memberof EntityStore#
+     * @method free
+     * @param  {Entity} entity entity
+     */
     free(entity) {
       entity.markAsRecycled();
 
       this._pools[entity.type].free(entity);
     },
-  }
+  },
 });
 
 export default EntityStore;
