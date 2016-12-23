@@ -5,28 +5,31 @@ import FastArray from 'fast-array';
 
 /**
  * Used to perform matching of entities.
- * Only parameter is an array of component names to include or object with `include` and/or `exclude` properties,
- * witch are arrays of component names to respectively include and/or exclude. Object can also have `name` property,
- * that will match entities with given name.
  *
  * @example
- *     //matches entities with 'Position' and 'Velocity' components
- *     var q1 = game.createQuery(["Position", "Velocity"]);
+ * //matches entities with 'Position' and 'Velocity' components
+ * const q1 = Query({
+ *   criterions: ["Position", "Velocity"],
+ * });
  *
- *     //matches entities with 'Position' and 'Velocity' components and without 'Sprite' component
- *     var q2 = new Entropy.Query({
- *         include: ["Position", "Velocity"],
- *         exclude: ["Sprite"]
- *     });
+ * //matches entities with 'Position' and 'Velocity' components and without 'Sprite' component
+ * const q2 = Query({
+ *   criterions: {
+ *     include: ["Position", "Velocity"],
+ *     exclude: ["Sprite"],
+ *   },
+ * });
  *
- *     //matches entities with name 'Ball'
- *     var q3 = new Entropy.Query({
- *         name: "Ball"
- *     });
+ * //matches entities of type 'Ball'
+ * const q3 = Query({
+ *   criterions: {
+ *     entityType: "Ball",
+ *   },
+ * });
  *
  * @class Query
- * @constructor
- * @param {Object|Array} query query conditions
+ * @param {Object}       opts
+ * @param {Object|Array} opts.criterions query criterions
  */
 const Query = stampit({
   deepProps: {
@@ -81,9 +84,12 @@ const Query = stampit({
   },
   methods: {
     /**
-     * [initialize description]
-     * @param  {[type]} allEntities [description]
-     * @return {[type]}             [description]
+     * Initializes query. Builds initial entities index.
+     *
+     * @public
+     * @memberof Query#
+     * @method initialize
+     * @param {FastArray} allEntities fast array of all entities present in the engine
      */
     initialize(allEntities) {
       for (let i = 0; i < allEntities.length; i += 1) {
@@ -97,9 +103,12 @@ const Query = stampit({
       this.update(allEntities);
     },
     /**
-     * [satisfiedBy description]
-     * @param  {[type]} entity [description]
-     * @return {[type]}        [description]
+     * Checks if entity satisfies query criterions.
+     *
+     * @public
+     * @memberof Query#
+     * @method satisfiedBy
+     * @param {Entity} entity entity to check
      */
     satisfiedBy(entity) {
       let satisfies = true;
@@ -119,24 +128,37 @@ const Query = stampit({
       return satisfies;
     },
     /**
-     * [shouldUpdate description]
-     * @return {[type]} [description]
+     * Checks if query should update.
+     *
+     * Query should update when entities matching its criterions are added or removed from engine.
+     * It should also update when entity that was matching criterions has changed and doesn't match it anymore.
+     *
+     * @public
+     * @memberof Query#
+     * @method shouldUpdate
      */
     shouldUpdate() {
       return this._shouldUpdate;
     },
     /**
-     * [addToIndex description]
-     * @param {[type]} entityId [description]
+     * Adds entity ID to query index.
+     *
+     * @public
+     * @memberof Query#
+     * @method addToIndex
+     * @param {Number} entityId
      */
     addToIndex(entityId) {
       this._shouldUpdate = true;
       this._entitiesIndex.push(entityId);
     },
     /**
-     * [removeFromIndex description]
-     * @param  {[type]} entityId [description]
-     * @return {[type]}          [description]
+     * Removes entity ID from query index.
+     *
+     * @public
+     * @memberof Query#
+     * @method removeFromIndex
+     * @param {Number} entityId
      */
     removeFromIndex(entityId) {
       const indexOfEntity = this._entitiesIndex.indexOf(entityId);
@@ -147,17 +169,28 @@ const Query = stampit({
       }
     },
     /**
-     * [getEntities description]
-     * @return {[type]} [description]
+     * Returns entities matched by query.
+     *
+     * Returns object with following properties:
+     * - `length` - number of matched entities
+     * - `entities` - array with matched entities. __This array length is usually not the same as matched entities number!__
+     *
+     * @public
+     * @memberof Query#
+     * @method getEntities
+     * @returns {Object}
      */
     getEntities() {
       this._result.length = this._matchedEntities.length;
       return this._result;
     },
     /**
-     * [update description]
-     * @param  {[type]} allEntities [description]
-     * @return {[type]}             [description]
+     * Updates internal matched entities with index.
+     *
+     * @public
+     * @memberof Query#
+     * @method update
+     * @param {FastArray} allEntities fast array of all entities present in the engine
      */
     update(allEntities) {
       if (!this._shouldUpdate) {
