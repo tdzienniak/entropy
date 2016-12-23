@@ -1,4 +1,4 @@
-import { compose } from 'stampit';
+import { stampit } from 'entropy.js';
 import { default as ResourceLoader, Resource, base64 } from 'resource-loader';
 import path from 'path';
 
@@ -7,11 +7,15 @@ let Howl;
 
 try {
   PIXI = require('pixi.js');
-} catch (e) {}
+} catch (e) {
+  // noop
+}
 
 try {
   Howl = require('howler');
-} catch (e) {}
+} catch (e) {
+  // noop
+}
 
 import spritesheetParser from './middlewares/spritesheetParser';
 import textureParser from './middlewares/textureParser';
@@ -65,7 +69,7 @@ const parseHowlerSounds = (loader, resources) => {
   })
 }
 
-const Loader = compose({
+const Loader = stampit.compose({
   statics: {
     propName: 'loader'
   },
@@ -74,7 +78,7 @@ const Loader = compose({
 
     const wrapMiddleware = (fn) => {
       return (resource, next) => fn(this, resource, next);
-    }
+    };
 
     if (PIXI) {
       game.TEXTURE_CACHE = PIXI.utils.TextureCache;
