@@ -47,7 +47,7 @@ var EntropyLoaderPlugin =
 
 	'use strict';
 
-	var _stampit = __webpack_require__(1);
+	var _entropy = __webpack_require__(1);
 
 	var _resourceLoader = __webpack_require__(2);
 
@@ -72,11 +72,15 @@ var EntropyLoaderPlugin =
 
 	try {
 	  PIXI = __webpack_require__(13);
-	} catch (e) {}
+	} catch (e) {
+	  // noop
+	}
 
 	try {
 	  Howl = __webpack_require__(14);
-	} catch (e) {}
+	} catch (e) {
+	  // noop
+	}
 
 	var extMimeMap = {
 	  ogg: 'audio/ogg',
@@ -133,7 +137,7 @@ var EntropyLoaderPlugin =
 	  });
 	};
 
-	var Loader = (0, _stampit.compose)({
+	var Loader = _entropy.stampit.compose({
 	  statics: {
 	    propName: 'loader'
 	  },
@@ -273,7 +277,7 @@ var EntropyLoaderPlugin =
 /* 1 */
 /***/ function(module, exports) {
 
-	module.exports = Entropy.stampit;
+	module.exports = Entropy;
 
 /***/ },
 /* 2 */
