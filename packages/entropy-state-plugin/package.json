@@ -1,6 +1,6 @@
 {
   "name": "entropy.js-state-plugin",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "description": "",
   "keywords": [],
   "homepage": "https://github.com/tdzienniak/entropy#readme",
@@ -23,11 +23,11 @@
     "babel-cli": "^6.18.0",
     "babel-core": "^6.18.2",
     "babel-preset-es2015": "^6.18.0",
-    "entropy.js": "1.0.0-alpha.3",
+    "entropy.js": "^1.0.0-alpha.4",
     "rimraf": "^2.5.4",
     "webpack": "^1.13.3"
   },
   "peerDependencies": {
-    "entropy.js": ">= 1 < 2"
+    "entropy.js": "^1.0.0-alpha.4"
   }
 }
