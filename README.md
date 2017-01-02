@@ -34,7 +34,7 @@ The best way to get a grasp of Entropy is to read the [wiki](https://github.com/
 You can also read the [docs](http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.5/) and check out examples:
 
 1. [Bunnies (benchmark and PIXI.js rendering)](http://tdzienniak.github.io/entropy/example/bunnies/)
-2. [Breakout (complete game with p2.js physics, PIXI rendering and plugins)](http://tdzienniak.github.io/entropy/example/breakout/)
+2. [Breakout (complete game with p2.js physics, PIXI rendering and plugins)](http://tdzienniak.github.io/entropy/example/breakout/) __(not working at the moment)__
 
 ## Packages
 
