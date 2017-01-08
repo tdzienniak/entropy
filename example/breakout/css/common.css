@@ -115,33 +115,3 @@ footer {
     font-weight: 100;
     font-size: 11pt;
 }
-
-/**
- * Fade animations
- */
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-  }
-}
-
-.fade-in {
-  opacity: 0;
-  animation: fadeIn .5s ease-in 1 forwards;
-}
-
-.fade-out {
-  opacity: 1;
-  animation: fadeOut .5s ease-in 1 forwards;
-}
-
-.is-paused {
-  animation-play-state: paused;
-}
