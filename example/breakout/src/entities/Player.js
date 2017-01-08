@@ -34,7 +34,7 @@ module.exports = {
     game.stage.addChild(scoreTextNode)
     game.stage.addChild(levelTextNode)
 
-    this.addComponent("Stats", 0, livesTextNode, scoreTextNode, levelTextNode);
+    this.addComponent("Stats", 3, livesTextNode, scoreTextNode, levelTextNode);
   },
   onRemove: function () {
     game.stage.removeChild(this.components.playerstats.livesTextNode);
