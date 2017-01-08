@@ -34,7 +34,7 @@ The best way to get a grasp of Entropy is to read the [wiki](https://github.com/
 You can also read the [docs](http://tdzienniak.github.io/entropy/docs/entropy.js/1.0.0-alpha.5/) and check out examples:
 
 1. [Bunnies (benchmark and PIXI.js rendering)](http://tdzienniak.github.io/entropy/example/bunnies/)
-2. [Breakout (complete game with p2.js physics, PIXI rendering and plugins)](http://tdzienniak.github.io/entropy/example/breakout/) __(not working at the moment)__
+2. [Breakout (complete game with p2.js physics, PIXI rendering and plugins)](http://tdzienniak.github.io/entropy/example/breakout/)
 
 ## Packages
 
@@ -45,6 +45,7 @@ This is monorepo. You can check versions of included packages by looking at the 
 | [`entropy.js`](/packages/entropy) | [![npm](https://img.shields.io/npm/v/entropy.js.svg)](https://www.npmjs.com/package/entropy.js) |
 | [`entropy.js-state-plugin`](/packages/entropy-state-plugin) | [![npm](https://img.shields.io/npm/v/entropy.js-state-plugin.svg)](https://www.npmjs.com/package/entropy.js-state-plugin) |
 | [`entropy.js-loader-plugin`](/packages/entropy-loader-plugin) | [![npm](https://img.shields.io/npm/v/entropy.js-loader-plugin.svg)](https://www.npmjs.com/package/entropy.js-loader-plugin) |
+| [`entropy.js-animation-plugin`](/packages/entropy-animation-plugin) | [![npm](https://img.shields.io/npm/v/entropy.js-animation-plugin.svg)](https://www.npmjs.com/package/entropy.js-animation-plugin) |
 
 ## Building and testing
 
