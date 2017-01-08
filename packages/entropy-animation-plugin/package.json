@@ -1,0 +1,34 @@
+{
+  "name": "entropy.js-animation-plugin",
+  "version": "1.0.0-alpha.1",
+  "description": "",
+  "keywords": [],
+  "homepage": "https://github.com/tdzienniak/entropy#readme",
+  "bugs": {
+    "url": "https://github.com/tdzienniak/entropy/issues"
+  },
+  "license": "MIT",
+  "author": "Tymoteusz Dzienniak <tymoteusz.dzienniak@outlook.com>",
+  "main": "./build/index.js",
+  "scripts": {
+    "babel": "babel src --out-dir build --presets=es2015",
+    "bundle": "npm run bundle:production && npm run bundle:development",
+    "bundle:development": "webpack --config development.config.js",
+    "bundle:production": "webpack --config production.config.js",
+    "bundle:watch": "npm run bundle:development -- --watch",
+    "clean": "rimraf build/* && rimraf dist/*",
+    "prepublish": "npm run clean && npm run babel && npm run bundle"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.18.2",
+    "babel-preset-es2015": "^6.18.0",
+    "entropy.js": "^1.0.0-alpha.5",
+    "rimraf": "^2.5.4",
+    "webpack": "^1.13.3"
+  },
+  "peerDependencies": {
+    "entropy.js": "^1.0.0-alpha.5",
+    "pixi.js": ">= 4 < 5"
+  }
+}
