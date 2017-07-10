@@ -1,11 +1,12 @@
 var webpack = require('webpack');
+var path = require('path');
 
 module.exports = {
   entry: {
     'entropy-loader': './src/index.js',
   },
   output: {
-    path: './dist',
+    path: path.resolve('./dist'),
     filename: '[name]-plugin.min.js',
     library: 'EntropyLoaderPlugin',
   },
@@ -16,7 +17,7 @@ module.exports = {
     howler: 'Howl',
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
         exclude: /(bower_components)/,

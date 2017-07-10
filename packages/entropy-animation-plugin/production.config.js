@@ -1,11 +1,12 @@
 var webpack = require('webpack');
+var path = require('path');
 
 module.exports = {
   entry: {
     'entropy-animation': './src/index.js',
   },
   output: {
-    path: './dist',
+    path: path.resolve('./dist'),
     filename: '[name]-plugin.min.js',
     library: 'EntropyAnimationPlugin',
   },
@@ -15,7 +16,7 @@ module.exports = {
     'pixi.js': 'PIXI',
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
         exclude: /(bower_components)/,

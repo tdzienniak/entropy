@@ -1,11 +1,12 @@
 var webpack = require('webpack');
+var path = require('path');
 
 module.exports = {
   entry: {
     'entropy-state': './src/index.js',
   },
   output: {
-    path: './dist',
+    path: path.resolve('./dist'),
     filename: '[name]-plugin.min.js',
     library: 'EntropyStatePlugin',
   },
@@ -14,7 +15,7 @@ module.exports = {
     stampit: 'Entropy.stampit',
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
         exclude: /(bower_components)/,
