@@ -1,6 +1,6 @@
 {
   "name": "entropy.js",
-  "version": "1.0.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "description": "Framework for making games and not only games in entity system manner.",
   "keywords": [
     "entity system",
