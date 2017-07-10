@@ -19,10 +19,10 @@ const System = compose({
     enable() {
       if (!this.isEnabled()) {
         this.enabled = true;
-        this.emit('enable');
 
-        // stop responding to events
-        this.stopResponding();
+        // start responding to events
+        this.startResponding();
+        this.emit('enable');
       }
 
       return this;
@@ -31,9 +31,9 @@ const System = compose({
       if (this.isEnabled()) {
         this.enabled = false;
 
-        // start responding to events
-        this.startResponding();
+        // stop responding to events
         this.emit('disable');
+        this.stopResponding();
       }
 
       return this;
